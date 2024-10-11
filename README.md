@@ -1,12 +1,12 @@
 # Platforma pro prodej bot
 
 # Zadání dlouhodobé maturitní práce
-## Žák: Ernst Christoph Leschka, Bui Dai Duong, Vojtěch Šebek
-## Třída: 4.H
-## Studijní obor: 18-20-M/01 Informační technologie
-## Zaměření: Vývoj aplikací, Počítačové sítě
-## Školní rok: 2024–2025
-## Téma práce: Vývoj webovou aplikaci na prodej tenisek „LaceHub.cz“
+- Žák: Ernst Christoph Leschka, Bui Dai Duong, Vojtěch Šebek
+- Třída: 4.H
+- Studijní obor: 18-20-M/01 Informační technologie
+- Zaměření: Vývoj aplikací, Počítačové sítě
+- Školní rok: 2024–2025
+- Téma práce: Vývoj webovou aplikaci na prodej tenisek „LaceHub.cz“
 
 # Pokyny k obsahu a rozsahu práce:
 1. Navrhněte a vytvořte responzivní webovou aplikaci, která bude fungovat jako platforma pro 
