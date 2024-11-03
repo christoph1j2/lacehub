@@ -101,8 +101,23 @@ ALTER TABLE
     "matches" ADD PRIMARY KEY("id");
 
 ----------------------------------------------------------------------------
+-- ROLES
+CREATE TABLE "user_roles"(
+    "id" BIGINT NOT NULL,
+    "role_name" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "user_roles" ADD PRIMARY KEY("id");
+ALTER TABLE
+    "user_roles" ADD CONSTRAINT "user_roles_role_name_unique" UNIQUE("role_name");
+
+INSERT INTO user_roles (role_name)
+VALUES ('admin'),
+       ('user');
 
 -- FOREIGN KEYS
+ALTER TABLE
+    "users" ADD CONSTRAINT "users_role_id_foreign" FOREIGN KEY("role_id") REFERENCES "user_roles"("id");
 ALTER TABLE
     "matches" ADD CONSTRAINT "matches_wtb_id_foreign" FOREIGN KEY("wtb_id") REFERENCES "wtb"("id");
 ALTER TABLE
