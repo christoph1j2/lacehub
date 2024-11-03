@@ -1,3 +1,4 @@
+-- Exported from drawSQL (https://www.drawsql.app)
 CREATE TABLE "wtb"(
     "id" BIGINT NOT NULL,
     "user_id" BIGINT NOT NULL,
@@ -35,6 +36,15 @@ CREATE TABLE "wts"(
 );
 ALTER TABLE
     "wts" ADD PRIMARY KEY("id");
+CREATE TABLE "user_inventory"(
+    "id" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "product_id" BIGINT NOT NULL,
+    "size" VARCHAR(255) NOT NULL,
+    "quantity" BIGINT NOT NULL DEFAULT '1'
+);
+ALTER TABLE
+    "user_inventory" ADD PRIMARY KEY("id");
 CREATE TABLE "matches"(
     "id" BIGINT NOT NULL,
     "wtb_id" BIGINT NOT NULL,
@@ -66,6 +76,7 @@ CREATE TABLE "products"(
     "sku" VARCHAR(255) NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
+    "image_link" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE
@@ -82,6 +93,10 @@ ALTER TABLE
     "matches" ADD CONSTRAINT "matches_wts_id_foreign" FOREIGN KEY("wts_id") REFERENCES "wts"("id");
 ALTER TABLE
     "wts" ADD CONSTRAINT "wts_user_id_foreign" FOREIGN KEY("user_id") REFERENCES "users"("id");
+ALTER TABLE
+    "user_inventory" ADD CONSTRAINT "user_inventory_product_id_foreign" FOREIGN KEY("product_id") REFERENCES "products"("id");
+ALTER TABLE
+    "user_inventory" ADD CONSTRAINT "user_inventory_user_id_foreign" FOREIGN KEY("user_id") REFERENCES "users"("id");
 ALTER TABLE
     "matches" ADD CONSTRAINT "matches_seller_id_foreign" FOREIGN KEY("seller_id") REFERENCES "users"("id");
 ALTER TABLE
