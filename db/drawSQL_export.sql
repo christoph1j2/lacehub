@@ -34,17 +34,7 @@ ALTER TABLE
 ALTER TABLE
     "products" ADD CONSTRAINT "products_sku_unique" UNIQUE("sku");
 ----------------------------------------------------------------------------
--- NOTIFICATIONS
-CREATE TABLE "notifications"(
-    "id" BIGSERIAL NOT NULL,
-    "user_id" BIGINT NOT NULL REFERENCES users(id),
-    "match_id" BIGINT NOT NULL REFERENCES matches(id),
-    "message" TEXT NOT NULL,
-    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-ALTER TABLE
-    "notifications" ADD PRIMARY KEY("id");
-----------------------------------------------------------------------------
+
 -- REVIEWS
 CREATE TABLE "reviews"(
     "id" BIGSERIAL NOT NULL,
@@ -107,6 +97,17 @@ CREATE TABLE "matches"(
 ALTER TABLE
     "matches" ADD PRIMARY KEY("id");
 
+----------------------------------------------------------------------------
+-- NOTIFICATIONS
+CREATE TABLE "notifications"(
+    "id" BIGSERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL REFERENCES users(id),
+    "match_id" BIGINT NOT NULL REFERENCES matches(id),
+    "message" TEXT NOT NULL,
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE
+    "notifications" ADD PRIMARY KEY("id");
 ----------------------------------------------------------------------------
 -- ROLES
 CREATE TABLE "user_roles"(
