@@ -6,8 +6,12 @@ CREATE TABLE "users"(
     "username" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "password_hash" VARCHAR(255) NOT NULL,
-    "verified" BOOLEAN NOT NULL DEFAULT '0',
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "role_id" BIGINT NOT NULL DEFAULT 2,
+    "verified" BOOLEAN NOT NULL DEFAULT 0,
+    "credibility_score" INT DEFAULT 0,
+    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "is_banned" BOOLEAN NOT NULL DEFAULT 0,
+    "ban_expiration" TIMESTAMP(0) WITHOUT TIME ZONE
 );
 ALTER TABLE
     "users" ADD PRIMARY KEY("id");
@@ -44,11 +48,12 @@ ALTER TABLE
 -- REVIEWS
 CREATE TABLE "reviews"(
     "id" BIGINT NOT NULL,
-    "reviewer_id" BIGINT NOT NULL REFERENCES users(id),
-    "seller_id" BIGINT NOT NULL REFERENCES users(id),
-    "rating" SMALLINT NOT NULL CHECK (rating BETWEEN 0 AND 1),
+    "reviewer_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    "seller_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    "rating" BOOLEAN NOT NULL,
     "review_text" TEXT NOT NULL,
     "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    UNIQUE (reviewer_id, seller_id)
 );
 ALTER TABLE
     "reviews" ADD PRIMARY KEY("id");
@@ -59,7 +64,7 @@ CREATE TABLE "wtb"(
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
     "size" VARCHAR(10) NOT NULL,
-    "quantity" BIGINT NOT NULL DEFAULT '1'
+    "quantity" BIGINT NOT NULL DEFAULT 1
 );
 ALTER TABLE
     "wtb" ADD PRIMARY KEY("id");
@@ -70,7 +75,7 @@ CREATE TABLE "wts"(
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
     "size" VARCHAR(10) NOT NULL,
-    "quantity" BIGINT NOT NULL DEFAULT '1'
+    "quantity" BIGINT NOT NULL DEFAULT 1
 );
 ALTER TABLE
     "wts" ADD PRIMARY KEY("id");
@@ -81,7 +86,7 @@ CREATE TABLE "user_inventory"(
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
     "size" VARCHAR(10) NOT NULL,
-    "quantity" BIGINT NOT NULL DEFAULT '1'
+    "quantity" BIGINT NOT NULL DEFAULT 1
 );
 ALTER TABLE
     "user_inventory" ADD PRIMARY KEY("id");
@@ -112,8 +117,23 @@ ALTER TABLE
     "user_roles" ADD CONSTRAINT "user_roles_role_name_unique" UNIQUE("role_name");
 
 INSERT INTO user_roles (role_name)
-VALUES ('admin'),
-       ('user');
+VALUES ('admin'),('user');
+
+----------------------------------------------------------------------------
+-- REPORTS
+CREATE TABLE "reports"(
+    "id" BIGINT NOT NULL,
+    "reported_user_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    "reporter_user_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    "report_text" TEXT NOT NULL,
+    "report_date" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "resolved" BOOLEAN NOT NULL DEFAULT 0,
+    "action_taken" TEXT
+);
+ALTER TABLE
+    "reports" ADD PRIMARY KEY("id");
+
+----------------------------------------------------------------------------
 
 -- FOREIGN KEYS
 ALTER TABLE
