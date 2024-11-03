@@ -166,3 +166,7 @@ ALTER TABLE
     "wts" ADD CONSTRAINT "wts_product_id_foreign" FOREIGN KEY("product_id") REFERENCES "products"("id");
 ALTER TABLE
     "reviews" ADD CONSTRAINT "reviews_seller_id_foreign" FOREIGN KEY("seller_id") REFERENCES "users"("id");
+ALTER TABLE
+    "reports" ADD CONSTRAINT "reports_reported_user_id_foreign" FOREIGN KEY("reported_user_id") REFERENCES "users"("id");
+ALTER TABLE
+    "reports" ADD CONSTRAINT "reports_reporter_user_id_foreign" FOREIGN KEY("reporter_user_id") REFERENCES "users"("id");
