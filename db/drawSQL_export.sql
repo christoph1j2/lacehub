@@ -1,62 +1,6 @@
 -- Exported from drawSQL (https://www.drawsql.app)
-CREATE TABLE "wtb"(
-    "id" BIGINT NOT NULL,
-    "user_id" BIGINT NOT NULL,
-    "product_id" BIGINT NOT NULL,
-    "size" VARCHAR(255) NOT NULL,
-    "quantity" BIGINT NOT NULL DEFAULT '1'
-);
-ALTER TABLE
-    "wtb" ADD PRIMARY KEY("id");
-CREATE TABLE "notifications"(
-    "id" BIGINT NOT NULL,
-    "user_id" BIGINT NOT NULL,
-    "match_id" BIGINT NOT NULL,
-    "message" TEXT NOT NULL,
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-ALTER TABLE
-    "notifications" ADD PRIMARY KEY("id");
-CREATE TABLE "reviews"(
-    "id" BIGINT NOT NULL,
-    "reviewer_id" BIGINT NOT NULL,
-    "seller_id" BIGINT NOT NULL,
-    "rating" SMALLINT NOT NULL,
-    "review_text" TEXT NOT NULL,
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-ALTER TABLE
-    "reviews" ADD PRIMARY KEY("id");
-CREATE TABLE "wts"(
-    "id" BIGINT NOT NULL,
-    "user_id" BIGINT NOT NULL,
-    "product_id" BIGINT NOT NULL,
-    "size" VARCHAR(255) NOT NULL,
-    "quantity" BIGINT NOT NULL DEFAULT '1'
-);
-ALTER TABLE
-    "wts" ADD PRIMARY KEY("id");
-CREATE TABLE "user_inventory"(
-    "id" BIGINT NOT NULL,
-    "user_id" BIGINT NOT NULL,
-    "product_id" BIGINT NOT NULL,
-    "size" VARCHAR(255) NOT NULL,
-    "quantity" BIGINT NOT NULL DEFAULT '1'
-);
-ALTER TABLE
-    "user_inventory" ADD PRIMARY KEY("id");
-CREATE TABLE "matches"(
-    "id" BIGINT NOT NULL,
-    "wtb_id" BIGINT NOT NULL,
-    "wts_id" BIGINT NOT NULL,
-    "buyer_id" BIGINT NOT NULL,
-    "seller_id" BIGINT NOT NULL,
-    "match_score" INTEGER NOT NULL,
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "status" VARCHAR(255) NOT NULL DEFAULT '' pending ''
-);
-ALTER TABLE
-    "matches" ADD PRIMARY KEY("id");
+----------------------------------------------------------------------------
+-- USERS
 CREATE TABLE "users"(
     "id" BIGINT NOT NULL,
     "username" VARCHAR(255) NOT NULL,
@@ -71,6 +15,8 @@ ALTER TABLE
     "users" ADD CONSTRAINT "users_username_unique" UNIQUE("username");
 ALTER TABLE
     "users" ADD CONSTRAINT "users_email_unique" UNIQUE("email");
+----------------------------------------------------------------------------
+-- PRODUCT
 CREATE TABLE "products"(
     "id" BIGINT NOT NULL,
     "sku" VARCHAR(255) NOT NULL,
@@ -83,6 +29,80 @@ ALTER TABLE
     "products" ADD PRIMARY KEY("id");
 ALTER TABLE
     "products" ADD CONSTRAINT "products_sku_unique" UNIQUE("sku");
+----------------------------------------------------------------------------
+-- NOTIFICATIONS
+CREATE TABLE "notifications"(
+    "id" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL REFERENCES users(id),
+    "match_id" BIGINT NOT NULL REFERENCES matches(id),
+    "message" TEXT NOT NULL,
+    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE
+    "notifications" ADD PRIMARY KEY("id");
+----------------------------------------------------------------------------
+-- REVIEWS
+CREATE TABLE "reviews"(
+    "id" BIGINT NOT NULL,
+    "reviewer_id" BIGINT NOT NULL REFERENCES users(id),
+    "seller_id" BIGINT NOT NULL REFERENCES users(id),
+    "rating" SMALLINT NOT NULL CHECK (rating BETWEEN 0 AND 1),
+    "review_text" TEXT NOT NULL,
+    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE
+    "reviews" ADD PRIMARY KEY("id");
+----------------------------------------------------------------------------
+-- WTB
+CREATE TABLE "wtb"(
+    "id" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL REFERENCES users(id),
+    "product_id" BIGINT NOT NULL REFERENCES products(id),
+    "size" VARCHAR(10) NOT NULL,
+    "quantity" BIGINT NOT NULL DEFAULT '1'
+);
+ALTER TABLE
+    "wtb" ADD PRIMARY KEY("id");
+----------------------------------------------------------------------------
+-- WTS
+CREATE TABLE "wts"(
+    "id" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL REFERENCES users(id),
+    "product_id" BIGINT NOT NULL REFERENCES products(id),
+    "size" VARCHAR(10) NOT NULL,
+    "quantity" BIGINT NOT NULL DEFAULT '1'
+);
+ALTER TABLE
+    "wts" ADD PRIMARY KEY("id");
+----------------------------------------------------------------------------
+-- USER_INVENTORY
+CREATE TABLE "user_inventory"(
+    "id" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL REFERENCES users(id),
+    "product_id" BIGINT NOT NULL REFERENCES products(id),
+    "size" VARCHAR(10) NOT NULL,
+    "quantity" BIGINT NOT NULL DEFAULT '1'
+);
+ALTER TABLE
+    "user_inventory" ADD PRIMARY KEY("id");
+----------------------------------------------------------------------------
+-- MATCHES
+CREATE TABLE "matches"(
+    "id" BIGINT NOT NULL,
+    "wtb_id" BIGINT NOT NULL REFERENCES wtb(id),
+    "wts_id" BIGINT NOT NULL REFERENCES wts(id),
+    "buyer_id" BIGINT NOT NULL REFERENCES users(id),
+    "seller_id" BIGINT NOT NULL REFERENCES users(id),
+    "match_score" INTEGER NOT NULL CHECK (match_score BETWEEN 0 AND 100),
+    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" VARCHAR(255) NOT NULL DEFAULT 'pending'
+);
+ALTER TABLE
+    "matches" ADD PRIMARY KEY("id");
+
+----------------------------------------------------------------------------
+
+-- FOREIGN KEYS
 ALTER TABLE
     "matches" ADD CONSTRAINT "matches_wtb_id_foreign" FOREIGN KEY("wtb_id") REFERENCES "wtb"("id");
 ALTER TABLE
