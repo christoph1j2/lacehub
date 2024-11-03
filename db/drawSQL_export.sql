@@ -2,16 +2,16 @@
 ----------------------------------------------------------------------------
 -- USERS
 CREATE TABLE "users"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "username" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "password_hash" VARCHAR(255) NOT NULL,
     "role_id" BIGINT NOT NULL DEFAULT 2,
-    "verified" BOOLEAN NOT NULL DEFAULT 0,
+    "verified" BOOLEAN NOT NULL DEFAULT FALSE,
     "credibility_score" INT DEFAULT 0,
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "is_banned" BOOLEAN NOT NULL DEFAULT 0,
-    "ban_expiration" TIMESTAMP(0) WITHOUT TIME ZONE
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "is_banned" BOOLEAN NOT NULL DEFAULT FALSE,
+    "ban_expiration" TIMESTAMP WITH TIME ZONE
 );
 ALTER TABLE
     "users" ADD PRIMARY KEY("id");
@@ -22,12 +22,12 @@ ALTER TABLE
 ----------------------------------------------------------------------------
 -- PRODUCT
 CREATE TABLE "products"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "sku" VARCHAR(255) NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
     "image_link" VARCHAR(255) NOT NULL,
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE
     "products" ADD PRIMARY KEY("id");
@@ -36,31 +36,33 @@ ALTER TABLE
 ----------------------------------------------------------------------------
 -- NOTIFICATIONS
 CREATE TABLE "notifications"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "match_id" BIGINT NOT NULL REFERENCES matches(id),
     "message" TEXT NOT NULL,
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE
     "notifications" ADD PRIMARY KEY("id");
 ----------------------------------------------------------------------------
 -- REVIEWS
 CREATE TABLE "reviews"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "reviewer_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     "seller_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     "rating" BOOLEAN NOT NULL,
     "review_text" TEXT NOT NULL,
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-    UNIQUE (reviewer_id, seller_id)
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE
     "reviews" ADD PRIMARY KEY("id");
+ALTER TABLE 
+    "reviews" ADD CONSTRAINT "reviews_reviewer_seller_unique" UNIQUE("reviewer_id", "seller_id");
+
 ----------------------------------------------------------------------------
 -- WTB
 CREATE TABLE "wtb"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
     "size" VARCHAR(10) NOT NULL,
@@ -71,7 +73,7 @@ ALTER TABLE
 ----------------------------------------------------------------------------
 -- WTS
 CREATE TABLE "wts"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
     "size" VARCHAR(10) NOT NULL,
@@ -82,7 +84,7 @@ ALTER TABLE
 ----------------------------------------------------------------------------
 -- USER_INVENTORY
 CREATE TABLE "user_inventory"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
     "size" VARCHAR(10) NOT NULL,
@@ -93,13 +95,13 @@ ALTER TABLE
 ----------------------------------------------------------------------------
 -- MATCHES
 CREATE TABLE "matches"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "wtb_id" BIGINT NOT NULL REFERENCES wtb(id),
     "wts_id" BIGINT NOT NULL REFERENCES wts(id),
     "buyer_id" BIGINT NOT NULL REFERENCES users(id),
     "seller_id" BIGINT NOT NULL REFERENCES users(id),
     "match_score" INTEGER NOT NULL CHECK (match_score BETWEEN 0 AND 100),
-    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" VARCHAR(255) NOT NULL DEFAULT 'pending'
 );
 ALTER TABLE
@@ -108,7 +110,7 @@ ALTER TABLE
 ----------------------------------------------------------------------------
 -- ROLES
 CREATE TABLE "user_roles"(
-    "id" BIGINT NOT NULL,
+    "id" SERIAL NOT NULL,
     "role_name" VARCHAR(255) NOT NULL
 );
 ALTER TABLE
@@ -117,17 +119,17 @@ ALTER TABLE
     "user_roles" ADD CONSTRAINT "user_roles_role_name_unique" UNIQUE("role_name");
 
 INSERT INTO user_roles (role_name)
-VALUES ('admin'),('user');
+VALUES ('admin'), ('user');
 
 ----------------------------------------------------------------------------
 -- REPORTS
 CREATE TABLE "reports"(
-    "id" BIGINT NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "reported_user_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     "reporter_user_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     "report_text" TEXT NOT NULL,
-    "report_date" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "resolved" BOOLEAN NOT NULL DEFAULT 0,
+    "report_date" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "resolved" BOOLEAN NOT NULL DEFAULT FALSE,
     "action_taken" TEXT
 );
 ALTER TABLE
