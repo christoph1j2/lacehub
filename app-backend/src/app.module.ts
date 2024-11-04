@@ -17,7 +17,7 @@ import { UserInventoryModule } from './user-inventory/user-inventory.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: 'development.env'
+      envFilePath: '/app-backend/development.env'
     }),
     DatabaseModule,
     UsersModule,

@@ -1,5 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany} from 'typeorm';
-import { UserRole } from 'src/entities/user-role.entity'; // assuming you have a UserRole entity
+import { Role } from 'src/entities/role.entity';
 import { UserInventory } from './userInventory.entity';
 import { Review } from './review.entity';
 import { Report } from './report.entity';
@@ -19,34 +19,34 @@ export class User {
     email: string;
 
     @Column()
-    passwordHash: string;
-
-    @ManyToOne(() => UserRole, (userRole) => userRole.id)
-    @JoinColumn({ name: 'role_id' })
-    role: UserRole;
+    password_hash: string;
 
     @Column({ default:false })
     verified: boolean;
 
     @Column()
-    createdAt: Date;
+    created_at: Date;
 
     @Column({ default:0 })
-    credScore: number;
+    credibility_score: number;
 
     @Column({ default:false })
-    isBanned: boolean;
+    is_banned: boolean;
 
     @Column({ nullable:true })
-    banExpiration: Date;
+    ban_expiration: Date;
 
-    @OneToMany(() => UserInventory, (userInventory) => userInventory.user)
+    @ManyToOne(() => Role, (role) => role.users)
+    @JoinColumn({ name: 'role_id' })
+    role: Role;
+
+    /*@OneToMany(() => UserInventory, (userInventory) => userInventory.user)
     inventory: UserInventory[];
 
     @OneToMany(() => Review, (review) => review.reviewer)
     reviewsAsReviewer: Review[];
 
-    @ManyToOne(() => Review, (review) => review.seller)
+    @OneToMany(() => Review, (review) => review.seller)
     reviewsAsSeller: Review[];
 
     @OneToMany(() => Report, (report) => report.reportedUser)
@@ -59,5 +59,5 @@ export class User {
     matchesAsBuyer: Match[];
 
     @OneToMany(() => Match, (match) => match.seller)
-    matchesAsSeller: Match[];
+    matchesAsSeller: Match[];*/
 }

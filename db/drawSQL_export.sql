@@ -6,11 +6,11 @@ CREATE TABLE "users"(
     "username" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "password_hash" VARCHAR(255) NOT NULL,
-    "role_id" BIGINT NOT NULL DEFAULT 2,
-    "verified" BOOLEAN NOT NULL DEFAULT FALSE,
+    "role_id" BIGINT  DEFAULT 2,
+    "verified" BOOLEAN DEFAULT FALSE,
     "credibility_score" INT DEFAULT 0,
-    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "is_banned" BOOLEAN NOT NULL DEFAULT FALSE,
+    "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    "is_banned" BOOLEAN DEFAULT FALSE,
     "ban_expiration" TIMESTAMP WITH TIME ZONE
 );
 ALTER TABLE
