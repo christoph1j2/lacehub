@@ -40,7 +40,7 @@ export class User {
     @JoinColumn({ name: 'role_id' })
     role: Role;
 
-    /*@OneToMany(() => UserInventory, (userInventory) => userInventory.user)
+    @OneToMany(() => UserInventory, (userInventory) => userInventory.user)
     inventory: UserInventory[];
 
     @OneToMany(() => Review, (review) => review.reviewer)
@@ -49,7 +49,7 @@ export class User {
     @OneToMany(() => Review, (review) => review.seller)
     reviewsAsSeller: Review[];
 
-    @OneToMany(() => Report, (report) => report.reportedUser)
+    /*@OneToMany(() => Report, (report) => report.reportedUser)
     reportsAsReported: Report[];
 
     @OneToMany(() => Report, (report) => report.reporterUser)

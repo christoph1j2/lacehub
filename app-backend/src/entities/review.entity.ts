@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique }
 import { User } from './user.entity';
 
 @Entity('reviews')
-@Unique(['reviewerId', 'sellerId']) 
+@Unique(['reviewerId', 'sellerId'])
 export class Review {
     @PrimaryGeneratedColumn()
     id: number;
@@ -13,13 +13,13 @@ export class Review {
     @Column()  // Explicitly add sellerId as a column
     sellerId: number;
 
-    /*@ManyToOne(() => User, (user) => user.reviewsAsReviewer)
+    @ManyToOne(() => User, (user) => user.reviewsAsReviewer)
     @JoinColumn({ name: 'reviewerId', referencedColumnName: 'id' })
     reviewer: User;
 
     @ManyToOne(() => User, (user) => user.reviewsAsSeller)
     @JoinColumn({ name: 'sellerId', referencedColumnName: 'id' })
-    seller: User;*/
+    seller: User;
 
     @Column()
     rating: boolean;

@@ -23,4 +23,8 @@ export class UsersService {
     async findAll(): Promise<User[]> {
         return await this.usersRepository.find();
     }
+
+    async delete(id: number): Promise<void> {
+        await this.usersRepository.delete(id);
+    }
 }

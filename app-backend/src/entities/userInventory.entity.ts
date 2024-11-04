@@ -7,9 +7,9 @@ export class UserInventory {
     @PrimaryGeneratedColumn()
     id: number;
 
-    /*@ManyToOne(() => User, (user) => user.inventory)
+    @ManyToOne(() => User, (user) => user.inventory)
     @JoinColumn({ name: 'user_id' })
-    user: User;*/
+    user: User;
 
     @ManyToOne(() => Product, (product) => product.inventory)
     @JoinColumn({ name: 'product_id' })
