@@ -17,13 +17,13 @@ export class Match {
     @JoinColumn({ name: 'wts_id' })
     wts: Wts;
 
-    /*@ManyToOne(() => User, (user) => user.matchesAsBuyer)
+    @ManyToOne(() => User, (user) => user.matchesAsBuyer)
     @JoinColumn({ name: 'buyer_id' })
     buyer: User;
 
     @ManyToOne(() => User, (user) => user.matchesAsSeller)
     @JoinColumn({ name: 'seller_id' })
-    seller: User;*/
+    seller: User;
 
     @Column()
     match_score: number;

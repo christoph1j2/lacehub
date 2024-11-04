@@ -49,7 +49,7 @@ export class User {
     @OneToMany(() => Review, (review) => review.seller)
     reviewsAsSeller: Review[];
 
-    /*@OneToMany(() => Report, (report) => report.reportedUser)
+    @OneToMany(() => Report, (report) => report.reportedUser)
     reportsAsReported: Report[];
 
     @OneToMany(() => Report, (report) => report.reporterUser)
@@ -59,5 +59,5 @@ export class User {
     matchesAsBuyer: Match[];
 
     @OneToMany(() => Match, (match) => match.seller)
-    matchesAsSeller: Match[];*/
+    matchesAsSeller: Match[];
 }
