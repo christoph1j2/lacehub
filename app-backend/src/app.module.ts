@@ -12,6 +12,8 @@ import { MatchesModule } from './matches/matches.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
 import { UserInventoryModule } from './user-inventory/user-inventory.module';
+import { APP_PIPE } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 
 @Module({
   imports: [
@@ -30,6 +32,12 @@ import { UserInventoryModule } from './user-inventory/user-inventory.module';
     UserInventoryModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe
+    }
+  ],
 })
 export class AppModule {}

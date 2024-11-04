@@ -21,6 +21,9 @@ export class User {
     @Column()
     password_hash: string;
 
+    @Column({default: 2})
+    role_id: number;
+
     @Column({ default:false })
     verified: boolean;
 
