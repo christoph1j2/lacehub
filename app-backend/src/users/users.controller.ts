@@ -11,9 +11,15 @@ export class UsersController {
         return await this.usersService.create(createUserDto);
     }
 
+    //* get user by id, won't be needed in production
     @Get(':id')
-    async findOne(@Param('id') id: number) {
-        return await this.usersService.findOne(id);
+    async findOneById(@Param('id') id: number) {
+        return await this.usersService.findOneById(id);
+    }
+
+    @Get(':username')
+    async findOne(@Param('username') username: string) {
+        return await this.usersService.findOne(username);
     }
 
     @Get()

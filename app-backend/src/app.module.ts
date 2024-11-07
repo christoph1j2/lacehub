@@ -14,6 +14,8 @@ import { ReportsModule } from './reports/reports.module';
 import { UserInventoryModule } from './user-inventory/user-inventory.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -37,7 +39,11 @@ import { ValidationPipe } from '@nestjs/common';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe
-    }
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard
+    },
   ],
 })
 export class AppModule {}

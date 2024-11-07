@@ -27,8 +27,13 @@ export class UsersService {
         return await this.usersRepository.save(user);
     }
 
-    async findOne(id: number): Promise<User> {
+    //* get user by id, won't be needed in production
+    async findOneById(id: number): Promise<User> {
         return await this.usersRepository.findOne({ where: { id } });
+    }
+
+    async findOne(username: string): Promise<User | null> {
+        return await this.usersRepository.findOne({ where: { username } });
     }
 
     async findAll(): Promise<User[]> {
