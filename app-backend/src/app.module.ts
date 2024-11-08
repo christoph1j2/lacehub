@@ -16,6 +16,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
     MatchesModule,
     NotificationsModule,
     ReportsModule,
-    UserInventoryModule
+    UserInventoryModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -39,10 +41,6 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe
-    },
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard
     },
   ],
 })
