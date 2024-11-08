@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -46,5 +47,11 @@ export class UsersService {
 
     async delete(id: number): Promise<void> {
         await this.usersRepository.delete(id);
+    }
+
+    //* according to the dto, should update user name and email, will have to consult with frontend
+    async update(userId: number, updateUserDto: UpdateUserDto){
+        await this.usersRepository.update(userId, updateUserDto);
+        return this.findOneById(userId);
     }
 }
