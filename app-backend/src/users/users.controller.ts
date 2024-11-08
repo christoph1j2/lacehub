@@ -17,6 +17,11 @@ export class UsersController {
         return await this.usersService.findOneById(id);
     }
 
+    @Get(':email')
+    async findOneByEmail(@Param('email') email: string) {
+        return await this.usersService.findOneByEmail(email);
+    }
+
     @Get(':username')
     async findOne(@Param('username') username: string) {
         return await this.usersService.findOne(username);
