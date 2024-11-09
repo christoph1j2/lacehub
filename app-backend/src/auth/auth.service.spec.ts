@@ -122,8 +122,10 @@ describe('AuthService', () => {
                 password_hash: 'hashedPassword',
                 verificationToken: 'token',
             };
+
             mockUserRepository.create.mockReturnValue(user);
             mockUserRepository.save.mockResolvedValue(user);
+
             jest.spyOn(bcrypt, 'hash').mockImplementation(
                 async () => 'hashedPassword',
             );
@@ -140,10 +142,12 @@ describe('AuthService', () => {
             mockUsersService.findOne.mockResolvedValue({
                 id: 1,
                 ...createUserDto,
-            });
+            }); // Simulate existing user
+
             await expect(service.register(createUserDto)).rejects.toThrow(
                 'Username or email already exists',
             );
+
             expect(mockUsersService.findOne).toHaveBeenCalledWith(
                 createUserDto.username,
             );
@@ -153,10 +157,12 @@ describe('AuthService', () => {
             mockUsersService.findOneByEmail.mockResolvedValue({
                 id: 1,
                 ...createUserDto,
-            });
+            }); // Simulate existing email
+
             await expect(service.register(createUserDto)).rejects.toThrow(
                 'Username or email already exists',
             );
+
             expect(mockUsersService.findOneByEmail).toHaveBeenCalledWith(
                 createUserDto.email,
             );

@@ -51,27 +51,33 @@ export class AuthService {
     }
 
     async register(createUserDto: CreateUserDto): Promise<User> {
-        if (
-            !createUserDto.username ||
-            !createUserDto.email ||
-            !createUserDto.password
-        ) {
+        const { username, email, password } = createUserDto;
+
+        // Validate required fields
+        if (!username || !email || !password) {
             throw new Error('Please enter all fields');
         }
 
-        const user = await this.usersRepository.create(createUserDto);
-        user.verificationToken = randomBytes(32).toString('hex');
-
-        try {
-            user.password_hash = await bcrypt.hash(createUserDto.password, 10); // hash password
-        } catch (error) {
-            console.error('Error hashing password:', error);
-            throw error;
+        // validation for email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new Error('Invalid email format');
         }
 
-        await this.usersRepository.save(user);
+        // Check if username or email already exists
+        const existingUser = await this.usersService.findOne(username);
+        const existingEmail = await this.usersService.findOneByEmail(email);
+        if (existingUser || existingEmail) {
+            throw new Error('Username or email already exists');
+        }
 
-        await this.sendVerificationEmail(user); // TODO: placeholder
+        // Proceed with creating the user
+        const user = this.usersRepository.create(createUserDto);
+        user.verificationToken = randomBytes(32).toString('hex');
+        user.password_hash = await bcrypt.hash(password, 10);
+
+        await this.usersRepository.save(user);
+        await this.sendVerificationEmail(user); //TODO: PLACEHOLDER
         return user;
     }
 
