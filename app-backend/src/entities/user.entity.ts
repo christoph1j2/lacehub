@@ -1,5 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany} from 'typeorm';
-import { Role } from 'src/entities/role.entity';
+import { Role } from './role.entity';
 import { UserInventory } from './userInventory.entity';
 import { Review } from './review.entity';
 import { Report } from './report.entity';
