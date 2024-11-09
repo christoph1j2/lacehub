@@ -1,14 +1,17 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
+import { User } from '../entities/user.entity';
+import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { randomBytes } from 'crypto';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
-import { create } from 'domain';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +22,10 @@ export class AuthService {
         private readonly usersRepository: Repository<User>,
     ) {}
 
-    async validateUser(username: string, password: string): Promise<User | null> {
+    async validateUser(
+        username: string,
+        password: string,
+    ): Promise<User | null> {
         const user = await this.usersService.findOne(username);
         if (user && (await bcrypt.compare(password, user.password_hash))) {
             return user;
@@ -35,15 +41,22 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const payload = { username: user.username, sub: user.id, role: user.role_id };
+        const payload = {
+            username: user.username,
+            sub: user.id,
+            role: user.role_id,
+        };
         const accessToken = this.jwtService.sign(payload);
         return { accessToken };
     }
 
     async register(createUserDto: CreateUserDto): Promise<User> {
-
-        if(!createUserDto.username || !createUserDto.email || !createUserDto.password){
-            throw new Error("Please enter all fields");
+        if (
+            !createUserDto.username ||
+            !createUserDto.email ||
+            !createUserDto.password
+        ) {
+            throw new Error('Please enter all fields');
         }
 
         const user = await this.usersRepository.create(createUserDto);
@@ -67,11 +80,12 @@ export class AuthService {
         const verificationUrl = `http://localhost:3000/auth/verify-email?token=${user.verificationToken}`;
         console.log(`Verification URL (placeholder): ${verificationUrl}`);
         //* To be replaced by SMTP sending logic
-
     }
 
     async verifyEmailToken(token: string): Promise<User | null> {
-        const user = await this.usersRepository.findOne({ where: { verificationToken: token } });
+        const user = await this.usersRepository.findOne({
+            where: { verificationToken: token },
+        });
         if (!user) return null;
 
         user.verified = true;
@@ -89,7 +103,7 @@ export class AuthService {
         user.resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
         await this.usersRepository.save(user);
 
-        await this.sendPasswordResetEmail(user);// 1 hour
+        await this.sendPasswordResetEmail(user); // 1 hour
     }
 
     async sendPasswordResetEmail(user: User) {
@@ -101,7 +115,10 @@ export class AuthService {
 
     async resetPassword(token: string, newPassword: string): Promise<User> {
         const user = await this.usersRepository.findOne({
-            where: { resetToken: token, resetTokenExpires: MoreThan(new Date()) },
+            where: {
+                resetToken: token,
+                resetTokenExpires: MoreThan(new Date()),
+            },
         });
         if (!user) return null;
 

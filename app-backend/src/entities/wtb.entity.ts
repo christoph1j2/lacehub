@@ -1,5 +1,11 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany} from 'typeorm';
-import { User } from './user.entity';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+    OneToMany,
+} from 'typeorm';
 import { Product } from './product.entity';
 import { Match } from './match.entity';
 

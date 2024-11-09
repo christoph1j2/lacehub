@@ -5,10 +5,8 @@ import { WtsController } from './wts.controller';
 import { WtsService } from './wts.service';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([Wts]),
-    ],
-    controllers: [WtsController],
-    providers: [WtsService],
+  imports: [TypeOrmModule.forFeature([Wts])],
+  controllers: [WtsController],
+  providers: [WtsService],
 })
 export class WtsModule {}

@@ -1,10 +1,15 @@
-import { Body, Controller, Post, UseGuards, Get, BadRequestException, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Post,
+    Get,
+    BadRequestException,
+    Query,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from 'src/users/users.service';
 import { LoginUserDto } from 'src/users/dto/login-user.dto';
-import { JwtAuthGuard } from './jwt-auth.guard/jwt-auth.guard';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import * as request from 'supertest';
 
 @Controller('auth')
 export class AuthController {
@@ -42,12 +47,14 @@ export class AuthController {
     }
 
     @Post('reset-password')
-    async resetPassword(@Query('token') token: string, @Body('newPassword') newPassword: string) {
+    async resetPassword(
+        @Query('token') token: string,
+        @Body('newPassword') newPassword: string,
+    ) {
         const user = await this.authService.resetPassword(token, newPassword);
-        if(!user){
+        if (!user) {
             throw new BadRequestException('Invalid token');
         }
         return { message: 'Password reset successfully' };
     }
-
 }

@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+    Unique,
+} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity('reviews')
@@ -7,10 +14,10 @@ export class Review {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()  // Explicitly add reviewerId as a column
+    @Column() // Explicitly add reviewerId as a column
     reviewerId: number;
 
-    @Column()  // Explicitly add sellerId as a column
+    @Column() // Explicitly add sellerId as a column
     sellerId: number;
 
     @ManyToOne(() => User, (user) => user.reviewsAsReviewer)

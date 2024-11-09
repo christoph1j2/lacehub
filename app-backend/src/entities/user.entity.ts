@@ -1,14 +1,19 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany} from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+    OneToMany,
+} from 'typeorm';
 import { Role } from './role.entity';
 import { UserInventory } from './userInventory.entity';
 import { Review } from './review.entity';
 import { Report } from './report.entity';
 import { Match } from './match.entity';
 
-
 @Entity('users')
 export class User {
-
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -21,31 +26,31 @@ export class User {
     @Column()
     password_hash: string;
 
-    @Column({default: 2})
+    @Column({ default: 2 })
     role_id: number;
 
-    @Column({nullable: true})
+    @Column({ nullable: true })
     verificationToken: string;
 
-    @Column({ default:false })
+    @Column({ default: false })
     verified: boolean;
 
     @Column()
     created_at: Date;
 
-    @Column({ default:0 })
+    @Column({ default: 0 })
     credibility_score: number;
 
-    @Column({ default:false })
+    @Column({ default: false })
     is_banned: boolean;
 
-    @Column({ nullable:true })
+    @Column({ nullable: true })
     ban_expiration: Date;
 
-    @Column({ nullable:true })
+    @Column({ nullable: true })
     resetToken: string;
 
-    @Column({ nullable:true })
+    @Column({ nullable: true })
     resetTokenExpires: Date;
 
     @ManyToOne(() => Role, (role) => role.users)

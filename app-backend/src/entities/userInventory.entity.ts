@@ -1,4 +1,10 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn} from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Product } from './product.entity';
 
@@ -20,5 +26,4 @@ export class UserInventory {
 
     @Column()
     quantity: number;
-
 }

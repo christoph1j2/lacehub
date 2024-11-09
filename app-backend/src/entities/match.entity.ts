@@ -1,11 +1,16 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn} from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Wts } from './wts.entity';
 import { Wtb } from './wtb.entity';
 
 @Entity('matches')
 export class Match {
-
     @PrimaryGeneratedColumn()
     id: number;
 
