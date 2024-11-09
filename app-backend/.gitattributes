@@ -1,0 +1,7 @@
+# Force LF line endings
+* text=auto eol=lf
+.editorconfig text eol=lf
+
+# Specific file types if needed
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf
