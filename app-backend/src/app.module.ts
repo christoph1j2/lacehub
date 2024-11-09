@@ -16,29 +16,29 @@ import { ValidationPipe } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '/app-backend/development.env',
-    }),
-    DatabaseModule,
-    UsersModule,
-    ProductsModule,
-    WtbModule,
-    WtsModule,
-    MatchesModule,
-    NotificationsModule,
-    ReportsModule,
-    UserInventoryModule,
-    AuthModule,
-  ],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
-  ],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: '/app-backend/development.env',
+        }),
+        DatabaseModule,
+        UsersModule,
+        ProductsModule,
+        WtbModule,
+        WtsModule,
+        MatchesModule,
+        NotificationsModule,
+        ReportsModule,
+        UserInventoryModule,
+        AuthModule,
+    ],
+    controllers: [AppController],
+    providers: [
+        AppService,
+        {
+            provide: APP_PIPE,
+            useClass: ValidationPipe,
+        },
+    ],
 })
 export class AppModule {}

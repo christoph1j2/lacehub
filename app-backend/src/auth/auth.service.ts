@@ -1,7 +1,7 @@
 import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
+    Injectable,
+    NotFoundException,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
@@ -15,114 +15,117 @@ import { MoreThan, Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-  ) {}
+    constructor(
+        private readonly usersService: UsersService,
+        private readonly jwtService: JwtService,
+        @InjectRepository(User)
+        private readonly usersRepository: Repository<User>,
+    ) {}
 
-  async validateUser(username: string, password: string): Promise<User | null> {
-    const user = await this.usersService.findOne(username);
-    if (user && (await bcrypt.compare(password, user.password_hash))) {
-      return user;
-    }
-    throw new UnauthorizedException('Invalid credentials');
-  }
-
-  async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
-    const { email, password } = loginUserDto;
-    const user = await this.usersService.findOneByEmail(email);
-
-    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-      throw new UnauthorizedException('Invalid credentials');
+    async validateUser(
+        username: string,
+        password: string,
+    ): Promise<User | null> {
+        const user = await this.usersService.findOne(username);
+        if (user && (await bcrypt.compare(password, user.password_hash))) {
+            return user;
+        }
+        throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = {
-      username: user.username,
-      sub: user.id,
-      role: user.role_id,
-    };
-    const accessToken = this.jwtService.sign(payload);
-    return { accessToken };
-  }
+    async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
+        const { email, password } = loginUserDto;
+        const user = await this.usersService.findOneByEmail(email);
 
-  async register(createUserDto: CreateUserDto): Promise<User> {
-    if (
-      !createUserDto.username ||
-      !createUserDto.email ||
-      !createUserDto.password
-    ) {
-      throw new Error('Please enter all fields');
+        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        const payload = {
+            username: user.username,
+            sub: user.id,
+            role: user.role_id,
+        };
+        const accessToken = this.jwtService.sign(payload);
+        return { accessToken };
     }
 
-    const user = await this.usersRepository.create(createUserDto);
-    user.verificationToken = randomBytes(32).toString('hex');
+    async register(createUserDto: CreateUserDto): Promise<User> {
+        if (
+            !createUserDto.username ||
+            !createUserDto.email ||
+            !createUserDto.password
+        ) {
+            throw new Error('Please enter all fields');
+        }
 
-    try {
-      user.password_hash = await bcrypt.hash(createUserDto.password, 10); // hash password
-    } catch (error) {
-      console.error('Error hashing password:', error);
-      throw error;
+        const user = await this.usersRepository.create(createUserDto);
+        user.verificationToken = randomBytes(32).toString('hex');
+
+        try {
+            user.password_hash = await bcrypt.hash(createUserDto.password, 10); // hash password
+        } catch (error) {
+            console.error('Error hashing password:', error);
+            throw error;
+        }
+
+        await this.usersRepository.save(user);
+
+        await this.sendVerificationEmail(user); // TODO: placeholder
+        return user;
     }
 
-    await this.usersRepository.save(user);
+    async sendVerificationEmail(user: User) {
+        // TODO: send email, in prod use email service
+        const verificationUrl = `http://localhost:3000/auth/verify-email?token=${user.verificationToken}`;
+        console.log(`Verification URL (placeholder): ${verificationUrl}`);
+        //* To be replaced by SMTP sending logic
+    }
 
-    await this.sendVerificationEmail(user); // TODO: placeholder
-    return user;
-  }
+    async verifyEmailToken(token: string): Promise<User | null> {
+        const user = await this.usersRepository.findOne({
+            where: { verificationToken: token },
+        });
+        if (!user) return null;
 
-  async sendVerificationEmail(user: User) {
-    // TODO: send email, in prod use email service
-    const verificationUrl = `http://localhost:3000/auth/verify-email?token=${user.verificationToken}`;
-    console.log(`Verification URL (placeholder): ${verificationUrl}`);
-    //* To be replaced by SMTP sending logic
-  }
+        user.verified = true;
+        user.verificationToken = null;
+        await this.usersRepository.save(user);
+        return user;
+    }
 
-  async verifyEmailToken(token: string): Promise<User | null> {
-    const user = await this.usersRepository.findOne({
-      where: { verificationToken: token },
-    });
-    if (!user) return null;
+    async requestPasswordReset(email: string): Promise<void> {
+        const user = await this.usersService.findOneByEmail(email);
+        if (!user) throw new NotFoundException('User not found');
 
-    user.verified = true;
-    user.verificationToken = null;
-    await this.usersRepository.save(user);
-    return user;
-  }
+        // Generate reset token
+        user.resetToken = randomBytes(32).toString('hex');
+        user.resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
+        await this.usersRepository.save(user);
 
-  async requestPasswordReset(email: string): Promise<void> {
-    const user = await this.usersService.findOneByEmail(email);
-    if (!user) throw new NotFoundException('User not found');
+        await this.sendPasswordResetEmail(user); // 1 hour
+    }
 
-    // Generate reset token
-    user.resetToken = randomBytes(32).toString('hex');
-    user.resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
-    await this.usersRepository.save(user);
+    async sendPasswordResetEmail(user: User) {
+        // TODO: send email, in prod use email service
+        const resetUrl = `http://localhost:3000/auth/reset-password?token=${user.resetToken}`;
+        console.log(`Password reset URL (placeholder): ${resetUrl}`);
+        //* To be replaced by SMTP sending logic
+    }
 
-    await this.sendPasswordResetEmail(user); // 1 hour
-  }
+    async resetPassword(token: string, newPassword: string): Promise<User> {
+        const user = await this.usersRepository.findOne({
+            where: {
+                resetToken: token,
+                resetTokenExpires: MoreThan(new Date()),
+            },
+        });
+        if (!user) return null;
 
-  async sendPasswordResetEmail(user: User) {
-    // TODO: send email, in prod use email service
-    const resetUrl = `http://localhost:3000/auth/reset-password?token=${user.resetToken}`;
-    console.log(`Password reset URL (placeholder): ${resetUrl}`);
-    //* To be replaced by SMTP sending logic
-  }
-
-  async resetPassword(token: string, newPassword: string): Promise<User> {
-    const user = await this.usersRepository.findOne({
-      where: {
-        resetToken: token,
-        resetTokenExpires: MoreThan(new Date()),
-      },
-    });
-    if (!user) return null;
-
-    user.password_hash = await bcrypt.hash(newPassword, 10);
-    user.resetToken = null;
-    user.resetTokenExpires = null;
-    await this.usersRepository.save(user);
-    return user;
-  }
+        user.password_hash = await bcrypt.hash(newPassword, 10);
+        user.resetToken = null;
+        user.resetTokenExpires = null;
+        await this.usersRepository.save(user);
+        return user;
+    }
 }

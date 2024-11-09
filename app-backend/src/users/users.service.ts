@@ -6,35 +6,35 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
-  ) {}
+    constructor(
+        @InjectRepository(User)
+        private usersRepository: Repository<User>,
+    ) {}
 
-  //* get user by id, won't be needed in production
-  async findOneById(id: number): Promise<User> {
-    return await this.usersRepository.findOne({ where: { id } });
-  }
+    //* get user by id, won't be needed in production
+    async findOneById(id: number): Promise<User> {
+        return await this.usersRepository.findOne({ where: { id } });
+    }
 
-  async findOneByEmail(email: string): Promise<User | null> {
-    return await this.usersRepository.findOne({ where: { email } });
-  }
+    async findOneByEmail(email: string): Promise<User | null> {
+        return await this.usersRepository.findOne({ where: { email } });
+    }
 
-  async findOne(username: string): Promise<User | null> {
-    return await this.usersRepository.findOne({ where: { username } });
-  }
+    async findOne(username: string): Promise<User | null> {
+        return await this.usersRepository.findOne({ where: { username } });
+    }
 
-  async findAll(): Promise<User[]> {
-    return await this.usersRepository.find();
-  }
+    async findAll(): Promise<User[]> {
+        return await this.usersRepository.find();
+    }
 
-  async delete(id: number): Promise<void> {
-    await this.usersRepository.delete(id);
-  }
+    async delete(id: number): Promise<void> {
+        await this.usersRepository.delete(id);
+    }
 
-  //* according to the dto, should update user name and email, will have to consult with frontend
-  async update(userId: number, updateUserDto: UpdateUserDto) {
-    await this.usersRepository.update(userId, updateUserDto);
-    return this.findOneById(userId);
-  }
+    //* according to the dto, should update user name and email, will have to consult with frontend
+    async update(userId: number, updateUserDto: UpdateUserDto) {
+        await this.usersRepository.update(userId, updateUserDto);
+        return this.findOneById(userId);
+    }
 }

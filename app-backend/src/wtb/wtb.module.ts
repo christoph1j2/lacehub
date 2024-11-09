@@ -5,8 +5,8 @@ import { WtbController } from './wtb.controller';
 import { WtbService } from './wtb.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Wtb])],
-  controllers: [WtbController],
-  providers: [WtbService],
+    imports: [TypeOrmModule.forFeature([Wtb])],
+    controllers: [WtbController],
+    providers: [WtbService],
 })
 export class WtbModule {}
