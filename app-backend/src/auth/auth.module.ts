@@ -7,9 +7,12 @@ import { config } from 'dotenv';
 import { JwtStrategy } from './jwt.strategy/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/entities/user.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([User]),
     UsersModule,
     PassportModule,
     JwtModule.registerAsync({

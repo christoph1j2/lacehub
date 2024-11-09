@@ -24,6 +24,9 @@ export class User {
     @Column({default: 2})
     role_id: number;
 
+    @Column({nullable: true})
+    verificationToken: string;
+
     @Column({ default:false })
     verified: boolean;
 
@@ -38,6 +41,12 @@ export class User {
 
     @Column({ nullable:true })
     ban_expiration: Date;
+
+    @Column({ nullable:true })
+    resetToken: string;
+
+    @Column({ nullable:true })
+    resetTokenExpires: Date;
 
     @ManyToOne(() => Role, (role) => role.users)
     @JoinColumn({ name: 'role_id' })

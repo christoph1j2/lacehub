@@ -13,20 +13,6 @@ export class UsersService {
         private usersRepository: Repository<User>,
     ) {}
 
-    async create(createUserDto: CreateUserDto): Promise<User> {
-        const { username, email, password } = createUserDto;
-
-        //*hash
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = this.usersRepository.create({
-            username,
-            email,
-            password_hash: hashedPassword,
-            role_id: 2,
-        });
-
-        return await this.usersRepository.save(user);
-    }
 
     //* get user by id, won't be needed in production
     async findOneById(id: number): Promise<User> {
