@@ -79,7 +79,7 @@ export class AuthService {
         user.password_hash = await bcrypt.hash(password, 10);
 
         await this.usersRepository.save(user);
-        await this.sendVerificationEmail(user); //TODO: PLACEHOLDER
+        await this.sendVerificationEmail(user);
         return user;
     }
 
