@@ -8,6 +8,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { MailService } from '../mail/mail.service';
 
 const mockUsersService = {
     findOneByEmail: jest.fn(),
@@ -24,6 +25,11 @@ const mockUserRepository = {
     findOne: jest.fn(),
 };
 
+const mockMailService = {
+    sendVerificationEmail: jest.fn(),
+    sendPasswordResetEmail: jest.fn(),
+};
+
 describe('AuthService', () => {
     let service: AuthService;
 
@@ -33,6 +39,7 @@ describe('AuthService', () => {
                 AuthService,
                 { provide: UsersService, useValue: mockUsersService },
                 { provide: JwtService, useValue: mockJwtService },
+                { provide: MailService, useValue: mockMailService },
                 {
                     provide: getRepositoryToken(User),
                     useValue: mockUserRepository,

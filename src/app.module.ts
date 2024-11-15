@@ -14,6 +14,7 @@ import { UserInventoryModule } from './user-inventory/user-inventory.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
+import { MailService } from './mail/mail.service';
 
 @Module({
     imports: [
@@ -39,6 +40,7 @@ import { AuthModule } from './auth/auth.module';
             provide: APP_PIPE,
             useClass: ValidationPipe,
         },
+        MailService,
     ],
 })
 export class AppModule {}

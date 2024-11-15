@@ -12,11 +12,13 @@ import { randomBytes } from 'crypto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UsersService,
+        private readonly mailService: MailService,
         private readonly jwtService: JwtService,
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
@@ -86,6 +88,11 @@ export class AuthService {
         const verificationUrl = `http://localhost:3000/auth/verify-email?token=${user.verificationToken}`;
         console.log(`Verification URL (placeholder): ${verificationUrl}`);
         //* To be replaced by SMTP sending logic
+
+        await this.mailService.sendVerificationEmail(
+            user.email,
+            user.verificationToken,
+        );
     }
 
     async verifyEmailToken(token: string): Promise<User | null> {
@@ -117,6 +124,11 @@ export class AuthService {
         const resetUrl = `http://localhost:3000/auth/reset-password?token=${user.resetToken}`;
         console.log(`Password reset URL (placeholder): ${resetUrl}`);
         //* To be replaced by SMTP sending logic
+
+        await this.mailService.sendPasswordResetEmail(
+            user.email,
+            user.resetToken,
+        );
     }
 
     async resetPassword(token: string, newPassword: string): Promise<User> {
