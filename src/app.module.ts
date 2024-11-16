@@ -20,7 +20,7 @@ import { MailService } from './mail/mail.service';
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: '/app-backend/development.env',
+            envFilePath: './development.env',
         }),
         DatabaseModule,
         UsersModule,

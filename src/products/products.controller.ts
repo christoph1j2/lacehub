@@ -14,6 +14,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('products')
 export class ProductsController {
@@ -21,6 +22,7 @@ export class ProductsController {
 
     @UseGuards(JwtAuthGuard)
     @UseGuards(RolesGuard)
+    @Roles('admin')
     @Post()
     create(@Body() createProductDto: CreateProductDto) {
         return this.productsService.create(createProductDto);
@@ -40,6 +42,7 @@ export class ProductsController {
 
     @UseGuards(JwtAuthGuard)
     @UseGuards(RolesGuard)
+    @Roles('admin')
     @Patch(':id')
     update(
         @Param('id', ParseIntPipe) id: number,
@@ -50,6 +53,7 @@ export class ProductsController {
 
     @UseGuards(JwtAuthGuard)
     @UseGuards(RolesGuard)
+    @Roles('admin')
     @Delete(':id')
     delete(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.delete(+id);
