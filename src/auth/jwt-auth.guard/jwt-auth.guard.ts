@@ -5,6 +5,11 @@ import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
+    /**
+     * Constructs a new instance of the JwtAuthGuard class.
+     * @param reflector The Reflector instance to use for getting the IS_PUBLIC_KEY
+     * metadata from the route handlers and controllers.
+     */
     constructor(private reflector: Reflector) {
         super();
     }

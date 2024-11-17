@@ -11,11 +11,20 @@ export class RolesGuard implements CanActivate {
     ) {}
 
     /**
-     * This method is part of the CanActivate interface and is used by the Guard to determine
-     * if the request should be allowed to proceed. It checks if the user has any of the roles
-     * specified in the @Roles decorator.
-     * @param context The ExecutionContext of the request.
-     * @returns `true` if the request should proceed, `false` otherwise.
+     * Determines whether a request has the necessary roles to proceed.
+     *
+     * This method checks if the user making the request has the required roles
+     * to access a specific handler or class. It retrieves the roles from metadata
+     * using the Reflector service and verifies them against the user's roles
+     * obtained from the UsersService.
+     *
+     * @param context - The execution context, which provides details about the
+     * request being processed, including the handler and class.
+     * @returns A promise that resolves to a boolean value. It returns true if the
+     * user has the necessary roles or if no roles are required, otherwise false.
+     *
+     * Logs various debug information during the process, including required roles,
+     * user information, and role-check results.
      */
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const requiredRoles = this.reflector.getAllAndOverride<string[]>(
