@@ -53,7 +53,7 @@ export class User {
     @Column({ nullable: true })
     resetTokenExpires: Date;
 
-    @ManyToOne(() => Role, (role) => role.users)
+    @ManyToOne(() => Role, { eager: true })
     @JoinColumn({ name: 'role_id' })
     role: Role;
 

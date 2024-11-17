@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 //import { config } from 'dotenv';
@@ -8,7 +8,8 @@ import { JwtStrategy } from './jwt.strategy/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
+import { User } from '../entities/user.entity';
+import { MailService } from '../mail/mail.service';
 
 @Module({
     imports: [
@@ -26,7 +27,7 @@ import { User } from 'src/entities/user.entity';
             inject: [ConfigService],
         }),
     ],
-    providers: [AuthService, JwtStrategy],
+    providers: [AuthService, JwtStrategy, MailService],
     exports: [AuthService],
     controllers: [AuthController],
 })

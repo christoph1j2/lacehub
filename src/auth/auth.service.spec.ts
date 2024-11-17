@@ -11,7 +11,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { MailService } from '../mail/mail.service';
 
 const mockUsersService = {
-    findOneByEmail: jest.fn(),
+    findOneByEmailWithRole: jest.fn(),
     findOne: jest.fn(),
 };
 
@@ -91,20 +91,21 @@ describe('AuthService', () => {
                 username: 'testuser',
                 email: 'test@example.com',
                 password_hash: 'hashedPassword',
+                role: { role_name: 'user' },
             };
-            mockUsersService.findOneByEmail.mockResolvedValue(user);
+            mockUsersService.findOneByEmailWithRole.mockResolvedValue(user);
             jest.spyOn(bcrypt, 'compare').mockImplementation(async () => true);
             mockJwtService.sign.mockReturnValue('accessToken');
 
             const result = await service.login(loginUserDto);
             expect(result).toEqual({ accessToken: 'accessToken' });
-            expect(mockUsersService.findOneByEmail).toHaveBeenCalledWith(
-                loginUserDto.email,
-            );
+            expect(
+                mockUsersService.findOneByEmailWithRole,
+            ).toHaveBeenCalledWith(loginUserDto.email);
         });
 
         it('should throw UnauthorizedException if credentials are invalid', async () => {
-            mockUsersService.findOneByEmail.mockResolvedValue(null);
+            mockUsersService.findOneByEmailWithRole.mockResolvedValue(null);
             await expect(
                 service.login({
                     email: 'test@example.com',
@@ -161,7 +162,7 @@ describe('AuthService', () => {
         });
 
         it('should throw an error if email already exists', async () => {
-            mockUsersService.findOneByEmail.mockResolvedValue({
+            mockUsersService.findOneByEmailWithRole.mockResolvedValue({
                 id: 1,
                 ...createUserDto,
             }); // Simulate existing email
@@ -170,9 +171,9 @@ describe('AuthService', () => {
                 'Username or email already exists',
             );
 
-            expect(mockUsersService.findOneByEmail).toHaveBeenCalledWith(
-                createUserDto.email,
-            );
+            expect(
+                mockUsersService.findOneByEmailWithRole,
+            ).toHaveBeenCalledWith(createUserDto.email);
         });
 
         it('should throw an error if any required field is missing', async () => {

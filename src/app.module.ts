@@ -11,10 +11,12 @@ import { MatchesModule } from './matches/matches.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
 import { UserInventoryModule } from './user-inventory/user-inventory.module';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { MailService } from './mail/mail.service';
+import { RolesGuard } from './common/guards/roles.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
 
 @Module({
     imports: [
@@ -39,6 +41,14 @@ import { MailService } from './mail/mail.service';
         {
             provide: APP_PIPE,
             useClass: ValidationPipe,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: JwtAuthGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: RolesGuard,
         },
         MailService,
     ],

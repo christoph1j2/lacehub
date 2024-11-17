@@ -4,6 +4,9 @@ import { ProductsService } from './products.service';
 import { NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { UsersService } from '../users/users.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from '../entities/user.entity';
 
 describe('ProductsController', () => {
     let controller: ProductsController;
@@ -27,6 +30,8 @@ describe('ProductsController', () => {
         delete: jest.fn().mockResolvedValue(undefined),
     };
 
+    const mockUserRepository = {};
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [ProductsController],
@@ -35,6 +40,11 @@ describe('ProductsController', () => {
                     provide: ProductsService,
                     useValue: mockProductsService,
                 },
+                {
+                    provide: getRepositoryToken(User),
+                    useValue: mockUserRepository,
+                },
+                UsersService,
             ],
         }).compile();
 

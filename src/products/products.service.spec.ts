@@ -22,7 +22,7 @@ describe('ProductsService', () => {
         description: 'A sample product description',
         image_link: 'http://example.com/image.jpg',
         inventory: [],
-        createdAt: new Date(),
+        created_at: new Date(),
     };
 
     // * Mock result for update operations
@@ -40,7 +40,7 @@ describe('ProductsService', () => {
             create: jest.fn().mockImplementation((dto) => ({
                 ...dto,
                 inventory: 100,
-                createdAt: new Date(),
+                created_at: new Date(),
             })),
             save: jest.fn().mockResolvedValue(mockProduct),
             find: jest.fn().mockResolvedValue([mockProduct]),
@@ -96,7 +96,7 @@ describe('ProductsService', () => {
             expect(repository.save).toHaveBeenCalledWith({
                 ...dto,
                 inventory: 100,
-                createdAt: expect.any(Date),
+                created_at: expect.any(Date),
             });
             expect(result).toEqual(mockProduct);
         });

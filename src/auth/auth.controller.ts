@@ -10,6 +10,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { Public } from '../common/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -18,17 +19,18 @@ export class AuthController {
         private readonly usersService: UsersService,
     ) {}
 
+    @Public()
     @Post('login')
     async login(@Body() loginUserDto: LoginUserDto) {
         return await this.authService.login(loginUserDto);
     }
 
+    @Public()
     @Post('register')
     async register(@Body() createUserDto: CreateUserDto) {
         return await this.authService.register(createUserDto);
     }
 
-    //@Public()
     @Get('verify-email')
     async verifyEmail(@Query('token') token: string) {
         const user = await this.authService.verifyEmailToken(token);
@@ -39,7 +41,6 @@ export class AuthController {
         return { message: 'Email verified successfully' };
     }
 
-    //@Public()
     @Post('request-password-reset')
     async requestPasswordReset(@Body('email') email: string) {
         await this.authService.requestPasswordReset(email);

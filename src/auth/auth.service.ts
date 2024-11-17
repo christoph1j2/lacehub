@@ -37,7 +37,7 @@ export class AuthService {
 
     async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
         const { email, password } = loginUserDto;
-        const user = await this.usersService.findOneByEmail(email);
+        const user = await this.usersService.findOneByEmailWithRole(email);
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             throw new UnauthorizedException('Invalid credentials');
@@ -46,7 +46,7 @@ export class AuthService {
         const payload = {
             username: user.username,
             sub: user.id,
-            role: user.role_id,
+            role: user.role.role_name,
         };
         const accessToken = this.jwtService.sign(payload);
         return { accessToken };
@@ -68,7 +68,8 @@ export class AuthService {
 
         // Check if username or email already exists
         const existingUser = await this.usersService.findOne(username);
-        const existingEmail = await this.usersService.findOneByEmail(email);
+        const existingEmail =
+            await this.usersService.findOneByEmailWithRole(email);
         if (existingUser || existingEmail) {
             throw new Error('Username or email already exists');
         }

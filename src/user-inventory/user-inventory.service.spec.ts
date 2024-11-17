@@ -29,8 +29,8 @@ describe('UserInventoryService', () => {
             created_at: new Date(),
             role: {
                 id: 0,
-                name: '',
                 users: [],
+                role_name: '',
             },
             inventory: [],
             reviewsAsReviewer: [],
@@ -46,7 +46,7 @@ describe('UserInventoryService', () => {
             name: '',
             description: '',
             image_link: '',
-            createdAt: undefined,
+            created_at: undefined,
             inventory: [],
         },
         size: 'M',

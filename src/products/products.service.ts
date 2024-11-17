@@ -14,7 +14,7 @@ export class ProductsService {
 
     async create(createProductDto: CreateProductDto): Promise<Product> {
         const product = this.productsRepository.create(createProductDto);
-        product.createdAt = new Date();
+        product.created_at = new Date();
         return this.productsRepository.save(product);
     }
 

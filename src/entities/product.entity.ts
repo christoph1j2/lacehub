@@ -19,7 +19,7 @@ export class Product {
     image_link: string;
 
     @Column()
-    createdAt: Date;
+    created_at: Date;
 
     @OneToMany(() => UserInventory, (userInventory) => userInventory.product)
     inventory: UserInventory[];

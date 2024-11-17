@@ -20,10 +20,8 @@ import { Roles } from '../common/decorators/roles.decorator';
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
 
-    @UseGuards(JwtAuthGuard)
-    @UseGuards(RolesGuard)
-    @Roles('admin')
     @Post()
+    @Roles('admin')
     create(@Body() createProductDto: CreateProductDto) {
         return this.productsService.create(createProductDto);
     }
