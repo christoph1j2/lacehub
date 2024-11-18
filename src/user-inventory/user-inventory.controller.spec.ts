@@ -58,7 +58,7 @@ describe('UserInventoryController', () => {
 
     it('should create a new inventory item', async () => {
         const dto: CreateUserInventoryDto = {
-            userId: 1,
+            //userId: 1,
             productId: 1,
             size: 'M',
             quantity: 5,

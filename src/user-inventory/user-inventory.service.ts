@@ -42,16 +42,21 @@ export class UserInventoryService {
         const userId =
             /*createUserInventoryDto.userId ||*/ authenthicatedUserId;
 
+        // fetch user
         const user = await this.userRepository.findOneBy({
             id: userId,
         });
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userId}  not found`);
+        }
+
+        // fetch product
         const product = await this.productRepository.findOneBy({
             id: createUserInventoryDto.productId,
         });
-
-        if (!user || !product) {
+        if (!product) {
             throw new NotFoundException(
-                `User with ID ${createUserInventoryDto.userId} or product with ID ${createUserInventoryDto.productId} not found`,
+                `Product with ID ${createUserInventoryDto.productId} not found`,
             );
         }
 
@@ -59,7 +64,7 @@ export class UserInventoryService {
             await this.userInventoryRepository.findOne({
                 where: {
                     user: { id: userId },
-                    product: { id: createUserInventoryDto.productId },
+                    product: { id: product.id },
                     size: createUserInventoryDto.size,
                 },
             });

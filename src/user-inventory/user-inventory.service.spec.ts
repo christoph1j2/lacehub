@@ -56,7 +56,7 @@ describe('UserInventoryService', () => {
     };
 
     const createUserInventoryDto: CreateUserInventoryDto = {
-        userId: 1,
+        //userId: 1,
         productId: 1,
         quantity: 10,
         size: '',
@@ -155,7 +155,7 @@ describe('UserInventoryService', () => {
 
     it('should create a new inventory item', async () => {
         const createUserInventoryDto: CreateUserInventoryDto = {
-            userId: 1,
+            //userId: 1,
             productId: 1,
             quantity: 5,
             size: 'M',

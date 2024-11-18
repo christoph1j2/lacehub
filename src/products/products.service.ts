@@ -44,4 +44,16 @@ export class ProductsService {
         if (result.affected === 0)
             throw new NotFoundException(`Product with ID ${id} not found`);
     }
+
+    async searchProducts(query: string, limit = 10): Promise<Product[]> {
+        return await this.productsRepository
+            .createQueryBuilder('product')
+            .where('product.name ILIKE :query', { query: `%${query}%` })
+            .orWhere('product.sku ILIKE :query', { query: `%${query}%` })
+            .orWhere('product.description ILIKE :query', {
+                query: `%${query}%`,
+            })
+            .limit(limit)
+            .getMany();
+    }
 }

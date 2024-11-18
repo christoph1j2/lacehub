@@ -7,6 +7,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { UsersService } from '../users/users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
+import { Product } from '../entities/product.entity';
 
 describe('ProductsController', () => {
     let controller: ProductsController;
@@ -28,9 +29,11 @@ describe('ProductsController', () => {
         findOne: jest.fn().mockResolvedValue(mockProduct),
         update: jest.fn().mockResolvedValue(mockProduct),
         delete: jest.fn().mockResolvedValue(undefined),
+        searchProducts: jest.fn().mockResolvedValue([mockProduct]),
     };
 
     const mockUserRepository = {};
+    const mockProductRepository = {};
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -43,6 +46,10 @@ describe('ProductsController', () => {
                 {
                     provide: getRepositoryToken(User),
                     useValue: mockUserRepository,
+                },
+                {
+                    provide: getRepositoryToken(Product),
+                    useValue: mockProductRepository, // Add this line
                 },
                 UsersService,
             ],
@@ -136,6 +143,14 @@ describe('ProductsController', () => {
             await expect(controller.delete(999)).rejects.toThrow(
                 NotFoundException,
             );
+        });
+    });
+
+    describe('search', () => {
+        it('should search for products by name', async () => {
+            const query = 'Sample';
+            const result = await service.searchProducts(query);
+            expect(result).toEqual([mockProduct]);
         });
     });
 });
