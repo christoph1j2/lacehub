@@ -1,7 +1,6 @@
 import {
     Controller,
     Get,
-    UseGuards,
     Request,
     Body,
     Post,
@@ -9,51 +8,60 @@ import {
     Param,
     ParseIntPipe,
     Delete,
+    Req,
 } from '@nestjs/common';
 import { UserInventoryService } from './user-inventory.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard/jwt-auth.guard';
 import { UserInventory } from '../entities/userInventory.entity';
 import { CreateUserInventoryDto } from './dto/create-userInventory.dto';
 import { UpdateUserInventoryDto } from './dto/update-userInventory.dto';
+import { GetUser } from '../common/decorators/get-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('user-inventory')
 export class UserInventoryController {
     constructor(private readonly userInventoryService: UserInventoryService) {}
 
-    @UseGuards(JwtAuthGuard)
+    @Roles('admin')
     @Get()
     async findAll(): Promise<UserInventory[]> {
         return await this.userInventoryService.findAll();
     }
 
-    @UseGuards(JwtAuthGuard)
     @Get('user')
     async findByUser(@Request() req) {
         const userId = req.user.id;
         return await this.userInventoryService.findByUser(userId);
     }
 
-    @UseGuards(JwtAuthGuard)
     @Post()
-    async create(@Body() createUserInventoryDto: CreateUserInventoryDto) {
-        return await this.userInventoryService.create(createUserInventoryDto);
+    async create(
+        @Body() createUserInventoryDto: CreateUserInventoryDto,
+        @Req() req,
+    ) {
+        return await this.userInventoryService.create(
+            createUserInventoryDto,
+            req.user.id,
+        );
     }
 
-    @UseGuards(JwtAuthGuard)
     @Patch(':id')
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() updateUserInventoryDto: UpdateUserInventoryDto,
+        @GetUser() user: { id: number },
     ) {
         return await this.userInventoryService.update(
             id,
             updateUserInventoryDto,
+            user.id,
         );
     }
 
-    @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    async delete(@Param('id', ParseIntPipe) id: number) {
-        return await this.userInventoryService.delete(id);
+    async delete(
+        @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: { id: number },
+    ) {
+        return await this.userInventoryService.delete(id, user.id);
     }
 }

@@ -12,9 +12,8 @@ import {
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -26,20 +25,19 @@ export class ProductsController {
         return this.productsService.create(createProductDto);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(VerifiedUserGuard)
     @Get()
     findAll() {
         return this.productsService.findAll();
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(VerifiedUserGuard)
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.findOne(+id);
     }
 
-    @UseGuards(JwtAuthGuard)
-    @UseGuards(RolesGuard)
+    @UseGuards(VerifiedUserGuard)
     @Roles('admin')
     @Patch(':id')
     update(
@@ -49,8 +47,7 @@ export class ProductsController {
         return this.productsService.update(+id, updateProductDto);
     }
 
-    @UseGuards(JwtAuthGuard)
-    @UseGuards(RolesGuard)
+    @UseGuards(VerifiedUserGuard)
     @Roles('admin')
     @Delete(':id')
     delete(@Param('id', ParseIntPipe) id: number) {

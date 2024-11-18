@@ -63,21 +63,22 @@ describe('UserInventoryController', () => {
             size: 'M',
             quantity: 5,
         };
-        expect(await controller.create(dto)).toEqual(mockInventory);
-        expect(service.create).toHaveBeenCalledWith(dto);
+        const req = { user: { id: 1 } };
+        expect(await controller.create(dto, req)).toEqual(mockInventory);
+        expect(service.create).toHaveBeenCalledWith(dto, req.user.id);
     });
 
     it('should update an inventory item', async () => {
         const dto: UpdateUserInventoryDto = { quantity: 10 };
-        expect(await controller.update(1, dto)).toEqual({
+        expect(await controller.update(1, dto, { id: 1 })).toEqual({
             ...mockInventory,
             quantity: 10,
         });
-        expect(service.update).toHaveBeenCalledWith(1, dto);
+        expect(service.update).toHaveBeenCalledWith(1, dto, 1);
     });
 
     it('should delete an inventory item', async () => {
-        await controller.delete(1);
-        expect(service.delete).toHaveBeenCalledWith(1);
+        await controller.delete(1, { id: 1 });
+        expect(service.delete).toHaveBeenCalledWith(1, 1);
     });
 });

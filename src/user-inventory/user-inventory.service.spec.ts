@@ -6,6 +6,8 @@ import { DeepPartial, Repository } from 'typeorm';
 import { UserInventory } from '../entities/userInventory.entity';
 import { NotFoundException } from '@nestjs/common';
 import { CreateUserInventoryDto } from './dto/create-userInventory.dto';
+import { Product } from '../entities/product.entity';
+import { User } from '../entities/user.entity';
 
 describe('UserInventoryService', () => {
     let service: UserInventoryService;
@@ -74,6 +76,48 @@ describe('UserInventoryService', () => {
         save: jest.fn().mockResolvedValue(mockInventory),
     };
 
+    const mockUserRepository = {
+        findOneBy: jest.fn().mockResolvedValue({
+            id: 1,
+            username: 'testuser',
+            email: 'test@example.com',
+            password_hash: 'hashedPassword',
+            role_id: 1,
+            verified: true,
+            verificationToken: 'token',
+            credibility_score: 0,
+            is_banned: false,
+            ban_expiration: null,
+            resetToken: null,
+            resetTokenExpires: null,
+            created_at: new Date(),
+            role: {
+                id: 0,
+                users: [],
+                role_name: '',
+            },
+            inventory: [],
+            reviewsAsReviewer: [],
+            reviewsAsSeller: [],
+            reportsAsReported: [],
+            reportsAsReporter: [],
+            matchesAsBuyer: [],
+            matchesAsSeller: [],
+        }),
+    };
+
+    const mockProductRepository = {
+        findOneBy: jest.fn().mockResolvedValue({
+            id: 1,
+            sku: '',
+            name: '',
+            description: '',
+            image_link: '',
+            created_at: undefined,
+            inventory: [],
+        }),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -81,6 +125,14 @@ describe('UserInventoryService', () => {
                 {
                     provide: getRepositoryToken(UserInventory),
                     useValue: mockRepository,
+                },
+                {
+                    provide: getRepositoryToken(User),
+                    useValue: mockUserRepository,
+                },
+                {
+                    provide: getRepositoryToken(Product),
+                    useValue: mockProductRepository,
                 },
             ],
         }).compile();
@@ -110,7 +162,7 @@ describe('UserInventoryService', () => {
         };
         jest.spyOn(repository, 'create').mockReturnValue(mockInventory);
         jest.spyOn(repository, 'save').mockResolvedValue(mockInventory);
-        expect(await service.create(createUserInventoryDto)).toEqual(
+        expect(await service.create(createUserInventoryDto, 1)).toEqual(
             mockInventory,
         );
     });
@@ -122,12 +174,10 @@ describe('UserInventoryService', () => {
             raw: {},
             generatedMaps: [],
         });
-        jest.spyOn(repository, 'findOne').mockResolvedValueOnce({
-            ...mockInventory,
-            quantity: 10,
-        });
-        const updatedItem = await service.update(1, { quantity: 10 });
-        expect(updatedItem.quantity).toBe(10);
+        mockInventory.quantity = 10; // update the mockInventory object directly
+        jest.spyOn(repository, 'findOne').mockResolvedValueOnce(mockInventory);
+        const updatedItem = await service.update(1, { quantity: 10 }, 1);
+        expect(updatedItem.quantity).toEqual(10);
     });
 
     it('should delete an inventory item', async () => {
@@ -135,13 +185,13 @@ describe('UserInventoryService', () => {
             affected: 1,
             raw: {},
         });
-        await service.delete(1);
+        await service.delete(1, 1);
         expect(repository.delete).toHaveBeenCalledWith(1);
     });
 
     it('should throw NotFoundException if inventory item to update does not exist', async () => {
         jest.spyOn(repository, 'findOne').mockResolvedValue(null);
-        await expect(service.update(99, { quantity: 10 })).rejects.toThrow(
+        await expect(service.update(99, { quantity: 10 }, 1)).rejects.toThrow(
             NotFoundException,
         );
     });
