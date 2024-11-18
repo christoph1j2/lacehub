@@ -31,6 +31,7 @@ export class AuthController {
         return await this.authService.register(createUserDto);
     }
 
+    @Public()
     @Get('verify-email')
     async verifyEmail(@Query('token') token: string) {
         const user = await this.authService.verifyEmailToken(token);
@@ -41,12 +42,14 @@ export class AuthController {
         return { message: 'Email verified successfully' };
     }
 
+    @Public()
     @Post('request-password-reset')
     async requestPasswordReset(@Body('email') email: string) {
         await this.authService.requestPasswordReset(email);
         return { message: 'Password reset link sent' };
     }
 
+    @Public()
     @Post('reset-password')
     async resetPassword(
         @Query('token') token: string,
