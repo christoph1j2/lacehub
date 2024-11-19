@@ -41,6 +41,8 @@ describe('UserInventoryService', () => {
             reportsAsReporter: [],
             matchesAsBuyer: [],
             matchesAsSeller: [],
+            wts: [],
+            wtb: [],
         },
         product: {
             id: 1,
@@ -50,6 +52,8 @@ describe('UserInventoryService', () => {
             image_link: '',
             created_at: undefined,
             inventory: [],
+            wts: [],
+            wtb: [],
         },
         size: 'M',
         quantity: 5,

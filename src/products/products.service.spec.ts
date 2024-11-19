@@ -23,6 +23,8 @@ describe('ProductsService', () => {
         image_link: 'http://example.com/image.jpg',
         inventory: [],
         created_at: new Date(),
+        wts: [],
+        wtb: [],
     };
 
     // * Mock result for update operations

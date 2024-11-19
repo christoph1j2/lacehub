@@ -10,6 +10,7 @@ import { CreateUserInventoryDto } from './dto/create-userInventory.dto';
 import { UpdateUserInventoryDto } from './dto/update-userInventory.dto';
 import { Product } from '../entities/product.entity';
 import { User } from '../entities/user.entity';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class UserInventoryService {
@@ -131,5 +132,64 @@ export class UserInventoryService {
         }
 
         await this.userInventoryRepository.delete(itemId);
+    }
+
+    async upload(fileBuffer: Buffer, userId: number): Promise<any> {
+        const workbook = XLSX.read(fileBuffer);
+        const sheetName = workbook.SheetNames[0];
+        const data: any[] = XLSX.utils.sheet_to_json(
+            workbook.Sheets[sheetName],
+        );
+
+        const errors = [];
+        const successes = [];
+
+        for (const row of data) {
+            try {
+                const { sku, size, quantity } = row;
+
+                if (!sku || !size || !quantity) {
+                    throw new Error('Missing required fields');
+                }
+
+                const product = await this.productRepository.findOne({
+                    where: { sku },
+                });
+
+                if (!product) {
+                    throw new Error(`Product with SKU ${sku} not found`);
+                }
+
+                // Check for existing inventory
+                const existingItem = await this.userInventoryRepository.findOne(
+                    {
+                        where: {
+                            user: { id: userId },
+                            product: { id: product.id },
+                            size,
+                        },
+                    },
+                );
+
+                if (existingItem) {
+                    existingItem.quantity += Number(quantity);
+                    await this.userInventoryRepository.save(existingItem);
+                } else {
+                    const newItem = this.userInventoryRepository.create({
+                        user: { id: userId },
+                        product,
+                        size,
+                        quantity: Number(quantity),
+                    });
+                    await this.userInventoryRepository.save(newItem);
+                }
+
+                successes.push(row);
+            } catch (error) {
+                errors.push({ row, error: error.message });
+            }
+        }
+
+        return { successes, errors };
     }
 }

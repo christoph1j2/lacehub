@@ -62,6 +62,7 @@ export class ProductsController {
         return this.productsService.delete(+id);
     }
 
+    @UseGuards(VerifiedUserGuard)
     @Get('search')
     async searchProducts(@Query('query') query: string): Promise<Product[]> {
         return await this.productRepository.find({

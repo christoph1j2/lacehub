@@ -8,17 +8,18 @@ import {
 } from 'typeorm';
 import { Product } from './product.entity';
 import { Match } from './match.entity';
+import { User } from './user.entity';
 
 @Entity('wts')
 export class Wts {
     @PrimaryGeneratedColumn()
     id: number;
 
-    /*@ManyToOne(() => User, (user) => user.inventory)
+    @ManyToOne(() => User, (user) => user.wts)
     @JoinColumn({ name: 'user_id' })
-    user: User;*/
+    user: User;
 
-    @ManyToOne(() => Product, (product) => product.inventory)
+    @ManyToOne(() => Product, (product) => product.wts)
     @JoinColumn({ name: 'product_id' })
     product: Product;
 

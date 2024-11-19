@@ -11,6 +11,8 @@ import { UserInventory } from './userInventory.entity';
 import { Review } from './review.entity';
 import { Report } from './report.entity';
 import { Match } from './match.entity';
+import { Wts } from './wts.entity';
+import { Wtb } from './wtb.entity';
 
 @Entity('users')
 export class User {
@@ -59,6 +61,12 @@ export class User {
 
     @OneToMany(() => UserInventory, (userInventory) => userInventory.user)
     inventory: UserInventory[];
+
+    @OneToMany(() => Wts, (wts) => wts.user)
+    wts: Wts[];
+
+    @OneToMany(() => Wtb, (wtb) => wtb.user)
+    wtb: Wtb[];
 
     @OneToMany(() => Review, (review) => review.reviewer)
     reviewsAsReviewer: Review[];

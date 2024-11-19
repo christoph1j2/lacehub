@@ -1,5 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { UserInventory } from './userInventory.entity';
+import { Wts } from './wts.entity';
+import { Wtb } from './wtb.entity';
 
 @Entity('products')
 export class Product {
@@ -23,4 +25,10 @@ export class Product {
 
     @OneToMany(() => UserInventory, (userInventory) => userInventory.product)
     inventory: UserInventory[];
+
+    @OneToMany(() => Wts, (wts) => wts.product)
+    wts: Wts[];
+
+    @OneToMany(() => Wtb, (wtb) => wtb.product)
+    wtb: Wtb[];
 }
