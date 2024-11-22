@@ -12,10 +12,14 @@ describe('UserInventoryController', () => {
 
     const mockInventory = {
         id: 1,
-        user: { id: 1 },
-        product: { id: 1 },
         size: 'M',
         quantity: 5,
+        product: {
+            name: 'Sample Product',
+            sku: 'SKU123',
+            description: 'A sample product description',
+            image_link: 'http://example.com/image.jpg',
+        },
     };
 
     beforeEach(async () => {

@@ -32,7 +32,19 @@ export class UserInventoryController {
     @Get('user')
     async findByUser(@Request() req) {
         const userId = req.user.id;
-        return await this.userInventoryService.findByUser(userId);
+        const items = await this.userInventoryService.findByUser(userId);
+
+        return items.map((item) => ({
+            id: item.id,
+            size: item.size,
+            quantity: item.quantity,
+            product: {
+                name: item.product.name,
+                sku: item.product.sku,
+                description: item.product.description,
+                image_link: item.product.image_link,
+            },
+        }));
     }
 
     @UseGuards(VerifiedUserGuard)

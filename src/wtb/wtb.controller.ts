@@ -17,11 +17,13 @@ import { VerifiedUserGuard } from 'src/common/guards/verified-user.guard';
 import { CreateWTBDto } from './dto/create-wtb.dto';
 import { UpdateWTBDto } from './dto/update-wtb.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Controller('wtb')
 export class WtbController {
     constructor(private readonly wtbService: WtbService) {}
 
+    @Roles('admin')
     @Get()
     async findAll(): Promise<Wtb[]> {
         return await this.wtbService.findAll();
@@ -30,7 +32,19 @@ export class WtbController {
     @Get('user')
     async findByUser(@Request() req) {
         const userId = req.user.id;
-        return await this.wtbService.findByUser(userId);
+        const items = await this.wtbService.findByUser(userId);
+
+        return items.map((item) => ({
+            id: item.id,
+            size: item.size,
+            quantity: item.quantity,
+            product: {
+                name: item.product.name,
+                sku: item.product.sku,
+                description: item.product.description,
+                image_link: item.product.image_link,
+            },
+        }));
     }
 
     @UseGuards(VerifiedUserGuard)
