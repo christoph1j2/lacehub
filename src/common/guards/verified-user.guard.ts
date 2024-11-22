@@ -8,10 +8,11 @@ import {
 @Injectable()
 export class VerifiedUserGuard implements CanActivate {
     /**
-     * Guard to check if the user is verified
-     * @param context The ExecutionContext of the request
-     * @returns `true` if the user is verified, `false` otherwise
-     * @throws UnauthorizedException if the user is not verified
+     * CanActivate implementation that checks if the user is verified.
+     *
+     * @param context ExecutionContext to access the request object.
+     * @returns boolean indicating whether the user is authorized to access the resource.
+     * @throws UnauthorizedException if the user is not verified, or if the verification status is not available.
      */
     canActivate(context: ExecutionContext): boolean {
         const request = context.switchToHttp().getRequest();

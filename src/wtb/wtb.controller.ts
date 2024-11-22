@@ -1,4 +1,58 @@
-import { Controller } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    ParseIntPipe,
+    Patch,
+    Post,
+    Req,
+    Request,
+    UseGuards,
+} from '@nestjs/common';
+import { WtbService } from './wtb.service';
+import { Wtb } from 'src/entities/wtb.entity';
+import { VerifiedUserGuard } from 'src/common/guards/verified-user.guard';
+import { CreateWTBDto } from './dto/create-wtb.dto';
+import { UpdateWTBDto } from './dto/update-wtb.dto';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @Controller('wtb')
-export class WtbController {}
+export class WtbController {
+    constructor(private readonly wtbService: WtbService) {}
+
+    @Get()
+    async findAll(): Promise<Wtb[]> {
+        return await this.wtbService.findAll();
+    }
+
+    @Get('user')
+    async findByUser(@Request() req) {
+        const userId = req.user.id;
+        return await this.wtbService.findByUser(userId);
+    }
+
+    @UseGuards(VerifiedUserGuard)
+    @Post()
+    async create(@Body() createWTBDto: CreateWTBDto, @Req() req) {
+        return await this.wtbService.create(createWTBDto, req.user.id);
+    }
+
+    @Patch(':id')
+    async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateWTBDto: UpdateWTBDto,
+        @GetUser() user: { id: number },
+    ) {
+        return await this.wtbService.update(id, updateWTBDto, user.id);
+    }
+
+    @Delete(':id')
+    async delete(
+        @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: { id: number },
+    ) {
+        return await this.wtbService.delete(id, user.id);
+    }
+}
