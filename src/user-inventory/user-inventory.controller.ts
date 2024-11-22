@@ -9,6 +9,7 @@ import {
     ParseIntPipe,
     Delete,
     Req,
+    UseGuards,
 } from '@nestjs/common';
 import { UserInventoryService } from './user-inventory.service';
 import { UserInventory } from '../entities/userInventory.entity';
@@ -16,6 +17,7 @@ import { CreateUserInventoryDto } from './dto/create-userInventory.dto';
 import { UpdateUserInventoryDto } from './dto/update-userInventory.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
+import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 
 @Controller('user-inventory')
 export class UserInventoryController {
@@ -33,6 +35,7 @@ export class UserInventoryController {
         return await this.userInventoryService.findByUser(userId);
     }
 
+    @UseGuards(VerifiedUserGuard)
     @Post()
     async create(
         @Body() createUserInventoryDto: CreateUserInventoryDto,
