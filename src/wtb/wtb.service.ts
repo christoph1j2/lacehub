@@ -4,12 +4,12 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Wtb } from 'src/entities/wtb.entity';
+import { Wtb } from '../entities/wtb.entity';
 import { Repository } from 'typeorm';
 import { CreateWTBDto } from './dto/create-wtb.dto';
-import { User } from 'src/entities/user.entity';
+import { User } from '../entities/user.entity';
 import { UpdateWTBDto } from './dto/update-wtb.dto';
-import { Product } from 'src/entities/product.entity';
+import { Product } from '../entities/product.entity';
 
 @Injectable()
 export class WtbService {
