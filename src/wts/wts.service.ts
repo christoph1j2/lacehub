@@ -4,12 +4,12 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Wts } from 'src/entities/wts.entity';
+import { Wts } from '../entities/wts.entity';
 import { Repository } from 'typeorm';
 import { CreateWTSDto } from './dto/create-wts.dto';
-import { User } from 'src/entities/user.entity';
+import { User } from '../entities/user.entity';
 import { UpdateWTSDto } from './dto/update-wts.dto';
-import { Product } from 'src/entities/product.entity';
+import { Product } from '../entities/product.entity';
 
 @Injectable()
 export class WtsService {

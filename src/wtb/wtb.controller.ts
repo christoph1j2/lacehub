@@ -12,12 +12,12 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { WtbService } from './wtb.service';
-import { Wtb } from 'src/entities/wtb.entity';
-import { VerifiedUserGuard } from 'src/common/guards/verified-user.guard';
+import { Wtb } from '../entities/wtb.entity';
+import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 import { CreateWTBDto } from './dto/create-wtb.dto';
 import { UpdateWTBDto } from './dto/update-wtb.dto';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { GetUser } from '../common/decorators/get-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('wtb')
 export class WtbController {

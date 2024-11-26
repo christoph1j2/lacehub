@@ -31,6 +31,8 @@ describe('WtbService', () => {
         product: mockProduct,
         size: 'M',
         quantity: 1,
+        // Add any other required properties from the Wtb entity
+        matches: [], // if matches is a required field
     } as Wtb;
 
     const mockWtbRepository = {
@@ -53,14 +55,12 @@ describe('WtbService', () => {
                 },
                 {
                     provide: getRepositoryToken(User),
-                    useClass: Repository,
                     useValue: {
                         findOneBy: jest.fn(),
                     },
                 },
                 {
                     provide: getRepositoryToken(Product),
-                    useClass: Repository,
                     useValue: {
                         findOneBy: jest.fn(),
                     },
@@ -165,27 +165,53 @@ describe('WtbService', () => {
         };
 
         it('should update a WTB item', async () => {
-            const updatedWtb = { ...mockWtb, quantity: 2 };
-            jest.spyOn(wtbRepository, 'findOne')
-                .mockResolvedValueOnce(mockWtb) // First call returns original
-                .mockResolvedValueOnce(updatedWtb); // Second call returns updated
+            jest.clearAllMocks();
+            const originalWtb: Wtb = {
+                id: 1,
+                user: mockUser,
+                product: mockProduct,
+                size: 'M',
+                quantity: 1,
+                matches: [], // ensure this is included if required
+            };
+            const updatedWtb: Wtb = {
+                ...originalWtb,
+                quantity: 2,
+            };
+
+            // Mock findOne to return the original WTB item
+            const findOneMock = jest
+                .spyOn(wtbRepository, 'findOne')
+                .mockResolvedValueOnce(originalWtb); // First call to check existing item
+
+            // Mock the update method
             jest.spyOn(wtbRepository, 'update').mockResolvedValue(undefined);
+
+            // Mock the second findOne to return the updated WTB after fetching
             jest.spyOn(wtbRepository, 'findOne').mockResolvedValueOnce(
                 updatedWtb,
             );
 
             const result = await service.update(1, updateDto, mockUser.id);
+
             expect(result).toEqual(updatedWtb);
+            expect(findOneMock).toHaveBeenCalledTimes(2);
+            expect(findOneMock).toHaveBeenCalledWith({
+                where: { id: 1 },
+                relations: ['user', 'product'],
+            });
+            expect(wtbRepository.update).toHaveBeenCalledWith(1, updateDto);
         });
 
         it('should throw NotFoundException if WTB item not found', async () => {
-            // Instead of using spyOn, directly set the mock implementation
-            mockWtbRepository.findOne.mockImplementation(async () => null);
+            // Explicitly mock findOne to return null
+            jest.spyOn(wtbRepository, 'findOne').mockResolvedValue(null);
 
             await expect(
                 service.update(999, updateDto, mockUser.id),
             ).rejects.toThrow(NotFoundException);
 
+            // Verify findOne was called with correct parameters
             expect(wtbRepository.findOne).toHaveBeenCalledWith({
                 where: { id: 999 },
                 relations: ['user', 'product'],
@@ -193,11 +219,34 @@ describe('WtbService', () => {
         });
 
         it('should throw ForbiddenException if user is not authorized', async () => {
-            jest.spyOn(wtbRepository, 'findOne').mockResolvedValue(mockWtb);
+            // Create a WTB item with a different user ID
+            const wtbWithDifferentUser: Wtb = {
+                id: 1,
+                user: { id: 999 } as User, // Different user ID
+                product: mockProduct,
+                size: 'M',
+                quantity: 1,
+                matches: [], // ensure this is included if required
+            };
 
-            await expect(service.update(1, updateDto, 999)).rejects.toThrow(
-                ForbiddenException,
+            // Explicitly mock findOne to return WTB with different user
+            jest.spyOn(wtbRepository, 'findOne').mockResolvedValue(
+                wtbWithDifferentUser,
             );
+
+            await expect(
+                service.update(1, updateDto, mockUser.id),
+            ).rejects.toThrow(ForbiddenException);
+
+            expect(wtbRepository.findOne).toHaveBeenCalledWith({
+                where: { id: 1 },
+                relations: ['user', 'product'],
+            });
+        });
+
+        // Add a cleanup after each test to reset mocks
+        afterEach(() => {
+            jest.clearAllMocks();
         });
     });
 

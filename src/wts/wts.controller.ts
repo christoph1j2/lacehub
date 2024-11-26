@@ -12,12 +12,12 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { WtsService } from './wts.service';
-import { Wts } from 'src/entities/wts.entity';
-import { VerifiedUserGuard } from 'src/common/guards/verified-user.guard';
+import { Wts } from '../entities/wts.entity';
+import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 import { CreateWTSDto } from './dto/create-wts.dto';
 import { UpdateWTSDto } from './dto/update-wts.dto';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { GetUser } from '../common/decorators/get-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('wts')
 export class WtsController {
