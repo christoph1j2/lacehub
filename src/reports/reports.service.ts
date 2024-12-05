@@ -47,6 +47,7 @@ export class ReportsService {
     }
 
     // mark report as resolved (admin)
+    // TODO: refine
     async resolveReport(id: number, actionTaken: string): Promise<Report> {
         const report = await this.findOne(id);
         report.resolved = true;

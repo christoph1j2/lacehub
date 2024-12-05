@@ -134,6 +134,7 @@ export class UserInventoryService {
         await this.userInventoryRepository.delete(itemId);
     }
 
+    //! TODO: I don't know how to test this without frontend, future feature
     async upload(fileBuffer: Buffer, userId: number): Promise<any> {
         const workbook = XLSX.read(fileBuffer);
         const sheetName = workbook.SheetNames[0];

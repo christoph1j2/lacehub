@@ -17,12 +17,16 @@ export class ReportsController {
     constructor(private readonly reportsService: ReportsService) {}
 
     // user reporting
-    @Post()
+    @Post(':reportedUserId')
     async create(
         @Body('reportText') reportText: string,
         @Param('reportedUserId') reportedUserId: number,
         @Req() req,
     ): Promise<void> {
+        if (!reportText) {
+            throw new Error('Report text is required');
+        }
+
         const reporterUserId = req.user.id;
         await this.reportsService.create(
             reportText,
@@ -54,6 +58,7 @@ export class ReportsController {
     }
 
     // mark report as resolved (admin)
+    // TODO: refine
     @Roles('admin')
     @Put(':id/resolve')
     async resolve(
