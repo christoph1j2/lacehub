@@ -17,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailService } from './mail/mail.service';
 import { RolesGuard } from './common/guards/roles.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
     imports: [
@@ -34,6 +35,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
         ReportsModule,
         UserInventoryModule,
         AuthModule,
+        ReviewsModule,
     ],
     controllers: [AppController],
     providers: [
