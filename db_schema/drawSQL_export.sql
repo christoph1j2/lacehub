@@ -89,8 +89,8 @@ ALTER TABLE
 -- MATCHES
 CREATE TABLE "matches"(
     "id" BIGSERIAL NOT NULL,
-    "wtb_id" BIGINT NOT NULL REFERENCES wtb(id),
-    "wts_id" BIGINT NOT NULL REFERENCES wts(id),
+    "wtb_id" BIGINT NOT NULL REFERENCES wtb(id), --?
+    "wts_id" BIGINT NOT NULL REFERENCES wts(id), --?
     "buyer_id" BIGINT NOT NULL REFERENCES users(id),
     "seller_id" BIGINT NOT NULL REFERENCES users(id),
     "match_score" INTEGER NOT NULL CHECK (match_score BETWEEN 0 AND 100),
@@ -108,6 +108,8 @@ CREATE TABLE "notifications"(
     "match_id" BIGINT NOT NULL REFERENCES matches(id),
     "message" TEXT NOT NULL,
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "type" VARCHAR(255) NOT NULL -- match/warn/...
+    "is_read" BOOLEAN DEFAULT FALSE
 );
 ALTER TABLE
     "notifications" ADD PRIMARY KEY("id");
