@@ -12,6 +12,9 @@ CREATE TABLE "users"(
     "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "is_banned" BOOLEAN DEFAULT FALSE,
     "ban_expiration" TIMESTAMP WITH TIME ZONE
+    "verificationToken" VARCHAR(255)
+    "resetToken" VARCHAR(255)
+    "resetTokenExpires" TIMESTAMP
 );
 ALTER TABLE
     "users" ADD PRIMARY KEY("id");
