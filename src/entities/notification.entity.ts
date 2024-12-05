@@ -22,7 +22,13 @@ export class Notification {
     match: Match;
 
     @Column()
+    type: string;
+
+    @Column()
     message: string;
+
+    @Column()
+    isRead: boolean;
 
     @Column()
     createdAt: Date;
