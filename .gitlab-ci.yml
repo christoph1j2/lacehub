@@ -18,6 +18,7 @@ deploy:
   script:
     - echo "Automatické mazání existujícího kontejneru (pokud existuje)..."
     - docker rm -f frontend || true  # Odstraní kontejner, pokud existuje
+    - docker image rm -f frontendgitlab || true
     - echo "Spouštění Docker containeru pro frontend..."
     - docker run -d -p 421:5173 --name frontend --network proxy frontendgitlab
   only:
