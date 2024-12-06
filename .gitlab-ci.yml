@@ -9,17 +9,16 @@ build:
     - echo "Vytvárím Docker image pro frontend..."
     - docker build -t frontendgitlab .
   only:
-    - frontend  # Job se spustí pouze pro tuto větev
+    - frontend
   tags:
-    - frontend  # Tento tag musí odpovídat runneru
+    - frontend
 
-# Job pro spuštění Docker kontejneru (volitelně)
 deploy:
   stage: deploy
   script:
     - echo "Spouštění Docker containeru pro frontend..."
-    - docker run -d -p 3000:3000 frontendgitlab --name frontend
+    - docker run -d -p 3000:3000 --name frontend frontendgitlab
   only:
-    - frontend  # Opět, pouze pro tuto větev
+    - frontend
   tags:
     - frontend
