@@ -1,26 +1,35 @@
 stages:
+  - smazat
   - build
-  - deploy
+  - spustit
 
-# Job pro sestavení Docker image
-build:
-  stage: build
+smazat:
+  stage: smazat
   script:
-    - echo "Vytvárim Docker image pro frontend..."
-    - docker build --no-cache -t frontendgitlab .
+    - echo "Automatické mazání existujícího kontejneru a image (pokud existuje)..."
+    - docker rm -f frontend || true
+    - docker image rm -f frontend || true
+    - docker volume rm -f frontend_data || true
   only:
     - frontend
   tags:
     - frontend
 
-deploy:
-  stage: deploy
+build:
+  stage: build
   script:
-    - echo "Automatické mazání existujícího kontejneru (pokud existuje)..."
-    - docker rm -f frontend || true  # Odstraní kontejner, pokud existuje
-    - docker image rm -f frontendgitlab || true
-    - echo "Spouštění Docker containeru pro frontend..."
-    - docker run -d -p 421:5173 --name frontend --network proxy frontendgitlab
+    - echo "Vytvářím Docker image pro frontend..."
+    - docker build --no-cache -t frontend .
+  only:
+    - frontend
+  tags:
+    - frontend
+
+spustit:
+  stage: spustit
+  script:
+    - echo "Spouštění Docker kontaineru pro frontend..."
+    - docker run -d --name frontend --network proxy -v frontend_data:/app frontend
   only:
     - frontend
   tags:
