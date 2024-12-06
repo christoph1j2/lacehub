@@ -1,7 +1,7 @@
 -- Exported from drawSQL (https://www.drawsql.app)
 ----------------------------------------------------------------------------
 -- USERS
-CREATE TABLE "users"(
+CREATE TABLE IF NOT EXISTS "users"(
     "id" BIGSERIAL NOT NULL,
     "username" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
@@ -24,7 +24,7 @@ ALTER TABLE
     "users" ADD CONSTRAINT "users_email_unique" UNIQUE("email");
 ----------------------------------------------------------------------------
 -- PRODUCT
-CREATE TABLE "products"(
+CREATE TABLE IF NOT EXISTS "products"(
     "id" BIGSERIAL NOT NULL,
     "sku" VARCHAR(255) NOT NULL,
     "name" VARCHAR(255) NOT NULL,
@@ -39,7 +39,7 @@ ALTER TABLE
 ----------------------------------------------------------------------------
 
 -- REVIEWS
-CREATE TABLE "reviews"(
+CREATE TABLE IF NOT EXISTS "reviews"(
     "id" BIGSERIAL NOT NULL,
     "reviewer_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     "seller_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -54,7 +54,7 @@ ALTER TABLE
 
 ----------------------------------------------------------------------------
 -- WTB
-CREATE TABLE "wtb"(
+CREATE TABLE IF NOT EXISTS "wtb"(
     "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
@@ -65,7 +65,7 @@ ALTER TABLE
     "wtb" ADD PRIMARY KEY("id");
 ----------------------------------------------------------------------------
 -- WTS
-CREATE TABLE "wts"(
+CREATE TABLE IF NOT EXISTS "wts"(
     "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
@@ -76,7 +76,7 @@ ALTER TABLE
     "wts" ADD PRIMARY KEY("id");
 ----------------------------------------------------------------------------
 -- USER_INVENTORY
-CREATE TABLE "user_inventory"(
+CREATE TABLE IF NOT EXISTS "user_inventory"(
     "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "product_id" BIGINT NOT NULL REFERENCES products(id),
@@ -87,7 +87,7 @@ ALTER TABLE
     "user_inventory" ADD PRIMARY KEY("id");
 ----------------------------------------------------------------------------
 -- MATCHES
-CREATE TABLE "matches"(
+CREATE TABLE IF NOT EXISTS "matches"(
     "id" BIGSERIAL NOT NULL,
     "wtb_id" BIGINT NOT NULL REFERENCES wtb(id), --?
     "wts_id" BIGINT NOT NULL REFERENCES wts(id), --?
@@ -102,7 +102,7 @@ ALTER TABLE
 
 ----------------------------------------------------------------------------
 -- NOTIFICATIONS
-CREATE TABLE "notifications"(
+CREATE TABLE IF NOT EXISTS "notifications"(
     "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "match_id" BIGINT NOT NULL REFERENCES matches(id),
@@ -115,7 +115,7 @@ ALTER TABLE
     "notifications" ADD PRIMARY KEY("id");
 ----------------------------------------------------------------------------
 -- ROLES
-CREATE TABLE "user_roles"(
+CREATE TABLE IF NOT EXISTS "user_roles"(
     "id" SERIAL NOT NULL,
     "role_name" VARCHAR(255) NOT NULL
 );
@@ -129,7 +129,7 @@ VALUES ('admin'), ('user');
 
 ----------------------------------------------------------------------------
 -- REPORTS
-CREATE TABLE "reports"(
+CREATE TABLE IF NOT EXISTS "reports"(
     "id" BIGSERIAL NOT NULL,
     "reported_user_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     "reporter_user_id" BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
