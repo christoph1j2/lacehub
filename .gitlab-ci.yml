@@ -7,7 +7,7 @@ build:
   stage: build
   script:
     - echo "Vytvárím Docker image pro frontend..."
-    - docker build -t frontend-gitlab:$CI_COMMIT_REF_NAME .
+    - docker build -t frontendgitlab .
   only:
     - frontend  # Job se spustí pouze pro tuto větev
   tags:
@@ -18,7 +18,7 @@ deploy:
   stage: deploy
   script:
     - echo "Spouštění Docker containeru pro frontend..."
-    - docker run -d -p 3000:3000 frontend-gitlab:$CI_COMMIT_REF_NAME
+    - docker run -d -p 3000:3000 frontendgitlab
   only:
     - frontend  # Opět, pouze pro tuto větev
   tags:
