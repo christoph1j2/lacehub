@@ -18,7 +18,7 @@ deploy:
   stage: deploy
   script:
     - echo "Spouštění Docker containeru pro frontend..."
-    - docker run -d -p 3000:3000 frontendgitlab
+    - docker run -d -p 3000:3000 frontendgitlab --name frontend
   only:
     - frontend  # Opět, pouze pro tuto větev
   tags:
