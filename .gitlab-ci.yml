@@ -6,8 +6,9 @@ stages:
 build:
   stage: build
   script:
-    - echo "Vytvárím Docker image pro frontend..."
-    - docker build -t frontendgitlab .
+    - echo "Vytvárim Docker image pro frontend..."
+    # Použití --no-cache pro vyloučení cache a zajištění správného tagu
+    - docker build --no-cache -t frontendgitlab .
   only:
     - frontend
   tags:
