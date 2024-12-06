@@ -18,7 +18,7 @@ deploy:
   script:
     - echo "Spouštění Docker containeru pro frontend..."
     - docker stop frontend
-    - docker remove frontend
+    - docker delete frontend
     - docker run -d -p 3000:3000 --name frontend frontendgitlab
   only:
     - frontend
