@@ -17,7 +17,7 @@ deploy:
   stage: deploy
   script:
     - echo "Spouštění Docker containeru pro frontend..."
-    - docker run -d -p 421:5173 --name frontend frontendgitlab
+    - docker run -d -p 421:5173 --name frontend --network proxy frontendgitlab
   only:
     - frontend
   tags:
