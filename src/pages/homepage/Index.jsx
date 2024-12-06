@@ -4,7 +4,7 @@ function Index() {
   return (
     <BaseLayout>
       <div className="container mx-auto p-4">
-        <h1 className="text-5xl font-bold text-center">Welcome to LaceHub</h1>
+        <h1 className="text-5xl font-bold text-center">Welcome to LaceHub (Test CI/CD)</h1>
         <p className="text-center mt-4 ">
           Your one-stop shop for all your lace needs
         </p>
