@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductsService } from './products.service';
 import { Product } from '../entities/product.entity';
-import { Repository, UpdateResult } from 'typeorm';
+import { ILike, Repository, UpdateResult } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 /**
  * * Main test suite for ProductsService
@@ -13,6 +15,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 describe('ProductsService', () => {
     let service: ProductsService;
     let repository: Repository<Product>;
+    let cacheManager: Cache;
 
     // * Mock product data for testing
     const mockProduct: Product = {
@@ -47,8 +50,14 @@ describe('ProductsService', () => {
             save: jest.fn().mockResolvedValue(mockProduct),
             find: jest.fn().mockResolvedValue([mockProduct]),
             findOne: jest.fn().mockResolvedValue(mockProduct),
+            findAndCount: jest.fn(),
             update: jest.fn().mockResolvedValue(updateResult),
             delete: jest.fn().mockResolvedValue(updateResult),
+        };
+
+        const mockCacheManager = {
+            get: jest.fn(),
+            set: jest.fn(),
         };
 
         const module: TestingModule = await Test.createTestingModule({
@@ -58,6 +67,10 @@ describe('ProductsService', () => {
                     provide: getRepositoryToken(Product),
                     useValue: mockProductRepository,
                 },
+                {
+                    provide: CACHE_MANAGER,
+                    useValue: mockCacheManager,
+                },
             ],
         }).compile();
 
@@ -65,6 +78,7 @@ describe('ProductsService', () => {
         repository = module.get<Repository<Product>>(
             getRepositoryToken(Product),
         );
+        cacheManager = module.get<Cache>(CACHE_MANAGER);
     });
 
     /**
@@ -209,6 +223,87 @@ describe('ProductsService', () => {
             await expect(service.delete(999)).rejects.toThrow(
                 NotFoundException,
             );
+        });
+    });
+
+    describe('searchProducts', () => {
+        const query = 'sample';
+        const limit = 10;
+        const offset = 0;
+
+        it('should return cached results if available', async () => {
+            const cachedData = {
+                results: [mockProduct],
+                total: 1,
+            };
+
+            jest.spyOn(cacheManager, 'get').mockResolvedValue(cachedData);
+
+            const results = await service.searchProducts(query, limit, offset);
+
+            expect(cacheManager.get).toHaveBeenCalledWith(
+                `search:${query}:${limit}:${offset}`,
+            );
+            expect(results).toEqual(cachedData.results);
+        });
+
+        it('should fetch from database and cache results if not cached', async () => {
+            const dbResults = [mockProduct];
+            const dbTotal = 1;
+
+            jest.spyOn(cacheManager, 'get').mockResolvedValue(null);
+            jest.spyOn(repository, 'findAndCount').mockResolvedValue([
+                dbResults,
+                dbTotal,
+            ]);
+            jest.spyOn(cacheManager, 'set').mockResolvedValue(undefined);
+
+            const results = await service.searchProducts(query, limit, offset);
+
+            expect(cacheManager.get).toHaveBeenCalledWith(
+                `search:${query}:${limit}:${offset}`,
+            );
+            expect(repository.findAndCount).toHaveBeenCalledWith({
+                where: [
+                    { sku: ILike(`%${query}%`) },
+                    { name: ILike(`%${query}%`) },
+                    { description: ILike(`%${query}%`) },
+                ],
+                take: limit,
+                skip: offset,
+            });
+            expect(cacheManager.set).toHaveBeenCalledWith(
+                `search:${query}:${limit}:${offset}`,
+                { results: dbResults, total: dbTotal },
+                300000, // 5 minutes in milliseconds
+            );
+            expect(results).toEqual(dbResults);
+        });
+
+        it('should paginate results based on limit and offset', async () => {
+            const dbResults = Array.from({ length: 10 }, (_, i) => ({
+                ...mockProduct,
+                id: i + 1,
+            }));
+            const dbTotal = 20;
+
+            jest.spyOn(repository, 'findAndCount').mockResolvedValue([
+                dbResults,
+                dbTotal,
+            ]);
+
+            const results = await service.searchProducts(query, limit, 10);
+
+            expect(repository.findAndCount).toHaveBeenCalledWith({
+                where: [
+                    { sku: ILike(`%${query}%`) },
+                    { name: ILike(`%${query}%`) },
+                    { description: ILike(`%${query}%`) },
+                ],
+                take: limit,
+                skip: 10,
+            });
+            expect(results).toHaveLength(10);
         });
     });
 });
