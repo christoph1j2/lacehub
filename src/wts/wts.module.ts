@@ -3,9 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Wts } from 'src/entities/wts.entity';
 import { WtsController } from './wts.controller';
 import { WtsService } from './wts.service';
+import { User } from '../entities/user.entity';
+import { Product } from '../entities/product.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Wts])],
+    imports: [TypeOrmModule.forFeature([Wts, User, Product])],
     controllers: [WtsController],
     providers: [WtsService],
 })
