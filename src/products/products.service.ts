@@ -1,15 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from '../entities/product.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class ProductsService {
     constructor(
         @InjectRepository(Product)
         private readonly productsRepository: Repository<Product>,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) {}
 
     async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -45,16 +47,41 @@ export class ProductsService {
             throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    async searchProducts(query: string, limit = 10): Promise<Product[]> {
-        return await this.productsRepository
-            .createQueryBuilder('product')
-            .where('product.name ILIKE :query', { query: `%${query}%` })
-            .orWhere('product.sku ILIKE :query', { query: `%${query}%` })
-            .orWhere('product.description ILIKE :query', {
-                query: `%${query}%`,
-            })
-            .limit(limit)
-            .getMany();
+    async searchProducts(
+        query: string,
+        limit = 10,
+        offset = 0,
+    ): Promise<Product[]> {
+        /**On the frontend:
+         * Pass limit and offset as query parameters.
+         * Use the currentPage and totalPages from the response for pagination UI.
+         */
+        const cacheKey = `search:${query}:${limit}:${offset}`;
+
+        // Try to get cached results
+        const cachedResults = await this.cacheManager.get<{
+            results: Product[];
+            total: number;
+        }>(cacheKey);
+        if (cachedResults) {
+            return cachedResults.results;
+        }
+
+        // If not in cache, fetch from database
+        const [results, total] = await this.productsRepository.findAndCount({
+            where: [
+                { sku: ILike(`%${query}%`) },
+                { name: ILike(`%${query}%`) },
+                { description: ILike(`%${query}%`) },
+            ],
+            take: limit,
+            skip: offset,
+        });
+
+        // Cache the results for 5 minutes (300 seconds)
+        const cacheData = { results, total };
+        await this.cacheManager.set(cacheKey, cacheData, 300000);
+
+        return cacheData.results;
     }
-    //*caching?
 }

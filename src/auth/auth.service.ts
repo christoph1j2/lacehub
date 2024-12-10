@@ -35,7 +35,7 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
     }
 
-    async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
+    async login(loginUserDto: LoginUserDto) {
         const { email, password } = loginUserDto;
         const user = await this.usersService.findOneByEmailWithRole(email);
 
@@ -50,7 +50,20 @@ export class AuthService {
             verified: user.verified,
         };
         const accessToken = this.jwtService.sign(payload);
-        return { accessToken };
+        return {
+            message: 'Login successful',
+            user,
+            accessToken,
+            cookie: {
+                name: 'auth_token',
+                value: accessToken,
+                options: {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                },
+            },
+        };
     }
 
     async register(createUserDto: CreateUserDto): Promise<User> {

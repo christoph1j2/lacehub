@@ -18,13 +18,19 @@ import { MailService } from './mail/mail.service';
 import { RolesGuard } from './common/guards/roles.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
 import { ReviewsModule } from './reviews/reviews.module';
-import { ExampleModule } from './example/example.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: './development.env',
+        }),
+        CacheModule.register({
+            isGlobal: true,
+            store: 'RedisStore',
+            host: 'localhost',
+            port: 6379,
         }),
         DatabaseModule,
         UsersModule,
@@ -37,7 +43,6 @@ import { ExampleModule } from './example/example.module';
         UserInventoryModule,
         AuthModule,
         ReviewsModule,
-        ExampleModule,
     ],
     controllers: [AppController],
     providers: [
