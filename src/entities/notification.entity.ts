@@ -28,8 +28,8 @@ export class Notification {
     message: string;
 
     @Column()
-    isRead: boolean;
+    is_read: boolean;
 
     @Column()
-    createdAt: Date;
+    created_at: Date;
 }

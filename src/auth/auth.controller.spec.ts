@@ -1,19 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 
 describe('AuthController', () => {
     let controller: AuthController;
     let authService: AuthService;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let usersService: UsersService;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let jwtService: JwtService;
 
     const mockJwtService = {
         sign: jest.fn(),
@@ -26,12 +23,8 @@ describe('AuthController', () => {
         verifyEmailToken: jest.fn(),
         requestPasswordReset: jest.fn(),
         resetPassword: jest.fn(),
-    };
-
-    const mockUsersService = {
-        findOne: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
+        refreshToken: jest.fn(),
+        logout: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -44,7 +37,11 @@ describe('AuthController', () => {
                 },
                 {
                     provide: UsersService,
-                    useValue: mockUsersService,
+                    useValue: {
+                        findOne: jest.fn(),
+                        create: jest.fn(),
+                        update: jest.fn(),
+                    },
                 },
                 {
                     provide: JwtService,
@@ -55,15 +52,12 @@ describe('AuthController', () => {
 
         controller = module.get<AuthController>(AuthController);
         authService = module.get<AuthService>(AuthService);
-        usersService = module.get<UsersService>(UsersService);
-        jwtService = module.get<JwtService>(JwtService);
     });
 
     afterEach(() => {
         jest.clearAllMocks();
     });
 
-    //* 1. login method test
     describe('login', () => {
         it('should login user successfully', async () => {
             const loginUserDto: LoginUserDto = {
@@ -71,21 +65,34 @@ describe('AuthController', () => {
                 password: 'password123',
             };
 
-            const expectedResult = {
-                access_token: 'mock-jwt-token',
-                user: {
-                    id: 1,
-                    email: 'test@example.com',
-                    name: 'Test User',
+            const loginResult = {
+                user: { id: 1, email: 'test@example.com' },
+                message: 'Login successful',
+                accessToken: 'mock-access-token',
+                refreshToken: 'mock-refresh-token',
+                cookie: {
+                    name: 'refreshToken',
+                    options: {},
                 },
             };
 
-            mockAuthService.login.mockResolvedValue(expectedResult);
+            mockAuthService.login.mockResolvedValue(loginResult);
 
-            const result = await controller.login(loginUserDto);
+            const res = { cookie: jest.fn() };
+
+            const result = await controller.login(loginUserDto, res);
 
             expect(authService.login).toHaveBeenCalledWith(loginUserDto);
-            expect(result).toEqual(expectedResult);
+            expect(res.cookie).toHaveBeenCalledWith(
+                loginResult.cookie.name,
+                loginResult.refreshToken,
+                loginResult.cookie.options,
+            );
+            expect(result).toEqual({
+                message: loginResult.message,
+                user: loginResult.user,
+                accessToken: loginResult.accessToken,
+            });
         });
 
         it('should handle invalid credentials', async () => {
@@ -98,43 +105,42 @@ describe('AuthController', () => {
                 new BadRequestException('Invalid credentials'),
             );
 
-            await expect(controller.login(loginUserDto)).rejects.toThrow(
-                BadRequestException,
-            );
+            await expect(
+                controller.login(loginUserDto, { cookie: jest.fn() }),
+            ).rejects.toThrow(BadRequestException);
         });
     });
 
-    //* 2. register method test
     describe('register', () => {
         it('should register user successfully', async () => {
             const createUserDto: CreateUserDto = {
                 email: 'test@example.com',
                 password: 'password123',
-                username: 'Test User',
+                username: 'TestUser',
             };
 
-            const expectedResult = {
-                access_token: 'mock-jwt-token',
+            const registerResult = {
                 user: {
                     id: 1,
                     email: 'test@example.com',
-                    name: 'Test User',
+                    username: 'TestUser',
                 },
+                message: 'Registration successful',
             };
 
-            mockAuthService.register.mockResolvedValue(expectedResult);
+            mockAuthService.register.mockResolvedValue(registerResult);
 
             const result = await controller.register(createUserDto);
 
             expect(authService.register).toHaveBeenCalledWith(createUserDto);
-            expect(result).toEqual(expectedResult);
+            expect(result).toEqual(registerResult);
         });
 
         it('should handle duplicate email registration', async () => {
             const createUserDto: CreateUserDto = {
                 email: 'existing@example.com',
                 password: 'password123',
-                username: 'Test User',
+                username: 'TestUser',
             };
 
             mockAuthService.register.mockRejectedValue(
@@ -147,74 +153,106 @@ describe('AuthController', () => {
         });
     });
 
-    // Placeholder tests for email functionality
-    describe('email-dependent functionality', () => {
-        //* 3. verifyEmail method test
-        describe('verifyEmail', () => {
-            it('should verify email successfully', async () => {
-                const token = 'valid-token';
-                mockAuthService.verifyEmailToken.mockResolvedValue({ id: 1 });
+    describe('verifyEmail', () => {
+        it('should verify email successfully', async () => {
+            const token = 'valid-token';
+            mockAuthService.verifyEmailToken.mockResolvedValue({ id: 1 });
 
-                const result = await controller.verifyEmail(token);
+            const result = await controller.verifyEmail(token);
 
-                expect(authService.verifyEmailToken).toHaveBeenCalledWith(
-                    token,
-                );
-                expect(result).toEqual({
-                    message: 'Email verified successfully',
-                });
-            });
-
-            it('should handle invalid token', async () => {
-                const token = 'invalid-token';
-                mockAuthService.verifyEmailToken.mockResolvedValue(null);
-
-                await expect(controller.verifyEmail(token)).rejects.toThrow(
-                    BadRequestException,
-                );
+            expect(authService.verifyEmailToken).toHaveBeenCalledWith(token);
+            expect(result).toEqual({
+                message: 'Email verified successfully',
             });
         });
 
-        //* 4. requestPasswordReset method test
-        describe('requestPasswordReset', () => {
-            it('should handle password reset request', async () => {
-                const email = 'test@example.com';
-                await controller.requestPasswordReset(email);
-                expect(authService.requestPasswordReset).toHaveBeenCalledWith(
-                    email,
-                );
+        it('should handle invalid token', async () => {
+            const token = 'invalid-token';
+            mockAuthService.verifyEmailToken.mockResolvedValue(null);
+
+            await expect(controller.verifyEmail(token)).rejects.toThrow(
+                BadRequestException,
+            );
+        });
+    });
+
+    describe('requestPasswordReset', () => {
+        it('should handle password reset request', async () => {
+            const email = 'test@example.com';
+            await controller.requestPasswordReset(email);
+            expect(authService.requestPasswordReset).toHaveBeenCalledWith(
+                email,
+            );
+        });
+    });
+
+    describe('resetPassword', () => {
+        it('should reset password successfully', async () => {
+            const token = 'valid-token';
+            const newPassword = 'newPassword123';
+            mockAuthService.resetPassword.mockResolvedValue({ id: 1 });
+
+            const result = await controller.resetPassword(token, newPassword);
+
+            expect(authService.resetPassword).toHaveBeenCalledWith(
+                token,
+                newPassword,
+            );
+            expect(result).toEqual({
+                message: 'Password reset successfully',
             });
         });
 
-        //* 5. resetPassword method test
-        describe('resetPassword', () => {
-            it('should reset password successfully', async () => {
-                const token = 'valid-token';
-                const newPassword = 'newPassword123';
-                mockAuthService.resetPassword.mockResolvedValue({ id: 1 });
+        it('should handle invalid reset token', async () => {
+            const token = 'invalid-token';
+            const newPassword = 'newPassword123';
+            mockAuthService.resetPassword.mockResolvedValue(null);
 
-                const result = await controller.resetPassword(
-                    token,
-                    newPassword,
-                );
+            await expect(
+                controller.resetPassword(token, newPassword),
+            ).rejects.toThrow(BadRequestException);
+        });
+    });
 
-                expect(authService.resetPassword).toHaveBeenCalledWith(
-                    token,
-                    newPassword,
-                );
-                expect(result).toEqual({
-                    message: 'Password reset successfully',
-                });
-            });
+    describe('refreshToken', () => {
+        it('should refresh access token successfully', async () => {
+            const refreshToken = 'valid-refresh-token';
+            const req = { cookies: { refreshToken } };
+            const newAccessToken = 'new-access-token';
 
-            it('should handle invalid reset token', async () => {
-                const token = 'invalid-token';
-                const newPassword = 'newPassword123';
-                mockAuthService.resetPassword.mockResolvedValue(null);
+            mockAuthService.refreshToken.mockResolvedValue(newAccessToken);
 
-                await expect(
-                    controller.resetPassword(token, newPassword),
-                ).rejects.toThrow(BadRequestException);
+            const result = await controller.refreshToken(req);
+
+            expect(authService.refreshToken).toHaveBeenCalledWith(refreshToken);
+            expect(result).toEqual({ accessToken: newAccessToken });
+        });
+
+        it('should handle missing refresh token', async () => {
+            const req = { cookies: {} };
+
+            await expect(controller.refreshToken(req)).rejects.toThrow(
+                UnauthorizedException,
+            );
+        });
+    });
+
+    describe('logout', () => {
+        it('should logout user successfully', async () => {
+            const req = { user: { sub: 1 } };
+            const res = {
+                clearCookie: jest.fn(),
+                status: jest.fn().mockReturnThis(),
+                json: jest.fn(),
+            };
+
+            await controller.logout(req, res);
+
+            expect(authService.logout).toHaveBeenCalledWith(1);
+            expect(res.clearCookie).toHaveBeenCalledWith('refreshToken');
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Logged out successfully',
             });
         });
     });

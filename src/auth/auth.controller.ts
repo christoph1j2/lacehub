@@ -5,6 +5,9 @@ import {
     Get,
     BadRequestException,
     Query,
+    Req,
+    Res,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -21,8 +24,25 @@ export class AuthController {
 
     @Public()
     @Post('login')
-    async login(@Body() loginUserDto: LoginUserDto) {
-        return await this.authService.login(loginUserDto);
+    async login(
+        @Body() loginUserDto: LoginUserDto,
+        @Res({ passthrough: true }) res,
+    ) {
+        //return await this.authService.login(loginUserDto);
+        const loginResult = await this.authService.login(loginUserDto);
+
+        // Explicitly set the cookie
+        res.cookie(
+            loginResult.cookie.name,
+            loginResult.refreshToken,
+            loginResult.cookie.options,
+        );
+
+        return {
+            message: loginResult.message,
+            user: loginResult.user,
+            accessToken: loginResult.accessToken,
+        };
     }
 
     @Public()
@@ -60,5 +80,33 @@ export class AuthController {
             throw new BadRequestException('Invalid token');
         }
         return { message: 'Password reset successfully' };
+    }
+
+    @Public()
+    @Post('refresh-token')
+    async refreshToken(@Req() req) {
+        console.log('Cookies:', req.cookies);
+        console.log('Headers:', req.headers);
+
+        const refreshToken = req.cookies['refreshToken'];
+
+        if (!refreshToken) {
+            throw new UnauthorizedException('Refresh token not found');
+        }
+
+        const newAccessToken =
+            await this.authService.refreshToken(refreshToken);
+        return { accessToken: newAccessToken };
+    }
+
+    @Post('logout')
+    async logout(@Req() req, @Res() res) {
+        const userId = req.user.sub;
+        await this.authService.logout(userId);
+        res.clearCookie('refreshToken');
+        console.log(req.user);
+        console.log(req.refreshToken);
+        //console.log(this.authService.jwtService.decode(req.accessToken));
+        res.status(200).json({ message: 'Logged out successfully' }); // Ensure this matches the test
     }
 }

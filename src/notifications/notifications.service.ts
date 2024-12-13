@@ -20,8 +20,8 @@ export class NotificationsService {
             user: { id: userId },
             type,
             message,
-            isRead: false,
-            createdAt: new Date(),
+            is_read: false,
+            created_at: new Date(),
             match: matchId ? { id: matchId } : null,
         });
         return await this.notificationsRepository.save(notification);
@@ -30,7 +30,7 @@ export class NotificationsService {
     async findAll(userId: number): Promise<Notification[]> {
         return await this.notificationsRepository.find({
             where: { user: { id: userId } },
-            order: { createdAt: 'DESC' },
+            order: { created_at: 'DESC' },
         });
     }
 
@@ -41,7 +41,7 @@ export class NotificationsService {
         if (!notification) {
             throw new Error('Notification not found');
         }
-        notification.isRead = true;
+        notification.is_read = true;
         return await this.notificationsRepository.save(notification);
     }
 

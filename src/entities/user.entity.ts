@@ -34,6 +34,9 @@ export class User {
     @Column({ nullable: true })
     verificationToken: string;
 
+    @Column({ nullable: true })
+    refreshToken: string;
+
     @Column({ default: false })
     verified: boolean;
 

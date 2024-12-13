@@ -19,7 +19,7 @@ export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly mailService: MailService,
-        private readonly jwtService: JwtService,
+        readonly jwtService: JwtService,
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
     ) {}
@@ -48,18 +48,33 @@ export class AuthService {
             sub: user.id,
             role: user.role.role_name,
             verified: user.verified,
+            refreshToken: this.jwtService.sign(
+                { sub: user.id },
+                { expiresIn: '7d' },
+            ),
         };
-        const accessToken = this.jwtService.sign(payload);
+
+        const accessToken = this.jwtService.sign(payload, {
+            expiresIn: '15m',
+        });
+        const refreshToken = payload.refreshToken;
+
+        // save refresh token in db
+        user.refreshToken = await bcrypt.hash(refreshToken, 10);
+        await this.usersRepository.save(user);
+
         return {
             message: 'Login successful',
             user,
             accessToken,
+            refreshToken,
             cookie: {
-                name: 'auth_token',
-                value: accessToken,
+                name: 'refreshToken',
+                value: refreshToken,
                 options: {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: process.env.NODE_ENV === 'development',
+                    sameSite: 'strict',
                     maxAge: 7 * 24 * 60 * 60 * 1000,
                 },
             },
@@ -160,5 +175,48 @@ export class AuthService {
         user.resetTokenExpires = null;
         await this.usersRepository.save(user);
         return user;
+    }
+
+    async refreshToken(refreshToken: string): Promise<string> {
+        // Find the user by the refresh token directly
+        const user = await this.validateRefreshToken(refreshToken);
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+
+        // Create a new access token with user details
+        const newAccessToken = this.jwtService.sign(
+            {
+                username: user.username,
+                sub: user.id,
+                role: user.role.role_name,
+                verified: user.verified,
+            },
+            { expiresIn: '15m' },
+        );
+
+        return newAccessToken;
+    }
+
+    async logout(userId: number): Promise<void> {
+        const user = await this.usersRepository.findOne({
+            where: { id: userId },
+        });
+
+        if (user) {
+            user.refreshToken = null;
+            await this.usersRepository.save(user);
+        }
+    }
+
+    async validateRefreshToken(refreshToken: string): Promise<User | null> {
+        const users = await this.usersRepository.find();
+        for (const user of users) {
+            if (await bcrypt.compare(refreshToken, user.refreshToken)) {
+                return user;
+            }
+        }
+        return null;
     }
 }

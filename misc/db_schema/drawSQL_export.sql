@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS "users"(
     "verificationToken" VARCHAR(255)
     "resetToken" VARCHAR(255)
     "resetTokenExpires" TIMESTAMP
+    "refreshToken" VARCHAR(255)
 );
 ALTER TABLE
     "users" ADD PRIMARY KEY("id");
