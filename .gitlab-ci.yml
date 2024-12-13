@@ -1,0 +1,36 @@
+stages:
+  - smazat
+  - build
+  - spustit
+
+smazat:
+  stage: smazat
+  script:
+    - echo "Automatické mazání existujícího kontejneru a image (pokud existuje)..."
+    - docker rm -f frontend || true
+    - docker image rm -f frontend || true
+    - docker volume rm -f frontend_data || true
+  only:
+    - frontend
+  tags:
+    - frontend
+
+build:
+  stage: build
+  script:
+    - echo "Vytvářím Docker image pro frontend..."
+    - docker build --no-cache -t frontend .
+  only:
+    - frontend
+  tags:
+    - frontend
+
+spustit:
+  stage: spustit
+  script:
+    - echo "Spouštění Docker kontaineru pro frontend..."
+    - docker run -d --name frontend --network proxy -v frontend_data:/app frontend
+  only:
+    - frontend
+  tags:
+    - frontend
