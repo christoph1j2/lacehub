@@ -1,37 +1,44 @@
 import BaseLayout from "../../layout/BaseLayout";
+import HowItWork from "./HowItWork";
 
 function Index() {
   return (
     <BaseLayout>
-      <div className="container mx-auto p-4">
-        <h1 className="text-5xl font-bold text-center">Welcome to LaceHub</h1>
-        <p className="text-center mt-4 ">
-          Your one-stop shop for all your lace needs
-        </p>
-        <div className="flex items-center gap-6 md:flex-row flex-col mt-8">
-          <div className="flex-1">
-            <img
-              src="/images/shoe.jpg"
-              alt="#"
-              className="mt-4  mx-auto rounded-lg shadow-lg "
-            />
-          </div>
-          <div className="flex-1 flex flex-col gap-6 items-start ">
-            <h1 className="text-5xl font-bold">Shoes</h1>
-            <p className="text-lg">
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Placeat
-              totam modi facilis, atque doloremque id accusantium. Lorem ipsum
-              dolor, sit amet consectetur adipisicing elit. Asperiores, est,
-              laudantium ullam sunt, dolorum at rerum placeat cum quae molestiae
-              facilis expedita dolor nam? Reprehenderit ad doloremque
-              praesentium. Praesentium, porro.
+      <div className="container mx-auto  h-screen">
+        <div className="flex flex-col gap-6 items-center justify-center max-w-xl mx-auto aspect-square bg-gray-500/20 rounded-full p-16 drop-shadow-xl shadow-[0_0_30px_rgba(107,114,128,0.3)] relative">
+          {/* Optional outer glow ring */}
+          <div className="absolute inset-0 rounded-full bg-gray-400/15 blur-xl -z-10"></div>
+
+          {/* Content wrapper with max height to prevent overflow */}
+          <div className="flex flex-col items-center gap-10 max-h-screen ">
+            <h1 className="text-5xl font-bold text-white text-center">
+              World of Sneakers
+            </h1>
+            <p className="text-lg text-white text-center">
+              Whether you are looking to buy, sell, or organize your shoe
+              collection, we have got you covered. Create a personal inventory
+              of your shoes, never forget what you own, and connect with others
+              to find your next perfect pair.
             </p>
-            <button className="bg-secondary-500 hover:bg-[#7c51ff] shadow-md text-white px-10 py-3 rounded-full ">
-              asdas
-            </button>
+            <div className="flex gap-4">
+              <button className="bg-secondary-600 hover:bg-secondary-500 shadow-md text-white px-10 py-3 rounded-full transition duration-300 font-semibold text-lg">
+                Try it yourself
+              </button>
+              <button className="border-2 border-secondary-600 hover:bg-secondary-500 shadow-md text-white px-10 py-3 rounded-full transition duration-300 font-semibold text-lg">
+                Learn more
+              </button>
+            </div>
           </div>
         </div>
+        <div className="flex-1">
+          <img
+            src="/images/zelena-bota.png"
+            alt="#"
+            className="mt-4  mx-auto rounded-lg shadow-lg max-w-md"
+          />
+        </div>
       </div>
+      <HowItWork />
     </BaseLayout>
   );
 }
