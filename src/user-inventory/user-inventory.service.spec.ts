@@ -43,6 +43,7 @@ describe('UserInventoryService', () => {
             matchesAsSeller: [],
             wts: [],
             wtb: [],
+            refreshToken: '',
         },
         product: {
             id: 1,

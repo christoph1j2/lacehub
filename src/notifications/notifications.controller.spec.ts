@@ -56,6 +56,7 @@ describe('NotificationsController', () => {
         reportsAsReporter: [],
         matchesAsBuyer: [],
         matchesAsSeller: [],
+        refreshToken: '',
     };
 
     it('should be defined', () => {
@@ -69,9 +70,9 @@ describe('NotificationsController', () => {
                 user: mockUser as User,
                 match: { id: 2 } as Match,
                 message: 'New match found!',
-                createdAt: new Date(),
+                created_at: new Date(),
                 type: 'MATCH',
-                isRead: false,
+                is_read: false,
             };
 
             const createDto = {
@@ -104,19 +105,19 @@ describe('NotificationsController', () => {
                     id: 1,
                     user: { id: 1 } as any,
                     message: 'Notification 1',
-                    createdAt: new Date(),
+                    created_at: new Date(),
                     match: new Match(),
                     type: '',
-                    isRead: false,
+                    is_read: false,
                 },
                 {
                     id: 2,
                     user: { id: 1 } as any,
                     message: 'Notification 2',
-                    createdAt: new Date(),
+                    created_at: new Date(),
                     match: new Match(),
                     type: '',
-                    isRead: false,
+                    is_read: false,
                 },
             ];
 
@@ -139,8 +140,8 @@ describe('NotificationsController', () => {
                 user: { id: 1 } as any,
                 match: { id: 2 } as any,
                 message: 'Notification 1',
-                createdAt: new Date(),
-                isRead: true,
+                created_at: new Date(),
+                is_read: true,
                 type: '',
             };
 
