@@ -7,15 +7,22 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     app.use(cookieParser());
 
-    const config = new DocumentBuilder()
-        .setTitle('LaceHub API')
-        .setDescription('The LaceHub API description')
-        .setVersion('1.0')
-        .addBearerAuth()
-        .build();
+    if (process.env.NODE_ENV !== 'production') {
+        const config = new DocumentBuilder()
+            .setTitle('LaceHub API')
+            .setDescription('The LaceHub API description')
+            .setVersion('1.0')
+            .addBearerAuth()
+            .build();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
+        const document = SwaggerModule.createDocument(app, config);
+        SwaggerModule.setup('api', app, document, {
+            swaggerOptions: {
+                persistAuthorization: true,
+            },
+            customSiteTitle: 'LaceHub API Docs',
+        });
+    }
 
     await app.listen(3000);
 }
