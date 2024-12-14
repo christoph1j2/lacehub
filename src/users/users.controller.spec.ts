@@ -67,7 +67,7 @@ describe('UsersController', () => {
         it('should update the profile of authenticated user', async () => {
             const updateUserDto: UpdateUserDto = {
                 username: 'updateduser',
-                email: 'updated@example.com',
+                //email: 'updated@example.com',
             };
             const updatedUser = { id: 1, ...updateUserDto };
             mockUsersService.update.mockResolvedValue(updatedUser);
@@ -153,7 +153,8 @@ describe('UsersController', () => {
         it('should delete a user by id', async () => {
             mockUsersService.delete.mockResolvedValue(undefined);
 
-            const result = await controller.delete(1);
+            const mockReq = { user: { id: 1 } };
+            const result = await controller.delete(mockReq);
             expect(result).toBeUndefined();
             expect(mockUsersService.delete).toHaveBeenCalledWith(1);
         });

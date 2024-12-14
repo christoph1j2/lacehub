@@ -14,7 +14,9 @@ import { UsersService } from '../users/users.service';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { Public } from '../common/decorators/public.decorator';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
     constructor(
@@ -24,6 +26,9 @@ export class AuthController {
 
     @Public()
     @Post('login')
+    @ApiOperation({ summary: 'Login user' })
+    @ApiResponse({ status: 200, description: 'Login successful' })
+    @ApiResponse({ status: 401, description: 'Invalid credentials' })
     async login(
         @Body() loginUserDto: LoginUserDto,
         @Res({ passthrough: true }) res,
@@ -47,12 +52,21 @@ export class AuthController {
 
     @Public()
     @Post('register')
+    @ApiOperation({ summary: 'Register user' })
+    @ApiResponse({ status: 200, description: 'Registration successful' })
+    @ApiResponse({
+        status: 401,
+        description: 'Username or email already exists',
+    })
     async register(@Body() createUserDto: CreateUserDto) {
         return await this.authService.register(createUserDto);
     }
 
     @Public()
     @Get('verify-email')
+    @ApiOperation({ summary: 'Verify email' })
+    @ApiResponse({ status: 200, description: 'Email verified successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid token' })
     async verifyEmail(@Query('token') token: string) {
         const user = await this.authService.verifyEmailToken(token);
         if (!user) {
@@ -64,6 +78,9 @@ export class AuthController {
 
     @Public()
     @Post('request-password-reset')
+    @ApiOperation({ summary: 'Request password reset' })
+    @ApiResponse({ status: 200, description: 'Password reset link sent' })
+    @ApiResponse({ status: 400, description: 'Invalid email' })
     async requestPasswordReset(@Body('email') email: string) {
         await this.authService.requestPasswordReset(email);
         return { message: 'Password reset link sent' };
@@ -71,6 +88,9 @@ export class AuthController {
 
     @Public()
     @Post('reset-password')
+    @ApiOperation({ summary: 'Reset password' })
+    @ApiResponse({ status: 200, description: 'Password reset successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid token' })
     async resetPassword(
         @Query('token') token: string,
         @Body('newPassword') newPassword: string,
@@ -84,6 +104,9 @@ export class AuthController {
 
     @Public()
     @Post('refresh-token')
+    @ApiOperation({ summary: 'Refresh access token' })
+    @ApiResponse({ status: 200, description: 'Access token refreshed' })
+    @ApiResponse({ status: 401, description: 'Refresh token not found' })
     async refreshToken(@Req() req) {
         console.log('Cookies:', req.cookies);
         console.log('Headers:', req.headers);
@@ -99,7 +122,11 @@ export class AuthController {
         return { accessToken: newAccessToken };
     }
 
+    @Public()
     @Post('logout')
+    @ApiOperation({ summary: 'Logout user' })
+    @ApiResponse({ status: 200, description: 'Logged out successfully' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async logout(@Req() req, @Res() res) {
         const userId = req.user.sub;
         await this.authService.logout(userId);

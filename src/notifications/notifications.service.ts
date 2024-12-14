@@ -34,9 +34,9 @@ export class NotificationsService {
         });
     }
 
-    async markAsRead(id: number): Promise<Notification> {
-        const notification = await this.notificationsRepository.findOneBy({
-            id,
+    async markAsRead(id: number, userId: number): Promise<Notification> {
+        const notification = await this.notificationsRepository.findOne({
+            where: { id, user: { id: userId } },
         });
         if (!notification) {
             throw new Error('Notification not found');
@@ -45,8 +45,13 @@ export class NotificationsService {
         return await this.notificationsRepository.save(notification);
     }
 
-    async delete(id: number): Promise<void> {
-        const result = await this.notificationsRepository.delete(id);
-        if (result.affected === 0) throw new Error('Notification not found');
+    async delete(id: number, userId: number): Promise<void> {
+        const notification = await this.notificationsRepository.findOne({
+            where: { id, user: { id: userId } },
+        });
+        if (!notification) {
+            throw new Error('Notification not found');
+        }
+        await this.notificationsRepository.delete(id);
     }
 }

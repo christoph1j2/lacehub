@@ -18,18 +18,30 @@ import { CreateWTBDto } from './dto/create-wtb.dto';
 import { UpdateWTBDto } from './dto/update-wtb.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('wtb')
 @Controller('wtb')
 export class WtbController {
     constructor(private readonly wtbService: WtbService) {}
 
     @Roles('admin')
     @Get()
+    @ApiOperation({ summary: 'Get all wtb items' })
+    @ApiResponse({ status: 200, description: 'Get all wtb items' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Not found' })
     async findAll(): Promise<Wtb[]> {
         return await this.wtbService.findAll();
     }
 
     @Get('user')
+    @ApiOperation({ summary: 'Get all wtb items for a user' })
+    @ApiResponse({ status: 200, description: 'Get all wtb items' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Not found' })
     async findByUser(@Request() req) {
         const userId = req.user.id;
         const items = await this.wtbService.findByUser(userId);
@@ -49,11 +61,21 @@ export class WtbController {
 
     @UseGuards(VerifiedUserGuard)
     @Post()
+    @ApiOperation({ summary: 'Create a new wtb item' })
+    @ApiResponse({ status: 201, description: 'Created' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Not found' })
     async create(@Body() createWTBDto: CreateWTBDto, @Req() req) {
         return await this.wtbService.create(createWTBDto, req.user.id);
     }
 
     @Patch(':id')
+    @ApiOperation({ summary: 'Update a wtb item' })
+    @ApiResponse({ status: 200, description: 'Updated' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Not found' })
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() updateWTBDto: UpdateWTBDto,
@@ -63,6 +85,11 @@ export class WtbController {
     }
 
     @Delete(':id')
+    @ApiOperation({ summary: 'Delete a wtb item' })
+    @ApiResponse({ status: 200, description: 'Deleted' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Not found' })
     async delete(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: { id: number },

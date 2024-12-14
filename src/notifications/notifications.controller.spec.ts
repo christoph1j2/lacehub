@@ -149,9 +149,9 @@ describe('NotificationsController', () => {
                 mockNotification,
             );
 
-            const result = await controller.markAsRead(1);
+            const result = await controller.markAsRead(1, { user: { id: 1 } });
 
-            expect(service.markAsRead).toHaveBeenCalledWith(1);
+            expect(service.markAsRead).toHaveBeenCalledWith(1, 1);
             expect(result).toEqual(mockNotification);
         });
     });
@@ -160,9 +160,9 @@ describe('NotificationsController', () => {
         it('should delete a notification', async () => {
             jest.spyOn(service, 'delete').mockResolvedValue(undefined);
 
-            const result = await controller.delete(1);
+            const result = await controller.delete(1, { user: { id: 1 } });
 
-            expect(service.delete).toHaveBeenCalledWith(1);
+            expect(service.delete).toHaveBeenCalledWith(1, 1);
             expect(result).toBeUndefined();
         });
     });

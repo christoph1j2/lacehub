@@ -52,6 +52,7 @@ describe('NotificationsService', () => {
         reportsAsReporter: [],
         matchesAsBuyer: [],
         matchesAsSeller: [],
+        refreshToken: '',
     };
 
     it('should be defined', () => {
@@ -72,8 +73,8 @@ describe('NotificationsService', () => {
             type: 'MATCH',
             message: 'New match found!',
             match: { id: 2 } as Match,
-            isRead: false,
-            createdAt: new Date(),
+            is_read: false,
+            created_at: new Date(),
         };
 
         jest.spyOn(repository, 'create').mockReturnValue(mockNotification);
@@ -90,8 +91,8 @@ describe('NotificationsService', () => {
             user: { id: 1 },
             type: 'MATCH',
             message: 'New match found!',
-            isRead: false,
-            createdAt: expect.any(Date),
+            is_read: false,
+            created_at: expect.any(Date),
             match: { id: 2 },
         });
         expect(repository.save).toHaveBeenCalledWith(mockNotification);
@@ -106,8 +107,8 @@ describe('NotificationsService', () => {
                 match: { id: 1 } as Match,
                 type: 'MATCH',
                 message: 'Notification 1',
-                isRead: false,
-                createdAt: new Date(),
+                is_read: false,
+                created_at: new Date(),
             },
             {
                 id: 2,
@@ -115,8 +116,8 @@ describe('NotificationsService', () => {
                 match: { id: 2 } as Match,
                 type: 'MATCH',
                 message: 'Notification 2',
-                isRead: false,
-                createdAt: new Date(),
+                is_read: false,
+                created_at: new Date(),
             },
         ];
 
@@ -126,7 +127,7 @@ describe('NotificationsService', () => {
 
         expect(repository.find).toHaveBeenCalledWith({
             where: { user: { id: 1 } },
-            order: { createdAt: 'DESC' },
+            order: { created_at: 'DESC' },
         });
         expect(result).toEqual(mockNotifications);
     });
@@ -138,45 +139,58 @@ describe('NotificationsService', () => {
             match: { id: 1 } as Match,
             type: 'MATCH',
             message: 'Notification 1',
-            isRead: false,
-            createdAt: new Date(),
+            is_read: false,
+            created_at: new Date(),
         };
 
-        jest.spyOn(repository, 'findOneBy').mockResolvedValue(mockNotification);
+        jest.spyOn(repository, 'findOne').mockResolvedValue(mockNotification);
         jest.spyOn(repository, 'save').mockResolvedValue({
             ...mockNotification,
-            isRead: true,
+            created_at: mockNotification.created_at,
+            is_read: true,
         });
 
-        const result = await service.markAsRead(1);
+        const result = await service.markAsRead(1, 1);
 
-        expect(repository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+        expect(repository.findOne).toHaveBeenCalledWith({
+            where: { id: 1, user: { id: 1 } },
+        });
         expect(repository.save).toHaveBeenCalledWith({
             ...mockNotification,
-            isRead: true,
+            is_read: true,
         });
-        expect(result.isRead).toBe(true);
+        expect(result.is_read).toBe(true);
     });
 
     it('should delete a notification', async () => {
+        jest.spyOn(repository, 'findOne').mockResolvedValue({
+            id: 1,
+            user: { id: 1 } as any,
+            match: { id: 2 } as any,
+            message: 'Notification 1',
+            created_at: new Date(),
+            is_read: true,
+            type: '',
+        });
         jest.spyOn(repository, 'delete').mockResolvedValue({
             affected: 1,
             raw: {},
         });
 
-        await expect(service.delete(1)).resolves.toBeUndefined();
+        await expect(service.delete(1, 1)).resolves.toBeUndefined();
         expect(repository.delete).toHaveBeenCalledWith(1);
     });
 
     it('should throw an error if notification not found during delete', async () => {
+        jest.spyOn(repository, 'findOne').mockResolvedValue(null);
         jest.spyOn(repository, 'delete').mockResolvedValue({
             affected: 0,
             raw: {},
         });
 
-        await expect(service.delete(1)).rejects.toThrow(
+        await expect(service.delete(1, 1)).rejects.toThrow(
             'Notification not found',
         );
-        expect(repository.delete).toHaveBeenCalledWith(1);
+        expect(repository.delete).not.toHaveBeenCalled();
     });
 });
