@@ -6,10 +6,10 @@ stages:
 smazat:
   stage: smazat
   script:
-    - echo "Automatické mazání existujícího kontejneru a image (pokud existuje)..."
+    - echo "Automatické mazání kontejneru a image pro Frontend (Vite) (pokud existuje)..."
     - docker rm -f frontend || true
     - docker image rm -f frontend || true
-    - docker volume rm -f frontend_data || true
+    - docker volume rm -f frontend || true
   only:
     - frontend
   tags:
@@ -18,7 +18,7 @@ smazat:
 build:
   stage: build
   script:
-    - echo "Vytvářím Docker image pro frontend..."
+    - echo "Vytvářím Docker image pro Frontend (Vite)..."
     - docker build --no-cache -t frontend .
   only:
     - frontend
@@ -28,8 +28,8 @@ build:
 spustit:
   stage: spustit
   script:
-    - echo "Spouštění Docker kontaineru pro frontend..."
-    - docker run -d --name frontend --network proxy -v frontend_data:/app frontend
+    - echo "Spouštění Docker kontaineru pro Frontend (Vite)..."
+    - docker run -d --name frontend --network proxy -v frontend:/app frontend
   only:
     - frontend
   tags:
