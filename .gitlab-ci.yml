@@ -6,7 +6,7 @@ stages:
 smazat:
   stage: smazat
   script:
-    - echo "Automatické mazání kontejneru a image Backend (NestJS) (pokud existuje)..."
+    - echo "Automatické mazání kontejneru a image pro Backend (NestJS) (pokud existuje)..."
     - docker rm -f backend || true
     - docker image rm -f backend || true
     - docker volume rm -f backend || true
