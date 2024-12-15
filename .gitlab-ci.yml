@@ -29,7 +29,7 @@ spustit:
   stage: spustit
   script:
     - echo "Spouštění Docker kontaineru pro Backend (NestJS)..."
-    - docker run -d --name backend --network proxy --network databaze --network cache -v backend_data:/app backend
+    - docker run -d --name backend --network proxy --network databaze --network cache -v backend:/app backend
   only:
     - backend
   tags:
