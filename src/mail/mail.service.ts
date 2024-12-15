@@ -15,7 +15,7 @@ export class MailService {
 
     async sendVerificationEmail(to: string, token: string) {
         // ! ONLY FOR LOCAL DEVELOPMENT
-        const url = `http://localhost:3000/auth/verify-email?token=${token}`; // TODO! CHANGE URL IN PRODUCTION
+        const url = `http://localhost:3000/auth/verify-email?token=${token}`; // TODO! CHANGE URL IN PRODUCTION VERISON
 
         await this.transporter.sendMail({
             from: 'LaceHub <admin@lacehub.cz>',
