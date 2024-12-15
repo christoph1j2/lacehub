@@ -27,7 +27,7 @@ export class WtsController {
 
     @Roles('admin')
     @Get()
-    @ApiOperation({ summary: 'Get all wts items' })
+    @ApiOperation({ summary: 'Get all wts items, admin only' })
     @ApiResponse({ status: 200, description: 'Get all wts items' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -61,7 +61,7 @@ export class WtsController {
 
     @UseGuards(VerifiedUserGuard)
     @Post()
-    @ApiOperation({ summary: 'Create a new wts item' })
+    @ApiOperation({ summary: 'Create a new wts item for a user' })
     @ApiResponse({ status: 201, description: 'Created' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -71,7 +71,7 @@ export class WtsController {
     }
 
     @Patch(':id')
-    @ApiOperation({ summary: 'Update a wts item' })
+    @ApiOperation({ summary: 'Update a wts item for a user' })
     @ApiResponse({ status: 200, description: 'Updated' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -85,7 +85,7 @@ export class WtsController {
     }
 
     @Delete(':id')
-    @ApiOperation({ summary: 'Delete a wts item' })
+    @ApiOperation({ summary: 'Delete a wts item for a user' })
     @ApiResponse({ status: 200, description: 'Deleted' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })

@@ -31,7 +31,7 @@ export class ProductsController {
 
     @Post()
     @Roles('admin')
-    @ApiOperation({ summary: 'Create a new product' })
+    @ApiOperation({ summary: 'Create a new product, only admin' })
     @ApiResponse({ status: 201, description: 'Product created successfully' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -64,7 +64,7 @@ export class ProductsController {
     @UseGuards(VerifiedUserGuard)
     @Roles('admin')
     @Patch(':id')
-    @ApiOperation({ summary: 'Update a product by id' })
+    @ApiOperation({ summary: 'Update a product by id, only admin' })
     @ApiResponse({ status: 200, description: 'Product updated successfully' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -79,7 +79,7 @@ export class ProductsController {
     @UseGuards(VerifiedUserGuard)
     @Roles('admin')
     @Delete(':id')
-    @ApiOperation({ summary: 'Delete a product by id' })
+    @ApiOperation({ summary: 'Delete a product by id, only admin' })
     @ApiResponse({ status: 200, description: 'Product deleted successfully' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -90,7 +90,10 @@ export class ProductsController {
 
     @UseGuards(VerifiedUserGuard)
     @Get('search')
-    @ApiOperation({ summary: 'Search for products by name/sku/description' })
+    @ApiOperation({
+        summary:
+            'Search for products by name/sku/description (will be used for inventory/wtb/wts lists)',
+    })
     @ApiResponse({
         status: 200,
         description: 'Products retrieved successfully',

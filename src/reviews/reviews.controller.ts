@@ -19,7 +19,10 @@ export class ReviewsController {
     constructor(private readonly reviewsService: ReviewsService) {}
 
     @Post(':sellerId')
-    @ApiOperation({ summary: 'Create a review' })
+    @ApiOperation({
+        summary:
+            'Create a review, sellerId as param, reviewerId from token, review from body',
+    })
     @ApiResponse({ status: 201, description: 'Review created' })
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -40,7 +43,9 @@ export class ReviewsController {
     }
 
     @Get(':sellerId')
-    @ApiOperation({ summary: 'Get all reviews for a seller' })
+    @ApiOperation({
+        summary: 'Get all reviews for a seller, displayed on user profile',
+    })
     @ApiResponse({ status: 200, description: 'Reviews found' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -53,7 +58,7 @@ export class ReviewsController {
 
     @Roles('admin')
     @Get('review/:id')
-    @ApiOperation({ summary: 'Get a review by ID' })
+    @ApiOperation({ summary: 'Get a review by ID, only for admin' })
     @ApiResponse({ status: 200, description: 'Review found' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -63,7 +68,7 @@ export class ReviewsController {
     }
 
     @Delete(':id')
-    @ApiOperation({ summary: 'Delete a review' })
+    @ApiOperation({ summary: 'Delete users own posted review' })
     @ApiResponse({ status: 200, description: 'Review deleted' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })

@@ -20,7 +20,9 @@ export class UsersController {
 
     @Get('profile')
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get user profile' })
+    @ApiOperation({
+        summary: 'Get user profile, use for displaying personal profile',
+    })
     @ApiResponse({ status: 200, description: 'User profile retrieved' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     getProfile(@Request() req) {
@@ -41,7 +43,7 @@ export class UsersController {
 
     @Get(':id')
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get user by id' })
+    @ApiOperation({ summary: 'Get a user by id' })
     @ApiResponse({ status: 200, description: 'User retrieved' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async findOneById(@Param('id', ParseIntPipe) id: number) {
@@ -77,7 +79,7 @@ export class UsersController {
 
     @Delete(':id')
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Delete user' })
+    @ApiOperation({ summary: 'Delete users own profile' })
     @ApiResponse({ status: 200, description: 'User deleted' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async delete(@Request() req) {
