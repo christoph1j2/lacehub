@@ -1,0 +1,36 @@
+stages:
+  - smazat
+  - build
+  - spustit
+
+smazat:
+  stage: smazat
+  script:
+    - echo "Automatické mazání kontejneru a image Backend (NestJS) (pokud existuje)..."
+    - docker rm -f backend || true
+    - docker image rm -f backend || true
+    - docker volume rm -f backend || true
+  only:
+    - backend
+  tags:
+    - backend
+
+build:
+  stage: build
+  script:
+    - echo "Vytvářím Docker image pro Backend (NestJS)..."
+    - docker build --no-cache -t backend .
+  only:
+    - backend
+  tags:
+    - backend
+
+spustit:
+  stage: spustit
+  script:
+    - echo "Spouštění Docker kontaineru pro Backend (NestJS)..."
+    - docker run -d --name backend --network proxy --network databaze --network cache -v backend_data:/app backend
+  only:
+    - backend
+  tags:
+    - backend
