@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Match } from 'src/entities/match.entity';
-import { User } from 'src/entities/user.entity';
-import { Wtb } from 'src/entities/wtb.entity';
-import { Wts } from 'src/entities/wts.entity';
-import { NotificationsService } from 'src/notifications/notifications.service';
+import { Match } from '../entities/match.entity';
+import { User } from '../entities/user.entity';
+import { Wtb } from '../entities/wtb.entity';
+import { Wts } from '../entities/wts.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { Not, Repository } from 'typeorm';
 
 @Injectable()
@@ -46,6 +46,7 @@ export class MatchesService {
             });
         }
 
+        // Sort and pick top 5 matches
         matches.sort(
             (a, b) =>
                 b.matchScore - a.matchScore ||
@@ -54,25 +55,104 @@ export class MatchesService {
 
         const topMatches = matches.slice(0, 5);
 
-        for (const match of topMatches) {
-            await this.createMatchNotificationForBuyer(match, buyer);
-        }
+        // Create single grouped notification for the buyer
+        const notificationContent = topMatches
+            .map(
+                (match, index) =>
+                    `#${index + 1}: ${match.seller.username} (${match.matchScore.toFixed(
+                        2,
+                    )} matches, Credibility: ${match.credibilityScore})`,
+            )
+            .join('\n');
 
-        //? idk
-        this.matchRepository.save(
-            topMatches.map((match) => {
-                return {
-                    seller: match.seller,
-                    buyer: buyer,
-                    match_score: match.matchScore,
-                    status: 'pending',
-                };
-            }),
+        await this.notificationsService.create(
+            buyer.id,
+            'match_found',
+            `Top 5 Matches Found for Your WTB List:\n\n${notificationContent}`,
         );
+
+        // Save matches to the database
+        await this.matchRepository.save(
+            topMatches
+                .map((match) => {
+                    const overlapItems = match.overlap;
+                    return overlapItems.map((item) => ({
+                        wtb: item.wtb,
+                        wts: item.wts,
+                        buyer: match.buyer,
+                        seller: match.seller,
+                        match_score: match.matchScore,
+                        createdAt: new Date(),
+                        status: 'pending',
+                    }));
+                })
+                .flat(), // Flatten the array to handle multiple overlaps per match.
+        );
+
         return topMatches;
     }
-    async findMatchesForSeller() {
-        // TODO
+
+    async findMatchesForSeller(sellerId: number): Promise<any> {
+        const seller = await this.userRepository.findOne({
+            where: { id: sellerId },
+            relations: ['wts', 'wts.product'],
+        });
+
+        const buyers = await this.userRepository.find({
+            where: { id: Not(sellerId) },
+            relations: ['wtb', 'wtb.product'],
+        });
+
+        const matches = [];
+        for (const buyer of buyers) {
+            const overlap = this.calculateOverlap(buyer.wtb, seller.wts);
+            const matchScore = overlap.length / seller.wts.length;
+
+            matches.push({
+                buyer,
+                overlap,
+                matchScore,
+                credibilityScore: buyer.credibility_score,
+            });
+        }
+
+        // Sort and pick top 5 matches
+        matches.sort(
+            (a, b) =>
+                b.matchScore - a.matchScore ||
+                b.credibilityScore - a.credibilityScore,
+        );
+
+        const topMatches = matches.slice(0, 5);
+
+        // Notify seller for each match (optional: could also aggregate like buyers)
+        for (const match of topMatches) {
+            await this.notificationsService.create(
+                seller.id,
+                'match_found',
+                `You have a match with ${match.buyer.username}! Credibility: ${match.credibilityScore}`,
+            );
+        }
+
+        // Save matches to the database
+        await this.matchRepository.save(
+            topMatches
+                .map((match) => {
+                    const overlapItems = match.overlap;
+                    return overlapItems.map((item) => ({
+                        wtb: item.wtb,
+                        wts: item.wts,
+                        buyer: match.buyer,
+                        seller: match.seller,
+                        match_score: match.matchScore,
+                        createdAt: new Date(),
+                        status: 'pending',
+                    }));
+                })
+                .flat(), // Flatten the array to handle multiple overlaps per match.
+        );
+
+        return topMatches;
     }
 
     private calculateOverlap(wtbList: Wtb[], wtsList: Wts[]): any[] {
@@ -85,25 +165,5 @@ export class MatchesService {
         );
     }
 
-    private async createMatchNotificationForBuyer(match, buyer) {
-        const riskMessage = this.getRiskMessage(match.credibilityScore);
-        await this.notificationsService.create(
-            buyer.id,
-            'Match',
-            `You have a match with ${match.seller.username}! Risk: ${riskMessage}`,
-        );
-    }
-    private async createMatchNotificationForSeller(match, seller) {
-        const riskMessage = this.getRiskMessage(match.credibilityScore);
-        await this.notificationsService.create(
-            seller.id,
-            'Match',
-            `You have a match with ${match.buyer.username}! Risk: ${riskMessage}`,
-        );
-    }
-    private getRiskMessage(score: number): string {
-        if (score > 10) return 'Low Risk';
-        if (score > -5) return 'Medium Risk';
-        return 'High Risk';
-    }
+    //todo other methods for admins
 }
