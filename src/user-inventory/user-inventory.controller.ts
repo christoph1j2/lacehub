@@ -27,7 +27,7 @@ export class UserInventoryController {
 
     @Roles('admin')
     @Get()
-    @ApiOperation({ summary: 'Get all inventory items' })
+    @ApiOperation({ summary: 'Get all inventory items, admin only' })
     @ApiResponse({ status: 200, description: 'Get all inventory items' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -61,7 +61,7 @@ export class UserInventoryController {
 
     @UseGuards(VerifiedUserGuard)
     @Post()
-    @ApiOperation({ summary: 'Create a new inventory item' })
+    @ApiOperation({ summary: 'Create a new inventory item for a user' })
     @ApiResponse({ status: 201, description: 'Created' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -77,7 +77,7 @@ export class UserInventoryController {
     }
 
     @Patch(':id')
-    @ApiOperation({ summary: 'Update an inventory item' })
+    @ApiOperation({ summary: 'Update an inventory item for a user' })
     @ApiResponse({ status: 200, description: 'Updated' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -95,7 +95,7 @@ export class UserInventoryController {
     }
 
     @Delete(':id')
-    @ApiOperation({ summary: 'Delete an inventory item' })
+    @ApiOperation({ summary: 'Delete an inventory item for a user' })
     @ApiResponse({ status: 200, description: 'Deleted' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })

@@ -27,7 +27,7 @@ export class WtbController {
 
     @Roles('admin')
     @Get()
-    @ApiOperation({ summary: 'Get all wtb items' })
+    @ApiOperation({ summary: 'Get all wtb items, only admin' })
     @ApiResponse({ status: 200, description: 'Get all wtb items' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -61,7 +61,7 @@ export class WtbController {
 
     @UseGuards(VerifiedUserGuard)
     @Post()
-    @ApiOperation({ summary: 'Create a new wtb item' })
+    @ApiOperation({ summary: 'Create a new wtb item for a user' })
     @ApiResponse({ status: 201, description: 'Created' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -71,7 +71,7 @@ export class WtbController {
     }
 
     @Patch(':id')
-    @ApiOperation({ summary: 'Update a wtb item' })
+    @ApiOperation({ summary: 'Update a wtb item for a user' })
     @ApiResponse({ status: 200, description: 'Updated' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -85,7 +85,7 @@ export class WtbController {
     }
 
     @Delete(':id')
-    @ApiOperation({ summary: 'Delete a wtb item' })
+    @ApiOperation({ summary: 'Delete a wtb item for a user' })
     @ApiResponse({ status: 200, description: 'Deleted' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })

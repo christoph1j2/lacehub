@@ -26,7 +26,9 @@ export class AuthController {
 
     @Public()
     @Post('login')
-    @ApiOperation({ summary: 'Login user' })
+    @ApiOperation({
+        summary: 'Login user, returns access and refresh tokens, sets cookie',
+    })
     @ApiResponse({ status: 200, description: 'Login successful' })
     @ApiResponse({ status: 401, description: 'Invalid credentials' })
     async login(
@@ -52,7 +54,9 @@ export class AuthController {
 
     @Public()
     @Post('register')
-    @ApiOperation({ summary: 'Register user' })
+    @ApiOperation({
+        summary: 'Register user, requires username, email, and password',
+    })
     @ApiResponse({ status: 200, description: 'Registration successful' })
     @ApiResponse({
         status: 401,
@@ -64,7 +68,9 @@ export class AuthController {
 
     @Public()
     @Get('verify-email')
-    @ApiOperation({ summary: 'Verify email' })
+    @ApiOperation({
+        summary: 'Verify email, requires token (link sent to email)',
+    })
     @ApiResponse({ status: 200, description: 'Email verified successfully' })
     @ApiResponse({ status: 400, description: 'Invalid token' })
     async verifyEmail(@Query('token') token: string) {
@@ -78,7 +84,7 @@ export class AuthController {
 
     @Public()
     @Post('request-password-reset')
-    @ApiOperation({ summary: 'Request password reset' })
+    @ApiOperation({ summary: 'Request password reset, requires email' })
     @ApiResponse({ status: 200, description: 'Password reset link sent' })
     @ApiResponse({ status: 400, description: 'Invalid email' })
     async requestPasswordReset(@Body('email') email: string) {
@@ -88,7 +94,10 @@ export class AuthController {
 
     @Public()
     @Post('reset-password')
-    @ApiOperation({ summary: 'Reset password' })
+    @ApiOperation({
+        summary:
+            'Reset password, requires token (link sent to email) and new password',
+    })
     @ApiResponse({ status: 200, description: 'Password reset successfully' })
     @ApiResponse({ status: 400, description: 'Invalid token' })
     async resetPassword(
@@ -134,6 +143,6 @@ export class AuthController {
         console.log(req.user);
         console.log(req.refreshToken);
         //console.log(this.authService.jwtService.decode(req.accessToken));
-        res.status(200).json({ message: 'Logged out successfully' }); // Ensure this matches the test
+        res.status(200).json({ message: 'Logged out successfully' });
     }
 }

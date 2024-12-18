@@ -17,7 +17,10 @@ export class NotificationsController {
     constructor(private readonly notificationsService: NotificationsService) {}
 
     @Post()
-    @ApiOperation({ summary: 'Create a new notification' })
+    @ApiOperation({
+        summary:
+            'Create a new notification for a user, should be created on its own',
+    })
     @ApiResponse({ status: 201, description: 'Created' })
     @ApiResponse({ status: 400, description: 'Bad Request' })
     async create(
@@ -34,7 +37,9 @@ export class NotificationsController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'Get all notifications for a user' })
+    @ApiOperation({
+        summary: 'Get all notifications for a user, displayed in notif tab',
+    })
     @ApiResponse({ status: 200, description: 'OK' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async findAll(@Req() req: any) {
@@ -43,7 +48,10 @@ export class NotificationsController {
     }
 
     @Patch(':id/read')
-    @ApiOperation({ summary: 'Mark a notification as read' })
+    @ApiOperation({
+        summary:
+            'Mark a notification as read - when user sees the notification, mark as read',
+    })
     @ApiResponse({ status: 200, description: 'OK' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async markAsRead(@Param('id') id: number, @Req() req: any) {
@@ -52,7 +60,7 @@ export class NotificationsController {
     }
 
     @Delete(':id')
-    @ApiOperation({ summary: 'Delete a notification' })
+    @ApiOperation({ summary: 'Delete a notification, done through notif tab' })
     @ApiResponse({ status: 200, description: 'OK' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async delete(@Param('id') id: number, @Req() req: any) {

@@ -20,7 +20,10 @@ export class ReportsController {
 
     // user reporting
     @Post(':reportedUserId')
-    @ApiOperation({ summary: 'Report user' })
+    @ApiOperation({
+        summary:
+            'Report user, required report text, reportedUserId as parameter',
+    })
     @ApiResponse({ status: 201, description: 'Report created successfully' })
     @ApiResponse({ status: 400, description: 'Report text is required' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -44,7 +47,9 @@ export class ReportsController {
     // list all reports filed by specific user for admin ui
     @Roles('admin')
     @Get('user')
-    @ApiOperation({ summary: 'Get reports filed by specific user' })
+    @ApiOperation({
+        summary: 'Get reports filed by specific user, only for admin',
+    })
     @ApiResponse({ status: 200, description: 'Reports found' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -83,7 +88,7 @@ export class ReportsController {
     // get specific report by id for admin ui
     @Roles('admin')
     @Get(':id')
-    @ApiOperation({ summary: 'Get specific report by id for admin ui' })
+    @ApiOperation({ summary: 'Get specific report by id, for admin ui' })
     @ApiResponse({ status: 200, description: 'Report found' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
