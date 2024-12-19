@@ -3,7 +3,7 @@ const HowItWork = () => {
     <>
       <section className="py-20 " id="how-it-works">
         <div className="container">
-          <h2 className="text-5xl font-bold text-center mb-16 text-black">
+          <h2 className="text-5xl font-bold text-center mb-16 text-white">
             How Does It Work?
           </h2>
 
@@ -14,9 +14,9 @@ const HowItWork = () => {
                 <span className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold">
                   1
                 </span>
-                <h3 className="text-2xl font-semibold">Step One</h3>
+                <h3 className="text-2xl font-semibold text-white">Step One</h3>
               </div>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-white leading-relaxed">
                 Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quam
                 dignissimos quaerat, sed hic veniam commodi tempore qui deleniti
                 doloremque expedita numquam autem quod, culpa cupiditate
@@ -37,9 +37,9 @@ const HowItWork = () => {
                 <span className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold">
                   2
                 </span>
-                <h3 className="text-2xl font-semibold">Step Two</h3>
+                <h3 className="text-2xl font-semibold text-white">Step Two</h3>
               </div>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-white leading-relaxed">
                 Lorem amet consectetur adipisicing elit. Vero iste sequi,
                 quisquam adipisci eligendi perspiciatis quaerat expedita id in,
                 dolorum cupiditate praesentium. Iusto quaerat illo error sint!
@@ -58,9 +58,11 @@ const HowItWork = () => {
                 <span className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold">
                   3
                 </span>
-                <h3 className="text-2xl font-semibold">Step Three </h3>
+                <h3 className="text-2xl font-semibold text-white">
+                  Step Three{" "}
+                </h3>
               </div>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-white leading-relaxed">
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis
                 laborum quibusdam omnis similique id, repudiandae vel animi,
                 sequi accusantium minima repellendus maxime, eaque ipsum dolores
