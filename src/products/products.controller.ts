@@ -16,7 +16,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 import { Product } from '../entities/product.entity';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -100,14 +100,19 @@ export class ProductsController {
     })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'Products not found' })
-    async searchProducts(@Query('query') query: string): Promise<Product[]> {
-        return await this.productRepository.find({
-            where: [
-                { sku: Like(`%${query}%`) },
-                { name: Like(`%${query}%`) },
-                { description: Like(`%${query}%`) },
-            ],
-            take: 10,
-        });
+    async searchProducts(
+        @Query('query') query: string,
+        @Query('limit') limit = 10,
+        @Query('offset') offset = 0,
+    ): Promise<{ name: string; sku: string }[]> {
+        const products = await this.productsService.searchProducts(
+            query,
+            limit,
+            offset,
+        );
+        return products.map((product) => ({
+            name: product.name,
+            sku: product.sku,
+        }));
     }
 }

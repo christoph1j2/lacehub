@@ -33,7 +33,7 @@ const isServerIP = localIP === '172.20.0.7';
         CacheModule.register({
             isGlobal: true,
             store: 'RedisStore',
-            host: 'localhost',
+            host: isServerIP ? 'cache' : 'localhost',
             port: 6379,
         }),
         DatabaseModule,
