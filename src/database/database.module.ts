@@ -6,6 +6,9 @@ import * as os from 'os';
 const localIP = getLocalIP();
 const isServerIP = localIP === '93.99.25.8';
 
+console.log('localIP', localIP);
+console.log('isServerIP', isServerIP);
+
 @Module({
     imports: [
         ConfigModule.forRoot({
