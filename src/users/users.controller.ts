@@ -8,6 +8,7 @@ import {
     Request,
     Patch,
     ParseIntPipe,
+    NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -28,6 +29,37 @@ export class UsersController {
     getProfile(@Request() req) {
         const userId = req.user.id;
         return this.usersService.findOneById(userId);
+    }
+
+    @Get('profile/:id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get user profile by id' })
+    @ApiResponse({ status: 200, description: 'User profile retrieved' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async getProfileById(@Param('id', ParseIntPipe) id: number) {
+        const userProfile = await this.usersService.findOneById(id);
+
+        if (!userProfile) {
+            throw new NotFoundException('User not found');
+        }
+
+        const reviews = userProfile.reviewsAsSeller.map((review) => ({
+            rating: review.rating,
+            review_text: review.review_text,
+            createdAt: review.createdAt,
+            reviewer: {
+                username: review.reviewer.username,
+            },
+        }));
+
+        return {
+            username: userProfile.username,
+            role: userProfile.role.role_name,
+            verification: userProfile.verified,
+            memberSince: userProfile.created_at,
+            reviews: reviews,
+        };
     }
 
     //* according to the dto, should update user name and email, will have to consult with frontend
