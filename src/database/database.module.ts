@@ -1,11 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import * as os from 'os';
+
+const localIP = getLocalIP();
+const isServerIP = localIP === '93.99.25.8';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
-            envFilePath: './local.env',
+            envFilePath: isServerIP ? './development.env' : './local.env',
             isGlobal: true,
         }),
         TypeOrmModule.forRootAsync({
@@ -27,3 +31,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ],
 })
 export class DatabaseModule {}
+
+function getLocalIP(): string | null {
+    const interfaces = os.networkInterfaces();
+    for (const interfaceName in interfaces) {
+        const iface = interfaces[interfaceName];
+        if (iface) {
+            for (const alias of iface) {
+                if (alias.family === 'IPv4' && !alias.internal) {
+                    return alias.address;
+                }
+            }
+        }
+    }
+    return null;
+}

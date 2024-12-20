@@ -19,12 +19,16 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import * as os from 'os';
+
+const localIP = getLocalIP();
+const isServerIP = localIP === '93.99.25.8';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: './local.env', //!change
+            envFilePath: isServerIP ? './development.env' : './local.env',
         }),
         CacheModule.register({
             isGlobal: true,
@@ -63,3 +67,18 @@ import { CacheModule } from '@nestjs/cache-manager';
     ],
 })
 export class AppModule {}
+
+function getLocalIP(): string | null {
+    const interfaces = os.networkInterfaces();
+    for (const interfaceName in interfaces) {
+        const iface = interfaces[interfaceName];
+        if (iface) {
+            for (const alias of iface) {
+                if (alias.family === 'IPv4' && !alias.internal) {
+                    return alias.address;
+                }
+            }
+        }
+    }
+    return null;
+}
