@@ -30,8 +30,8 @@ const Navigation = () => {
           </button>
 
           {/* Desktop menu */}
-          <ul className="hidden md:flex space-x-6 ">
-            <li>
+          <ul className="hidden md:flex space-x-6  ">
+            <li className="m-auto">
               <a
                 href="#"
                 className="text-white group-hover:text-black px-4 py-2 rounded-full transition-all hover:bg-black/5"
@@ -39,7 +39,7 @@ const Navigation = () => {
                 How Does It Work?
               </a>
             </li>
-            <li>
+            <li className="m-auto">
               <a
                 href="#"
                 className="text-white group-hover:text-black px-4 py-2 rounded-full transition-all hover:bg-black/5"
@@ -47,7 +47,7 @@ const Navigation = () => {
                 About Us
               </a>
             </li>
-            <li>
+            <li className="m-auto">
               <a
                 href="#"
                 className="text-white group-hover:text-black px-4 py-2 rounded-full transition-all hover:bg-black/5"
