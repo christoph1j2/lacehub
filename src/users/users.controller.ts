@@ -9,15 +9,23 @@ import {
     Patch,
     ParseIntPipe,
     NotFoundException,
+    Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { User } from '../entities/user.entity';
+import { ILike, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+    ) {}
 
     @Get('profile')
     @ApiBearerAuth()
@@ -117,5 +125,19 @@ export class UsersController {
     async delete(@Request() req) {
         const userId = req.user.id;
         return await this.usersService.delete(userId);
+    }
+
+    @Get('search')
+    @ApiOperation({ summary: 'Search for users by username' })
+    @ApiResponse({ status: 200, description: 'Users retrieved' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async searchUsers(@Query('username') username: string): Promise<User[]> {
+        return await this.userRepository.find({
+            where: {
+                username: ILike(`%${username}%`),
+            },
+            take: 10,
+        });
     }
 }
