@@ -29,7 +29,7 @@ spustit:
   stage: spustit
   script:
     - echo "Spouštění Docker kontaineru pro Frontend (Vite)..."
-    - docker run -d --name frontend --network proxy -v frontend:/app frontend
+    - docker run -d --name frontend --label io.portainer.accesscontrol.teams=Frontend --network proxy -v frontend:/app frontend
   only:
     - frontend
   tags:
