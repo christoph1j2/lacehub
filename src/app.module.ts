@@ -19,6 +19,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { MailModule } from './mail/mail.module';
 
 @Module({
     imports: [
@@ -43,6 +44,7 @@ import { CacheModule } from '@nestjs/cache-manager';
         UserInventoryModule,
         AuthModule,
         ReviewsModule,
+        MailModule,
     ],
     controllers: [AppController],
     providers: [

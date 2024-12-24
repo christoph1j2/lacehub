@@ -36,14 +36,17 @@ export class MatchesService {
         const matches = [];
         for (const seller of sellers) {
             const overlap = this.calculateOverlap(buyer.wtb, seller.wts);
-            const matchScore = overlap.length / buyer.wtb.length;
 
-            matches.push({
-                seller,
-                overlap,
-                matchScore,
-                credibilityScore: seller.credibility_score,
-            });
+            if (overlap.length > 0) {
+                const matchScore = overlap.length / buyer.wtb.length;
+
+                matches.push({
+                    seller,
+                    overlap,
+                    matchScore,
+                    credibilityScore: seller.credibility_score,
+                });
+            }
         }
 
         // Sort and pick top 5 matches
@@ -55,39 +58,49 @@ export class MatchesService {
 
         const topMatches = matches.slice(0, 5);
 
-        // Create single grouped notification for the buyer
-        const notificationContent = topMatches
-            .map(
-                (match, index) =>
-                    `#${index + 1}: ${match.seller.username} (${match.matchScore.toFixed(
-                        2,
-                    )} matches, Credibility: ${match.credibilityScore})`,
-            )
-            .join('\n');
+        // Only create notification and save matches if there are matches
+        if (topMatches.length > 0) {
+            // Create single grouped notification for the buyer
+            const notificationContent = topMatches
+                .map(
+                    (match, index) =>
+                        `#${index + 1}: ${match.seller.username} (${match.matchScore.toFixed(
+                            2,
+                        )} matches, Credibility: ${match.credibilityScore})`,
+                )
+                .join('\n');
 
-        await this.notificationsService.create(
-            buyer.id,
-            'match_found',
-            `Top 5 Matches Found for Your WTB List:\n\n${notificationContent}`,
-        );
+            await this.notificationsService.create(
+                buyer.id,
+                'match_found',
+                `Top 5 Matches Found for Your WTB List:\n\n${notificationContent}`,
+            );
 
-        // Save matches to the database
-        await this.matchRepository.save(
-            topMatches
-                .map((match) => {
-                    const overlapItems = match.overlap;
-                    return overlapItems.map((item) => ({
-                        wtb: item.wtb,
-                        wts: item.wts,
-                        buyer: match.buyer,
-                        seller: match.seller,
-                        match_score: match.matchScore,
-                        createdAt: new Date(),
-                        status: 'pending',
-                    }));
-                })
-                .flat(), // Flatten the array to handle multiple overlaps per match.
-        );
+            // Save matches to the database
+            await this.matchRepository.save(
+                topMatches
+                    .map((match) => {
+                        const overlapItems = match.overlap;
+                        return overlapItems.map((item) => ({
+                            wtb: item,
+                            wts: match.seller.wts.find(
+                                (wts) =>
+                                    wts.product.sku === item.product.sku &&
+                                    wts.size === item.size,
+                            ),
+                            buyer: buyer,
+                            seller: match.seller,
+                            match_score: match.matchScore,
+                            createdAt: new Date(),
+                            status: 'pending',
+                        }));
+                    })
+                    .flat(), // Flatten the array to handle multiple overlaps per match.
+            );
+        } else {
+            // If no matches, save an empty array to satisfy the repository save method
+            await this.matchRepository.save([]);
+        }
 
         return topMatches;
     }
