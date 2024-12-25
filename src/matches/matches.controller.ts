@@ -15,6 +15,4 @@ export class MatchesController {
     async getMatchesForSeller(@Param('sellerId', ParseIntPipe) sellerId: number) {
         return await this.matchesService.findMatchesForSeller(sellerId);
     }
-
-    //todo other endpoints for admins
 }

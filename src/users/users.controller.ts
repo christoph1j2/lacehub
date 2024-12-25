@@ -8,15 +8,24 @@ import {
     Request,
     Patch,
     ParseIntPipe,
+    NotFoundException,
+    Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { User } from '../entities/user.entity';
+import { ILike, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+    ) {}
 
     @Get('profile')
     @ApiBearerAuth()
@@ -28,6 +37,37 @@ export class UsersController {
     getProfile(@Request() req) {
         const userId = req.user.id;
         return this.usersService.findOneById(userId);
+    }
+
+    @Get('profile/:id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get user profile by id' })
+    @ApiResponse({ status: 200, description: 'User profile retrieved' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async getProfileById(@Param('id', ParseIntPipe) id: number) {
+        const userProfile = await this.usersService.findOneById(id);
+
+        if (!userProfile) {
+            throw new NotFoundException('User not found');
+        }
+
+        const reviews = userProfile.reviewsAsSeller.map((review) => ({
+            rating: review.rating,
+            review_text: review.review_text,
+            createdAt: review.createdAt,
+            reviewer: {
+                username: review.reviewer.username,
+            },
+        }));
+
+        return {
+            username: userProfile.username,
+            role: userProfile.role.role_name,
+            verification: userProfile.verified,
+            memberSince: userProfile.created_at,
+            reviews: reviews,
+        };
     }
 
     //* according to the dto, should update user name and email, will have to consult with frontend
@@ -85,5 +125,19 @@ export class UsersController {
     async delete(@Request() req) {
         const userId = req.user.id;
         return await this.usersService.delete(userId);
+    }
+
+    @Get('search')
+    @ApiOperation({ summary: 'Search for users by username' })
+    @ApiResponse({ status: 200, description: 'Users retrieved' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async searchUsers(@Query('username') username: string): Promise<User[]> {
+        return await this.userRepository.find({
+            where: {
+                username: ILike(`%${username}%`),
+            },
+            take: 10,
+        });
     }
 }
