@@ -3,15 +3,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Match } from '../entities/match.entity';
 import { MatchesController } from './matches.controller';
 import { MatchesService } from './matches.service';
-import { User } from 'src/entities/user.entity';
-import { Wtb } from 'src/entities/wtb.entity';
-import { Wts } from 'src/entities/wts.entity';
-import { NotificationsService } from 'src/notifications/notifications.service';
-import { Notification } from 'src/entities/notification.entity';
-import { MailService } from 'src/mail/mail.service';
+import { User } from '../entities/user.entity';
+import { Wtb } from '../entities/wtb.entity';
+import { Wts } from '../entities/wts.entity';
+import { NotificationsService } from '../notifications/notifications.service';
+import { Notification } from '../entities/notification.entity';
+import { MailService } from '../mail/mail.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Match, User, Wtb, Wts, Notification])],
+    imports: [
+        TypeOrmModule.forFeature([Match, User, Wtb, Wts, Notification]),
+        NotificationsModule,
+    ],
     controllers: [MatchesController],
     providers: [MatchesService, NotificationsService, MailService],
 })
