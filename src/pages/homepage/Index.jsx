@@ -1,9 +1,8 @@
-import BaseLayout from "../../layout/BaseLayout";
 import HowItWork from "./HowItWork";
 
 function Index() {
   return (
-    <BaseLayout>
+    <>
       <div className="container mx-auto">
         <div className="flex flex-col gap-6 items-center justify-center max-w-xl mx-auto aspect-square bg-gray-500/20 rounded-full p-16 drop-shadow-xl shadow-[0_0_30px_rgba(107,114,128,0.3)] relative">
           {/* Optional outer glow ring */}
@@ -40,7 +39,7 @@ function Index() {
       </div>
 
       <HowItWork />
-    </BaseLayout>
+    </>
   );
 }
 
