@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Report } from '../entities/report.entity';
@@ -50,6 +54,10 @@ export class ReportsService {
     // TODO: refine
     async resolveReport(id: number, actionTaken: string): Promise<Report> {
         const report = await this.findOne(id);
+
+        if (report.resolved) {
+            throw new BadRequestException('Report already resolved');
+        }
         report.resolved = true;
         report.action_taken = actionTaken;
         return await this.reportRepository.save(report);

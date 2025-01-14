@@ -12,6 +12,8 @@ import { ReportsService } from './reports.service';
 import { Report } from '../entities/report.entity';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ResolveReportDto } from './dto/resolve-report.dto';
+import { FileReportDto } from './dto/file-report.dto';
 
 @ApiTags('reports')
 @Controller('reports')
@@ -28,10 +30,12 @@ export class ReportsController {
     @ApiResponse({ status: 400, description: 'Report text is required' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async create(
-        @Body('reportText') reportText: string,
+        @Body() fileReportDto: FileReportDto,
         @Param('reportedUserId') reportedUserId: number,
         @Req() req,
     ): Promise<void> {
+        const { reportText } = fileReportDto;
+
         if (!reportText) {
             throw new Error('Report text is required');
         }
@@ -98,7 +102,6 @@ export class ReportsController {
     }
 
     // mark report as resolved (admin)
-    // TODO: refine
     @Roles('admin')
     @Put(':id/resolve')
     @ApiOperation({ summary: 'Mark report as resolved (admin)' })
@@ -108,8 +111,9 @@ export class ReportsController {
     @ApiResponse({ status: 404, description: 'Report not found' })
     async resolve(
         @Param('id') id: number,
-        @Body('actionTaken') actionTaken: string,
+        @Body() resolveReportDto: ResolveReportDto,
     ): Promise<Report> {
+        const { actionTaken } = resolveReportDto;
         return await this.reportsService.resolveReport(id, actionTaken);
     }
 }

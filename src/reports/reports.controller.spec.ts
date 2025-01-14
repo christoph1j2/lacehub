@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard/jwt-auth.guard';
+import { FileReportDto } from './dto/file-report.dto';
 
 describe('ReportsController', () => {
     let controller: ReportsController;
@@ -9,6 +10,10 @@ describe('ReportsController', () => {
 
     const mockService = {
         create: jest.fn(),
+    };
+
+    const fileReportDto: FileReportDto = {
+        reportText: 'Inappropriate behavior',
     };
 
     beforeEach(async () => {
@@ -33,16 +38,17 @@ describe('ReportsController', () => {
         const mockRequest = { user: { id: 1 } };
         const reportText = 'Inappropriate behavior';
 
-        await controller.create(reportText, 2, mockRequest);
+        await controller.create(fileReportDto, 2, mockRequest);
 
         expect(service.create).toHaveBeenCalledWith(reportText, 1, 2);
     });
 
     it('should throw an error if reportText is missing', async () => {
         const mockRequest = { user: { id: 1 } };
+        const mockDto: FileReportDto = { reportText: '' };
 
-        await expect(controller.create('', 1, mockRequest)).rejects.toThrow(
-            'Report text is required',
-        );
+        await expect(
+            controller.create(mockDto, 1, mockRequest),
+        ).rejects.toThrow('Report text is required');
     });
 });
