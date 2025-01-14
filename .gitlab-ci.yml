@@ -29,7 +29,7 @@ spustit:
   stage: spustit
   script:
     - echo "Spouštění Docker kontaineru pro Backend (NestJS)..."
-    - docker run -d --name backend --label io.portainer.accesscontrol.teams=Backend --network proxy -v backend:/app backend
+    - docker run -d --name backend --label io.portainer.accesscontrol.teams=Backend --network proxy -v backend:/app --restart always backend
     - docker network connect databaze backend
     - docker network connect cache backend
   only:

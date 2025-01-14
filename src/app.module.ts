@@ -22,7 +22,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import * as os from 'os';
 
 const localIP = getLocalIP();
-const isServerIP = localIP === '172.20.0.7';
+const isServerIP = localIP === '172.20.0.8';
 
 @Module({
     imports: [
