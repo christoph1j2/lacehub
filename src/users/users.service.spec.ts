@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 const mockUserRepository = {
     findOne: jest.fn(),
@@ -10,6 +11,8 @@ const mockUserRepository = {
     delete: jest.fn(),
     update: jest.fn(),
 };
+
+const mockCacheManager = {};
 
 describe('UsersService', () => {
     let service: UsersService;
@@ -23,6 +26,10 @@ describe('UsersService', () => {
                 {
                     provide: getRepositoryToken(User),
                     useValue: mockUserRepository,
+                },
+                {
+                    provide: CACHE_MANAGER,
+                    useValue: mockCacheManager,
                 },
             ],
         }).compile();

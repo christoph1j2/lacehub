@@ -8,6 +8,7 @@ import { UsersService } from '../users/users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Product } from '../entities/product.entity';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('ProductsController', () => {
     let controller: ProductsController;
@@ -34,6 +35,7 @@ describe('ProductsController', () => {
 
     const mockUserRepository = {};
     const mockProductRepository = {};
+    const mockCacheManager = {};
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -51,6 +53,11 @@ describe('ProductsController', () => {
                     provide: getRepositoryToken(Product),
                     useValue: mockProductRepository, // Add this line
                 },
+                {
+                    provide: CACHE_MANAGER,
+                    useValue: mockCacheManager,
+                },
+
                 UsersService,
             ],
         }).compile();

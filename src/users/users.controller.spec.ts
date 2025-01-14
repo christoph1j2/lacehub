@@ -4,6 +4,9 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard/jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ExecutionContext } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from '../entities/user.entity';
 
 const mockUsersService = {
     findOneById: jest.fn(),
@@ -22,6 +25,10 @@ const mockJwtAuthGuard = {
     },
 };
 
+const mockCacheManager = {};
+
+const mockUserRepository = {};
+
 describe('UsersController', () => {
     let controller: UsersController;
 
@@ -32,6 +39,14 @@ describe('UsersController', () => {
                 {
                     provide: UsersService,
                     useValue: mockUsersService,
+                },
+                {
+                    provide: CACHE_MANAGER,
+                    useValue: mockCacheManager,
+                },
+                {
+                    provide: getRepositoryToken(User),
+                    useValue: mockUserRepository,
                 },
             ],
         })
