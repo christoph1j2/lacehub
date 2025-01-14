@@ -16,7 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { User } from '../entities/user.entity';
-import { ILike, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('users')
@@ -128,16 +128,18 @@ export class UsersController {
     }
 
     @Get('search')
-    @ApiOperation({ summary: 'Search for users by username' })
+    @ApiOperation({ summary: 'Search for users by username or email' })
     @ApiResponse({ status: 200, description: 'Users retrieved' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'User not found' })
-    async searchUsers(@Query('username') username: string): Promise<User[]> {
-        return await this.userRepository.find({
-            where: {
-                username: ILike(`%${username}%`),
-            },
-            take: 10,
-        });
+    async searchUsers(
+        @Query('query') query: string,
+        @Query('limit') limit = 10,
+        @Query('offset') offset = 0,
+    ): Promise<{ username: string }[]> {
+        const users = await this.usersService.searchUsers(query, limit, offset);
+        return users.map((user) => ({
+            username: user.username,
+        }));
     }
 }
