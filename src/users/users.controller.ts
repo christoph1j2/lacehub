@@ -10,6 +10,7 @@ import {
     ParseIntPipe,
     NotFoundException,
     Query,
+    Put,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,6 +19,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -141,5 +143,28 @@ export class UsersController {
         return users.map((user) => ({
             username: user.username,
         }));
+    }
+
+    @Roles('admin')
+    @Put(':id/ban')
+    @ApiOperation({ summary: 'Ban a user' })
+    @ApiResponse({ status: 200, description: 'User banned' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async banUser(
+        @Param('id', ParseIntPipe) userId: number,
+        @Body('banExpiry') banExpiry: number,
+    ): Promise<User> {
+        return await this.usersService.banUser(userId, banExpiry);
+    }
+
+    @Roles('admin')
+    @Put(':id/unban')
+    @ApiOperation({ summary: 'Unban a user' })
+    @ApiResponse({ status: 200, description: 'User unbanned' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async unbanUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
+        return await this.usersService.unbanUser(userId);
     }
 }

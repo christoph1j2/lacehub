@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -76,5 +81,46 @@ export class UsersService {
         await this.cacheManager.set(cacheKey, cacheData, 300000); // 5 minutes in milliseconds
 
         return cacheData.results;
+    }
+
+    async banUser(userId: number, banDurationInDays: number): Promise<User> {
+        const user = await this.usersRepository.findOne({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found.');
+        }
+
+        if (user.is_banned) {
+            throw new BadRequestException('User is already banned.');
+        }
+
+        user.is_banned = true;
+        const banExpirationDate = new Date();
+        user.ban_expiration.setDate(
+            banExpirationDate.getDate() + banDurationInDays,
+        );
+
+        return await this.usersRepository.save(user);
+    }
+
+    async unbanUser(userId: number): Promise<User> {
+        const user = await this.usersRepository.findOne({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        if (!user.is_banned) {
+            throw new BadRequestException('User is not banned');
+        }
+
+        user.is_banned = false;
+        user.ban_expiration = null;
+
+        return await this.usersRepository.save(user);
     }
 }
