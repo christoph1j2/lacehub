@@ -25,10 +25,10 @@ async function bootstrap() {
     }
 
     app.enableCors({
-        origin: 'http://localhost:5173' /*'https://www.lacehub.cz'*/, //TODO: REPLACE WITH PROD URL LATER
+        origin: ['http://localhost:5173', 'https://www.lacehub.cz'],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
-    })
+    });
 
     await app.listen(3000);
 }
