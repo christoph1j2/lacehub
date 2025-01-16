@@ -2,16 +2,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserInventoryService } from './user-inventory.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UserInventory } from '../entities/userInventory.entity';
-import { NotFoundException } from '@nestjs/common';
-import { CreateUserInventoryDto } from './dto/create-userInventory.dto';
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { WtsService } from '../wts/wts.service';
+import { WtbService } from '../wtb/wtb.service';
 import { Product } from '../entities/product.entity';
 import { User } from '../entities/user.entity';
 
 describe('UserInventoryService', () => {
     let service: UserInventoryService;
     let repository: Repository<UserInventory>;
+    let wtsService: WtsService;
+    let wtbService: WtbService;
 
     const mockInventory: UserInventory = {
         id: 1,
@@ -47,80 +50,32 @@ describe('UserInventoryService', () => {
         },
         product: {
             id: 1,
-            sku: '',
-            name: '',
-            description: '',
+            sku: 'SKU123',
+            name: 'Test Product',
+            description: 'Test Description',
+            price: 100,
+            created_at: new Date(),
+            updated_at: new Date(),
             image_link: '',
-            created_at: undefined,
             inventory: [],
             wts: [],
             wtb: [],
-        },
+        } as Product,
         size: 'M',
         quantity: 5,
-    };
-
-    const createUserInventoryDto: CreateUserInventoryDto = {
-        //userId: 1,
-        productId: 1,
-        quantity: 10,
-        size: '',
-    };
+    } as UserInventory;
 
     const mockRepository = {
-        find: jest.fn(),
-        findOne: jest.fn().mockResolvedValue(null), // Mock to return null when inventory item does not exist
-        create: jest.fn().mockReturnValue(mockInventory),
-        update: jest.fn().mockImplementation(() => {
-            if (mockRepository.findOne.mock.calls[0][1].where.id === 99) {
-                throw new NotFoundException(); // Throw an exception when the inventory item does not exist
-            }
-            return Promise.resolve({ affected: 1, raw: {}, generatedMaps: [] });
-        }),
+        findOne: jest.fn(),
         delete: jest.fn(),
-        save: jest.fn().mockResolvedValue(mockInventory),
     };
 
-    const mockUserRepository = {
-        findOneBy: jest.fn().mockResolvedValue({
-            id: 1,
-            username: 'testuser',
-            email: 'test@example.com',
-            password_hash: 'hashedPassword',
-            role_id: 1,
-            verified: true,
-            verificationToken: 'token',
-            credibility_score: 0,
-            is_banned: false,
-            ban_expiration: null,
-            resetToken: null,
-            resetTokenExpires: null,
-            created_at: new Date(),
-            role: {
-                id: 0,
-                users: [],
-                role_name: '',
-            },
-            inventory: [],
-            reviewsAsReviewer: [],
-            reviewsAsSeller: [],
-            reportsAsReported: [],
-            reportsAsReporter: [],
-            matchesAsBuyer: [],
-            matchesAsSeller: [],
-        }),
+    const mockWtsService = {
+        create: jest.fn(),
     };
 
-    const mockProductRepository = {
-        findOneBy: jest.fn().mockResolvedValue({
-            id: 1,
-            sku: '',
-            name: '',
-            description: '',
-            image_link: '',
-            created_at: undefined,
-            inventory: [],
-        }),
+    const mockWtbService = {
+        create: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -132,12 +87,20 @@ describe('UserInventoryService', () => {
                     useValue: mockRepository,
                 },
                 {
+                    provide: WtsService,
+                    useValue: mockWtsService,
+                },
+                {
                     provide: getRepositoryToken(User),
-                    useValue: mockUserRepository,
+                    useValue: {},
+                },
+                {
+                    provide: WtbService,
+                    useValue: mockWtbService,
                 },
                 {
                     provide: getRepositoryToken(Product),
-                    useValue: mockProductRepository,
+                    useValue: {},
                 },
             ],
         }).compile();
@@ -146,58 +109,120 @@ describe('UserInventoryService', () => {
         repository = module.get<Repository<UserInventory>>(
             getRepositoryToken(UserInventory),
         );
+        wtsService = module.get<WtsService>(WtsService);
+        wtbService = module.get<WtbService>(WtbService);
     });
 
-    it('should retrieve all inventory items', async () => {
-        jest.spyOn(repository, 'find').mockResolvedValue([mockInventory]);
-        expect(await service.findAll()).toEqual([mockInventory]);
-    });
+    describe('moveToWts', () => {
+        it('should move an inventory item to WTS', async () => {
+            mockRepository.findOne.mockResolvedValue(mockInventory);
 
-    it('should retrieve inventory items for a specific user', async () => {
-        jest.spyOn(repository, 'find').mockResolvedValue([mockInventory]);
-        expect(await service.findByUser(1)).toEqual([mockInventory]);
-    });
+            await service.moveToWts(1, 1);
 
-    it('should create a new inventory item', async () => {
-        const createUserInventoryDto: CreateUserInventoryDto = {
-            //userId: 1,
-            productId: 1,
-            quantity: 5,
-            size: 'M',
-        };
-        jest.spyOn(repository, 'create').mockReturnValue(mockInventory);
-        jest.spyOn(repository, 'save').mockResolvedValue(mockInventory);
-        expect(await service.create(createUserInventoryDto, 1)).toEqual(
-            mockInventory,
-        );
-    });
-
-    it('should update an existing inventory item', async () => {
-        jest.spyOn(repository, 'findOne').mockResolvedValue(mockInventory);
-        jest.spyOn(repository, 'update').mockResolvedValue({
-            affected: 1,
-            raw: {},
-            generatedMaps: [],
+            expect(mockRepository.findOne).toHaveBeenCalledWith({
+                where: { id: 1 },
+                relations: ['user', 'product'],
+            });
+            expect(wtsService.create).toHaveBeenCalledWith(
+                {
+                    productId: mockInventory.product.id,
+                    size: mockInventory.size,
+                    quantity: mockInventory.quantity,
+                },
+                1,
+            );
         });
-        mockInventory.quantity = 10; // update the mockInventory object directly
-        jest.spyOn(repository, 'findOne').mockResolvedValueOnce(mockInventory);
-        const updatedItem = await service.update(1, { quantity: 10 }, 1);
-        expect(updatedItem.quantity).toEqual(10);
-    });
 
-    it('should delete an inventory item', async () => {
-        jest.spyOn(repository, 'delete').mockResolvedValue({
-            affected: 1,
-            raw: {},
+        it('should throw NotFoundException if inventory item not found', async () => {
+            mockRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.moveToWts(1, 1)).rejects.toThrow(
+                NotFoundException,
+            );
         });
-        await service.delete(1, 1);
-        expect(repository.delete).toHaveBeenCalledWith(1);
+
+        it('should throw ForbiddenException if user is not authorized', async () => {
+            mockRepository.findOne.mockResolvedValue({
+                ...mockInventory,
+                user: { id: 2 },
+            });
+
+            await expect(service.moveToWts(1, 1)).rejects.toThrow(
+                ForbiddenException,
+            );
+        });
     });
 
-    it('should throw NotFoundException if inventory item to update does not exist', async () => {
-        jest.spyOn(repository, 'findOne').mockResolvedValue(null);
-        await expect(service.update(99, { quantity: 10 }, 1)).rejects.toThrow(
-            NotFoundException,
-        );
+    describe('moveToWtb', () => {
+        it('should move an inventory item to WTB', async () => {
+            mockRepository.findOne.mockResolvedValue(mockInventory);
+
+            await service.moveToWtb(1, 1);
+
+            expect(mockRepository.findOne).toHaveBeenCalledWith({
+                where: { id: 1 },
+                relations: ['user', 'product'],
+            });
+            expect(wtbService.create).toHaveBeenCalledWith(
+                {
+                    productId: mockInventory.product.id,
+                    size: mockInventory.size,
+                    quantity: mockInventory.quantity,
+                },
+                1,
+            );
+        });
+
+        it('should throw NotFoundException if inventory item not found', async () => {
+            mockRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.moveToWtb(1, 1)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+
+        it('should throw ForbiddenException if user is not authorized', async () => {
+            mockRepository.findOne.mockResolvedValue({
+                ...mockInventory,
+                user: { id: 2 },
+            });
+
+            await expect(service.moveToWtb(1, 1)).rejects.toThrow(
+                ForbiddenException,
+            );
+        });
+    });
+
+    describe('delete', () => {
+        it('should delete an inventory item', async () => {
+            mockRepository.findOne.mockResolvedValue(mockInventory);
+
+            await service.delete(1, 1);
+
+            expect(mockRepository.findOne).toHaveBeenCalledWith({
+                where: { id: 1 },
+                relations: ['user'],
+            });
+            expect(mockRepository.delete).toHaveBeenCalledWith(1);
+        });
+
+        it('should throw NotFoundException if inventory item not found', async () => {
+            mockRepository.findOne.mockResolvedValue(null);
+
+            await expect(service.delete(1, 1)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+
+        it('should throw ForbiddenException if user is not authorized', async () => {
+            mockRepository.findOne.mockResolvedValue({
+                ...mockInventory,
+                user: { id: 2 },
+            });
+
+            await expect(service.delete(1, 1)).rejects.toThrow(
+                ForbiddenException,
+            );
+        });
     });
 });

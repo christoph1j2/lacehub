@@ -10,6 +10,9 @@ import { CreateUserInventoryDto } from './dto/create-userInventory.dto';
 import { UpdateUserInventoryDto } from './dto/update-userInventory.dto';
 import { Product } from '../entities/product.entity';
 import { User } from '../entities/user.entity';
+import { WtbService } from '../wtb/wtb.service';
+import { WtsService } from '../wts/wts.service';
+
 import * as XLSX from 'xlsx';
 
 @Injectable()
@@ -21,14 +24,18 @@ export class UserInventoryService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Product)
         private readonly productRepository: Repository<Product>,
+        private readonly wtbService: WtbService,
+        private readonly wtsService: WtsService,
     ) {}
 
+    // Get all inventory items
     async findAll(): Promise<UserInventory[]> {
         return await this.userInventoryRepository.find({
             relations: ['user', 'product'],
         });
     }
 
+    // Get all inventory items for a user
     async findByUser(userId: number): Promise<UserInventory[]> {
         return await this.userInventoryRepository.find({
             where: { user: { id: userId } },
@@ -36,6 +43,7 @@ export class UserInventoryService {
         });
     }
 
+    // Create a new inventory item for a user
     async create(
         createUserInventoryDto: CreateUserInventoryDto,
         authenthicatedUserId: number,
@@ -87,6 +95,7 @@ export class UserInventoryService {
         return await this.userInventoryRepository.save(inventoryItem);
     }
 
+    // Update an inventory item for a user
     async update(
         id: number,
         updateUserInventoryDto: UpdateUserInventoryDto,
@@ -115,6 +124,7 @@ export class UserInventoryService {
         });
     }
 
+    // Delete an inventory item for a user
     async delete(itemId: number, userId: number): Promise<void> {
         const item = await this.userInventoryRepository.findOne({
             where: { id: itemId },
@@ -132,6 +142,64 @@ export class UserInventoryService {
         }
 
         await this.userInventoryRepository.delete(itemId);
+    }
+
+    // Move an inventory item to WTB
+    async moveToWtb(itemId: number, userId: number): Promise<void> {
+        const item = await this.userInventoryRepository.findOne({
+            where: { id: itemId },
+            relations: ['user', 'product'],
+        });
+
+        if (!item) {
+            throw new NotFoundException('Inventory item not found');
+        }
+
+        if (item.user.id !== userId) {
+            throw new ForbiddenException(
+                'You do not have permission to move this inventory item',
+            );
+        }
+
+        await this.wtbService.create(
+            {
+                productId: item.product.id,
+                size: item.size,
+                quantity: item.quantity,
+            },
+            userId,
+        );
+
+        //? await this.userInventoryRepository.delete(itemId);
+    }
+
+    // Move an inventory item to WTS
+    async moveToWts(itemId: number, userId: number): Promise<void> {
+        const item = await this.userInventoryRepository.findOne({
+            where: { id: itemId },
+            relations: ['user', 'product'],
+        });
+
+        if (!item) {
+            throw new NotFoundException('Inventory item not found');
+        }
+
+        if (item.user.id !== userId) {
+            throw new ForbiddenException(
+                'You do not have permission to move this inventory item',
+            );
+        }
+
+        await this.wtsService.create(
+            {
+                productId: item.product.id,
+                size: item.size,
+                quantity: item.quantity,
+            },
+            userId,
+        );
+
+        //? await this.userInventoryRepository.delete(itemId);
     }
 
     //! TODO: I don't know how to test this without frontend, future feature

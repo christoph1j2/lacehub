@@ -106,4 +106,27 @@ export class UserInventoryController {
     ) {
         return await this.userInventoryService.delete(id, user.id);
     }
+
+    @Patch(':id/move-to-wtb')
+    @ApiOperation({ summary: 'Move an inventory item to the WTB list' })
+    @ApiResponse({ status: 200, description: 'Moved to WTB list' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Not found' })
+    async moveToWtb(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
+        return await this.userInventoryService.moveToWtb(id, user.id);
+    }
+
+    @Patch(':id/move-to-wts')
+    @ApiOperation({ summary: 'Move an inventory item to the WTS list' })
+    @ApiResponse({ status: 200, description: 'Moved to WTS list' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Not found' })
+    async moveToWts(
+        @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: { id: number },
+    ) {
+        return await this.userInventoryService.moveToWts(id, user.id);
+    }
 }
