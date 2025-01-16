@@ -111,6 +111,8 @@ describe('UserInventoryService', () => {
         );
         wtsService = module.get<WtsService>(WtsService);
         wtbService = module.get<WtbService>(WtbService);
+
+        jest.clearAllMocks();
     });
 
     describe('moveToWts', () => {
