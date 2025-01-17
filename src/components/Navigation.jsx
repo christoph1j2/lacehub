@@ -46,103 +46,36 @@ const Navigation = () => {
       : "bg-transparent hover:bg-primary-600";
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${navClass} ${
-        isVisible ? "translate-y-0" : "-translate-y-full"
-      }`}
-    >
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex justify-between items-center">
-          <div className="text-white font-bold text-2xl duration-300">
-            <NavLink to="/">LaceHub</NavLink>
-          </div>
+    <>
+      <nav
+        className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${navClass} ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="text-white font-bold text-2xl duration-300">
+              <NavLink to="/">LaceHub</NavLink>
+            </div>
 
-          <button
-            className="md:hidden text-white"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? (
-              <XMarkIcon className="h-8 w-8" />
-            ) : (
-              <Bars3Icon className="h-8 w-8" />
-            )}
-          </button>
+            <button
+              className="md:hidden text-white"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+            >
+              {isOpen ? (
+                <XMarkIcon className="h-8 w-8" />
+              ) : (
+                <Bars3Icon className="h-8 w-8" />
+              )}
+            </button>
 
-          {/* Desktop menu */}
-          <ul className="hidden md:flex space-x-6 items-center">
-            <li>
-              <NavLink
-                to="/how-it-works"
-                className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
-              >
-                How Does It Work?
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/about"
-                className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
-              >
-                About Us
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/contacts"
-                className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
-              >
-                Contact Us
-              </NavLink>
-            </li>
-            {!user ? (
-              <>
-                <li>
-                  <button
-                    onClick={() => setShowLoginForm(true)}
-                    className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
-                  >
-                    Login
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setShowRegisterForm(true)}
-                    className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
-                  >
-                    Register
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <NavLink
-                    to="/dashboard"
-                    className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
-                  >
-                    Dashboard
-                  </NavLink>
-                </li>
-                <li>
-                  <button
-                    onClick={logout}
-                    className="bg-secondary-500 text-white px-4 py-2 rounded-full hover:bg-secondary-600 transition duration-300"
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            )}
-          </ul>
-
-          {/* Mobile menu */}
-          {isOpen && (
-            <ul className="md:hidden absolute top-16 left-0 right-0 py-4 bg-primary-600 space-y-4 shadow-lg">
+            {/* Desktop menu */}
+            <ul className="hidden md:flex space-x-6 items-center">
               <li>
                 <NavLink
                   to="/how-it-works"
-                  className="text-white block px-4 py-2 hover:bg-primary-700"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                 >
                   How Does It Work?
                 </NavLink>
@@ -150,7 +83,7 @@ const Navigation = () => {
               <li>
                 <NavLink
                   to="/about"
-                  className="text-white block px-4 py-2 hover:bg-primary-700"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                 >
                   About Us
                 </NavLink>
@@ -158,7 +91,7 @@ const Navigation = () => {
               <li>
                 <NavLink
                   to="/contacts"
-                  className="text-white block px-4 py-2 hover:bg-primary-700"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                 >
                   Contact Us
                 </NavLink>
@@ -168,7 +101,7 @@ const Navigation = () => {
                   <li>
                     <button
                       onClick={() => setShowLoginForm(true)}
-                      className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
+                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                     >
                       Login
                     </button>
@@ -176,7 +109,7 @@ const Navigation = () => {
                   <li>
                     <button
                       onClick={() => setShowRegisterForm(true)}
-                      className="bg-accent-500 text-white block w-full text-left px-4 py-2 hover:bg-accent-600"
+                      className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
                     >
                       Register
                     </button>
@@ -187,7 +120,7 @@ const Navigation = () => {
                   <li>
                     <NavLink
                       to="/dashboard"
-                      className="text-white block px-4 py-2 hover:bg-primary-700"
+                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                     >
                       Dashboard
                     </NavLink>
@@ -195,7 +128,7 @@ const Navigation = () => {
                   <li>
                     <button
                       onClick={logout}
-                      className="bg-secondary-500 text-white block w-full text-left px-4 py-2 hover:bg-secondary-600"
+                      className="bg-secondary-500 text-white px-4 py-2 rounded-full hover:bg-secondary-600 transition duration-300"
                     >
                       Logout
                     </button>
@@ -203,9 +136,78 @@ const Navigation = () => {
                 </>
               )}
             </ul>
-          )}
+
+            {/* Mobile menu */}
+            {isOpen && (
+              <ul className="md:hidden absolute top-16 left-0 right-0 py-4 bg-primary-600 space-y-4 shadow-lg">
+                <li>
+                  <NavLink
+                    to="/how-it-works"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                  >
+                    How Does It Work?
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/about"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                  >
+                    About Us
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/contacts"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                  >
+                    Contact Us
+                  </NavLink>
+                </li>
+                {!user ? (
+                  <>
+                    <li>
+                      <button
+                        onClick={() => setShowLoginForm(true)}
+                        className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
+                      >
+                        Login
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => setShowRegisterForm(true)}
+                        className="bg-accent-500 text-white block w-full text-left px-4 py-2 hover:bg-accent-600"
+                      >
+                        Register
+                      </button>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <NavLink
+                        to="/dashboard"
+                        className="text-white block px-4 py-2 hover:bg-primary-700"
+                      >
+                        Dashboard
+                      </NavLink>
+                    </li>
+                    <li>
+                      <button
+                        onClick={logout}
+                        className="bg-secondary-500 text-white block w-full text-left px-4 py-2 hover:bg-secondary-600"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </>
+                )}
+              </ul>
+            )}
+          </div>
         </div>
-      </div>
+      </nav>
 
       {showRegisterForm && (
         <RegisterForm
@@ -226,7 +228,7 @@ const Navigation = () => {
           }}
         />
       )}
-    </nav>
+    </>
   );
 };
 

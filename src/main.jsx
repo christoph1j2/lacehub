@@ -11,8 +11,8 @@ import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
           <Route element={<BaseLayout />}>
             <Route path="/" element={<Homepage />} />
@@ -20,7 +20,7 @@ createRoot(document.getElementById("root")).render(
           </Route>
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </StrictMode>
 );
