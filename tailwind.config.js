@@ -51,6 +51,13 @@ export default {
           900: "#664210", // Darkest
         },
       },
+      safelist: [
+        "bg-primary-600",
+        "bg-transparent",
+        "hover:bg-primary-600",
+        "translate-y-0",
+        "-translate-y-full",
+      ],
     },
   },
   plugins: [],
