@@ -9,7 +9,12 @@ import {
     Req,
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('notifications')
 @Controller('notifications')
@@ -17,6 +22,7 @@ export class NotificationsController {
     constructor(private readonly notificationsService: NotificationsService) {}
 
     @Post()
+    @ApiBearerAuth()
     @ApiOperation({
         summary:
             'Create a new notification for a user, should be created on its own',
@@ -37,6 +43,7 @@ export class NotificationsController {
     }
 
     @Get()
+    @ApiBearerAuth()
     @ApiOperation({
         summary: 'Get all notifications for a user, displayed in notif tab',
     })
@@ -48,6 +55,7 @@ export class NotificationsController {
     }
 
     @Patch(':id/read')
+    @ApiBearerAuth()
     @ApiOperation({
         summary:
             'Mark a notification as read - when user sees the notification, mark as read',
@@ -60,6 +68,7 @@ export class NotificationsController {
     }
 
     @Delete(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a notification, done through notif tab' })
     @ApiResponse({ status: 200, description: 'OK' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })

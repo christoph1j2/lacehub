@@ -11,7 +11,12 @@ import { ReviewsService } from './reviews.service';
 import { Review } from '../entities/review.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Roles } from '../common/decorators/roles.decorator';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('reviews')
 @Controller('reviews')
@@ -19,6 +24,7 @@ export class ReviewsController {
     constructor(private readonly reviewsService: ReviewsService) {}
 
     @Post(':sellerId')
+    @ApiBearerAuth()
     @ApiOperation({
         summary:
             'Create a review, sellerId as param, reviewerId from token, review from body',
@@ -43,6 +49,7 @@ export class ReviewsController {
     }
 
     @Get(':sellerId')
+    @ApiBearerAuth()
     @ApiOperation({
         summary: 'Get all reviews for a seller, displayed on user profile',
     })
@@ -58,6 +65,7 @@ export class ReviewsController {
 
     @Roles('admin')
     @Get('review/:id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get a review by ID, only for admin' })
     @ApiResponse({ status: 200, description: 'Review found' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -68,6 +76,7 @@ export class ReviewsController {
     }
 
     @Delete(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete users own posted review' })
     @ApiResponse({ status: 200, description: 'Review deleted' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -79,6 +88,7 @@ export class ReviewsController {
     }
 
     @Delete('admin/:id')
+    @ApiBearerAuth()
     @Roles('admin')
     @ApiOperation({ summary: 'Delete a review by admin' })
     @ApiResponse({ status: 200, description: 'Review deleted' })

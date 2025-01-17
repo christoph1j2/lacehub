@@ -18,7 +18,12 @@ import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
 import { Product } from '../entities/product.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('products')
 @Controller('products')
@@ -31,6 +36,7 @@ export class ProductsController {
 
     @Post()
     @Roles('admin')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new product, only admin' })
     @ApiResponse({ status: 201, description: 'Product created successfully' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -41,6 +47,7 @@ export class ProductsController {
 
     @UseGuards(VerifiedUserGuard)
     @Get()
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all products' })
     @ApiResponse({
         status: 200,
@@ -53,6 +60,7 @@ export class ProductsController {
 
     @UseGuards(VerifiedUserGuard)
     @Get(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get a product by id' })
     @ApiResponse({ status: 200, description: 'Product retrieved successfully' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -64,6 +72,7 @@ export class ProductsController {
     @UseGuards(VerifiedUserGuard)
     @Roles('admin')
     @Patch(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a product by id, only admin' })
     @ApiResponse({ status: 200, description: 'Product updated successfully' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -79,6 +88,7 @@ export class ProductsController {
     @UseGuards(VerifiedUserGuard)
     @Roles('admin')
     @Delete(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a product by id, only admin' })
     @ApiResponse({ status: 200, description: 'Product deleted successfully' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -90,6 +100,7 @@ export class ProductsController {
 
     @UseGuards(VerifiedUserGuard)
     @Get('search')
+    @ApiBearerAuth()
     @ApiOperation({
         summary:
             'Search for products by name/sku/description (will be used for inventory/wtb/wts lists)',

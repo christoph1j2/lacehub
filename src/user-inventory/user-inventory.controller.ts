@@ -18,7 +18,12 @@ import { UpdateUserInventoryDto } from './dto/update-userInventory.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('user-inventory')
 @Controller('user-inventory')
@@ -27,6 +32,7 @@ export class UserInventoryController {
 
     @Roles('admin')
     @Get()
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all inventory items, admin only' })
     @ApiResponse({ status: 200, description: 'Get all inventory items' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -37,6 +43,7 @@ export class UserInventoryController {
     }
 
     @Get('user')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all inventory items for a user' })
     @ApiResponse({ status: 200, description: 'Get all inventory items' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -61,6 +68,7 @@ export class UserInventoryController {
 
     @UseGuards(VerifiedUserGuard)
     @Post()
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new inventory item for a user' })
     @ApiResponse({ status: 201, description: 'Created' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -77,6 +85,7 @@ export class UserInventoryController {
     }
 
     @Patch(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Update an inventory item for a user' })
     @ApiResponse({ status: 200, description: 'Updated' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -95,6 +104,7 @@ export class UserInventoryController {
     }
 
     @Delete(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete an inventory item for a user' })
     @ApiResponse({ status: 200, description: 'Deleted' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })

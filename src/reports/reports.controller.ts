@@ -11,7 +11,12 @@ import {
 import { ReportsService } from './reports.service';
 import { Report } from '../entities/report.entity';
 import { Roles } from '../common/decorators/roles.decorator';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { ResolveReportDto } from './dto/resolve-report.dto';
 import { FileReportDto } from './dto/file-report.dto';
 
@@ -22,6 +27,7 @@ export class ReportsController {
 
     // user reporting
     @Post(':reportedUserId')
+    @ApiBearerAuth()
     @ApiOperation({
         summary:
             'Report user, required report text, reportedUserId as parameter',
@@ -51,6 +57,7 @@ export class ReportsController {
     // list all reports filed by specific user for admin ui
     @Roles('admin')
     @Get('user')
+    @ApiBearerAuth()
     @ApiOperation({
         summary: 'Get reports filed by specific user, only for admin',
     })
@@ -66,6 +73,7 @@ export class ReportsController {
 
     // list all reports filed by specific user for user ui
     @Get('user')
+    @ApiBearerAuth()
     @ApiOperation({
         summary: 'Get reports filed by specific user for specific user',
     })
@@ -79,12 +87,13 @@ export class ReportsController {
 
     // list all reports for admin ui
     @Roles('admin')
+    @Get()
     @ApiOperation({ summary: 'Get all reports for admin ui' })
     @ApiResponse({ status: 200, description: 'Reports found' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Reports not found' })
-    @Get()
+    @ApiBearerAuth()
     async findAll(): Promise<Report[]> {
         return await this.reportsService.findAll();
     }
@@ -92,6 +101,7 @@ export class ReportsController {
     // get specific report by id for admin ui
     @Roles('admin')
     @Get(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get specific report by id, for admin ui' })
     @ApiResponse({ status: 200, description: 'Report found' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -104,6 +114,7 @@ export class ReportsController {
     // mark report as resolved (admin)
     @Roles('admin')
     @Put(':id/resolve')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Mark report as resolved (admin)' })
     @ApiResponse({ status: 200, description: 'Report resolved' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })

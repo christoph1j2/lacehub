@@ -18,7 +18,12 @@ import { CreateWTSDto } from './dto/create-wts.dto';
 import { UpdateWTSDto } from './dto/update-wts.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('wts')
 @Controller('wts')
@@ -27,6 +32,7 @@ export class WtsController {
 
     @Roles('admin')
     @Get()
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all wts items, admin only' })
     @ApiResponse({ status: 200, description: 'Get all wts items' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -37,6 +43,7 @@ export class WtsController {
     }
 
     @Get('user')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all wts items for a user' })
     @ApiResponse({ status: 200, description: 'Get all wts items' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -61,6 +68,7 @@ export class WtsController {
 
     @UseGuards(VerifiedUserGuard)
     @Post()
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new wts item for a user' })
     @ApiResponse({ status: 201, description: 'Created' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -71,6 +79,7 @@ export class WtsController {
     }
 
     @Patch(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a wts item for a user' })
     @ApiResponse({ status: 200, description: 'Updated' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -85,6 +94,7 @@ export class WtsController {
     }
 
     @Delete(':id')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a wts item for a user' })
     @ApiResponse({ status: 200, description: 'Deleted' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })

@@ -130,9 +130,9 @@ export class UsersController {
     }
 
     @Get('search')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Search for users by username or email' })
     @ApiResponse({ status: 200, description: 'Users retrieved' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'User not found' })
     async searchUsers(
         @Query('query') query: string,
@@ -147,9 +147,9 @@ export class UsersController {
 
     @Roles('admin')
     @Put(':id/ban')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Ban a user' })
     @ApiResponse({ status: 200, description: 'User banned' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'User not found' })
     async banUser(
         @Param('id', ParseIntPipe) userId: number,
@@ -160,9 +160,9 @@ export class UsersController {
 
     @Roles('admin')
     @Put(':id/unban')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Unban a user' })
     @ApiResponse({ status: 200, description: 'User unbanned' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'User not found' })
     async unbanUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
         return await this.usersService.unbanUser(userId);
