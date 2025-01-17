@@ -1,9 +1,5 @@
-import { useState, useEffect } from "react";
-
-// import { Navigate } from "react-router";
-// import { useAuth } from "./useAuth";
-
-// Import icons for better UI
+import { useState } from "react";
+import { useAuth } from "../../pages/registration/useAuth";
 import {
   HomeIcon,
   QuestionMarkCircleIcon,
@@ -12,248 +8,109 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
-const useAuth = () => {
-  return {
-    user: {
-      username: "MockUser", // Mock username
-      email: "mockuser@example.com",
-    },
-  };
-};
-
 const Dashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("inventory");
   const [searchQuery, setSearchQuery] = useState("");
-  const [wtbData, setWtbData] = useState([]);
-  const [wtsData, setWtsData] = useState([]);
-  const [inventoryData, setInventoryData] = useState([]);
 
-  // Protect the route
   if (!user) {
-    //     return <Navigate to="/" />;
-    return <div>Loading...</div>;
+    return (
+      <div className="h-screen flex items-center justify-center bg-primary-100 text-primary-800 text-2xl">
+        Loading...
+      </div>
+    );
   }
 
-  // Fetch data based on the active tab
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let response;
-        let data;
-
-        if (activeTab === "wtb") {
-          response = await fetch("https://api.lacehub.cz/wtb/list", {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-          data = await response.json();
-          setWtbData(data);
-        } else if (activeTab === "wts") {
-          response = await fetch("https://api.lacehub.cz/wts/list", {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-          data = await response.json();
-          setWtsData(data);
-        } else if (activeTab === "inventory") {
-          response = await fetch("https://api.lacehub.cz/inventory/list", {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-          data = await response.json();
-          setInventoryData(data);
-        }
-      } catch (error) {
-        console.error(`Failed to fetch ${activeTab} data:`, error);
-      }
-    };
-
-    fetchData();
-  }, [activeTab]); // Dependency array ensures this runs when `activeTab` changes
-
   return (
-    <div className="flex h-screen bg-primary-600">
+    <div className="flex h-screen bg-primary-100">
       {/* Sidebar */}
-      <div className="w-64 bg-white h-full shadow-lg">
-        {/* Logo */}
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-primary-600">LaceHub</h1>
-        </div>
-
-        {/* Navigation Links */}
-        <nav className="mt-6">
-          <a
-            href="#"
-            className="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-100 hover:text-primary-600"
-          >
-            <HomeIcon className="w-5 h-5 mr-3" />
-            Dashboard
-          </a>
-          <a
-            href="#"
-            className="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-100 hover:text-primary-600"
-          >
-            <QuestionMarkCircleIcon className="w-5 h-5 mr-3" />
-            How does it work
-          </a>
-          <a
-            href="#"
-            className="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-100 hover:text-primary-600"
-          >
-            <Cog6ToothIcon className="w-5 h-5 mr-3" />
-            Settings
-          </a>
-          <a
-            href="#"
-            className="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-100 hover:text-primary-600"
-          >
-            <LifebuoyIcon className="w-5 h-5 mr-3" />
-            Support
-          </a>
+      <div className="w-72 bg-secondary-700 text-white h-full p-6">
+        <h1 className="text-3xl font-bold text-secondary-100 mb-10">LaceHub</h1>
+        <nav className="space-y-6">
+          {[
+            { name: "Dashboard", icon: HomeIcon },
+            { name: "How it works", icon: QuestionMarkCircleIcon },
+            { name: "Settings", icon: Cog6ToothIcon },
+            { name: "Support", icon: LifebuoyIcon },
+          ].map((item) => (
+            <a
+              key={item.name}
+              href="#"
+              className="flex items-center text-xl text-secondary-100 hover:text-white transition-colors"
+            >
+              <item.icon className="h-6 w-6 mr-3" />
+              {item.name}
+            </a>
+          ))}
         </nav>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="bg-white shadow-sm z-10">
-          <div className="flex items-center justify-between p-4">
-            {/* Search Bar */}
-            <div className="flex-1 max-w-2xl mx-4">
+        <header className="bg-primary-500 text-white shadow-lg p-4">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <div className="flex-1 max-w-2xl">
               <div className="relative">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search for your sneaker"
-                  className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 rounded-full bg-primary-400 text-white placeholder-primary-200 focus:outline-none focus:ring-2 focus:ring-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary-200" />
               </div>
             </div>
-            {/* Account Icon/Info */}
-            <div className="flex items-center">
-              <span className="text-gray-700 mr-2">{user.username}</span>
-              <div className="w-8 h-8 rounded-full bg-primary-200 flex items-center justify-center">
-                <span className="text-primary-600 font-medium">
-                  {user.username?.charAt(0).toUpperCase()}
-                </span>
+            <div className="flex items-center ml-4">
+              <span className="mr-2 text-lg">{user.username}</span>
+              <div className="w-10 h-10 rounded-full bg-secondary-300 flex items-center justify-center text-secondary-800 font-bold text-lg">
+                {user.username.charAt(0).toUpperCase()}
               </div>
             </div>
-          </div>
-
-          {/* Tab Buttons */}
-          <div className="flex space-x-4 px-6 py-3">
-            <button
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                activeTab === "wtb"
-                  ? "bg-primary-600 text-white"
-                  : "bg-white text-gray-600 hover:bg-primary-100"
-              }`}
-              onClick={() => setActiveTab("wtb")}
-            >
-              WTB list
-            </button>
-            <button
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                activeTab === "wts"
-                  ? "bg-primary-600 text-white"
-                  : "bg-white text-gray-600 hover:bg-primary-100"
-              }`}
-              onClick={() => setActiveTab("wts")}
-            >
-              WTS list
-            </button>
-            <button
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                activeTab === "inventory"
-                  ? "bg-primary-600 text-white"
-                  : "bg-white text-gray-600 hover:bg-primary-100"
-              }`}
-              onClick={() => setActiveTab("inventory")}
-            >
-              Inventory
-            </button>
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
-          {activeTab === "wtb" && (
-            <div className="space-y-4">
-              {wtbData.length > 0 ? (
-                wtbData.map((item, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow p-4">
-                    <h3 className="text-lg font-medium text-gray-800">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600">{item.description}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="text-lg font-medium text-gray-800">
-                    No WTB listings yet
-                  </h3>
-                  <p className="text-gray-600">
-                    Your Want To Buy listings will appear here
-                  </p>
-                </div>
-              )}
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-7xl mx-auto px-4">
+            {" "}
+            {/* Added horizontal padding */}
+            {/* Tab Buttons */}
+            <div className="bg-white rounded-lg shadow-md p-2 mb-6 flex space-x-4">
+              {["WTB list", "WTS list", "Inventory"].map((tab) => (
+                <button
+                  key={tab}
+                  className={`px-6 py-3 rounded-full font-medium transition-colors text-lg ${
+                    activeTab === tab.toLowerCase().split(" ")[0]
+                      ? "bg-extraColor1-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  onClick={() => setActiveTab(tab.toLowerCase().split(" ")[0])}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
-          )}
-
-          {activeTab === "wts" && (
-            <div className="space-y-4">
-              {wtsData.length > 0 ? (
-                wtsData.map((item, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow p-4">
-                    <h3 className="text-lg font-medium text-gray-800">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600">{item.description}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="text-lg font-medium text-gray-800">
-                    No WTS listings yet
-                  </h3>
-                  <p className="text-gray-600">
-                    Your Want To Sell listings will appear here
-                  </p>
-                </div>
-              )}
+            {/* Content Card */}
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <h2 className="text-3xl font-bold text-secondary-800 mb-6">
+                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}{" "}
+                Dashboard
+              </h2>
+              <p className="text-lg text-gray-600 mb-4">
+                Welcome to your {activeTab} dashboard. Here you can manage your
+                sneaker collection and trades.
+              </p>
+              <div className="bg-primary-50 border border-primary-200 rounded-md p-4 text-primary-800">
+                <p className="font-medium">No data available</p>
+                <p>
+                  Your {activeTab} data will be displayed here once you add some
+                  items.
+                </p>
+              </div>
             </div>
-          )}
-
-          {activeTab === "inventory" && (
-            <div className="space-y-4">
-              {inventoryData.length > 0 ? (
-                inventoryData.map((item, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow p-4">
-                    <h3 className="text-lg font-medium text-gray-800">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600">{item.description}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-white rounded-lg shadow p-4">
-                  <h3 className="text-lg font-medium text-gray-800">
-                    No items in inventory
-                  </h3>
-                  <p className="text-gray-600">
-                    Your inventory items will appear here
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+          </div>
         </main>
       </div>
     </div>
