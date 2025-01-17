@@ -17,10 +17,10 @@ const Navigation = () => {
 
   return (
     <>
-      <nav className="bg-transparent py-4 transition duration-300 group md:hover:bg-white">
+      <nav className="bg-transparent py-4 transition duration-500 group md:hover:bg-white">
         <div className="flex justify-between items-center container">
           <div className="text-white md:group-hover:text-black font-bold text-2xl duration-300">
-            LaceHub
+            <a href="/">LaceHub</a>
           </div>
 
           <button
