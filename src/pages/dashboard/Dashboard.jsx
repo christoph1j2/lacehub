@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../../pages/registration/useAuth";
+// import { useAuth } from "../../pages/registration/useAuth";
 import {
   HomeIcon,
   QuestionMarkCircleIcon,
@@ -7,6 +7,15 @@ import {
   LifebuoyIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+
+const useAuth = () => {
+  return {
+    user: {
+      username: "MockUser", // Mock username
+      email: "mockuser@example.com",
+    },
+  };
+};
 
 const Dashboard = () => {
   const { user } = useAuth();
