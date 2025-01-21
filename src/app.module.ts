@@ -23,7 +23,7 @@ import * as os from 'os';
 import { BannedUserGuard } from './common/guards/banned-user.guard';
 
 const localIP = getLocalIP();
-const isServerIP = localIP === '172.20.0.8';
+const isServerIP = localIP === '172.20.0.9';
 
 @Module({
     imports: [
