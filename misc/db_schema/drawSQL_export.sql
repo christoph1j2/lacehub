@@ -11,10 +11,10 @@ CREATE TABLE IF NOT EXISTS "users"(
     "credibility_score" INT DEFAULT 0,
     "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "is_banned" BOOLEAN DEFAULT FALSE,
-    "ban_expiration" TIMESTAMP WITH TIME ZONE
-    "verificationToken" VARCHAR(255)
-    "resetToken" VARCHAR(255)
-    "resetTokenExpires" TIMESTAMP
+    "ban_expiration" TIMESTAMP WITH TIME ZONE,
+    "verificationToken" VARCHAR(255),
+    "resetToken" VARCHAR(255),
+    "resetTokenExpires" TIMESTAMP,
     "refreshToken" VARCHAR(255)
 );
 ALTER TABLE
@@ -108,8 +108,8 @@ CREATE TABLE IF NOT EXISTS "notifications"(
     "user_id" BIGINT NOT NULL REFERENCES users(id),
     "match_id" BIGINT NOT NULL REFERENCES matches(id),
     "message" TEXT NOT NULL,
-    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-    "type" VARCHAR(255) NOT NULL -- match/warn/...
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "type" VARCHAR(255) NOT NULL, -- match/warn/...
     "is_read" BOOLEAN DEFAULT FALSE
 );
 ALTER TABLE
