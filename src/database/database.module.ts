@@ -4,7 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as os from 'os';
 
 const localIP = getLocalIP();
-const isServerIP = localIP === '172.20.0.9';
+//const isServerIP = localIP === '172.20.0.9';
+const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
 
 console.log('localIP', localIP);
 console.log('isServerIP', isServerIP);
