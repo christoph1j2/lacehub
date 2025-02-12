@@ -35,7 +35,7 @@ async function bootstrap() {
 
     // CORS
     app.enableCors({
-        origin: ['http://localhost:5173', 'https://www.lacehub.cz'],
+        origin: '*', //['http://localhost:5173', 'https://www.lacehub.cz'],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
     });
