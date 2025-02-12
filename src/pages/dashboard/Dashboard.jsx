@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router"; // Added useNavigate
+import { Link, useNavigate } from "react-router"; // Added useNavigate´
+import { useAuth } from "../registration/useAuth";
 import {
   HomeIcon,
   QuestionMarkCircleIcon,
@@ -10,20 +11,20 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 
-const useAuth = () => {
-  const navigate = useNavigate(); // Hook for navigation
-  return {
-    user: {
-      username: "MockUser",
-      email: "mockuser@example.com",
-    },
-    logout: () => {
-      // Implement logout logic here (e.g., clear tokens, user data)
-      console.log("Logout function called");
-      navigate("/"); // Redirect to homepage after logout
-    },
-  };
-};
+// const useAuth = () => {
+//   const navigate = useNavigate(); // Hook for navigation
+//   return {
+//     user: {
+//       username: "MockUser",
+//       email: "mockuser@example.com",
+//     },
+//     logout: () => {
+//       // Implement logout logic here (e.g., clear tokens, user data)
+//       console.log("Logout function called");
+//       navigate("/"); // Redirect to homepage after logout
+//     },
+//   };
+// };
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
