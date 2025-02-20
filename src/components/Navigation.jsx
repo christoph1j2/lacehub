@@ -97,30 +97,20 @@ const Navigation = () => {
                 </NavLink>
               </li>
               {!user ? (
-                <>
-                  <li>
-                    <button
-                      onClick={() => setShowLoginForm(true)}
-                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
-                    >
-                      Login
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => setShowRegisterForm(true)}
-                      className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
-                    >
-                      Register
-                    </button>
-                  </li>
-                </>
+                <li>
+                  <button
+                    onClick={() => setShowRegisterForm(true)}
+                    className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
+                  >
+                    Register
+                  </button>
+                </li>
               ) : (
                 <>
                   <li>
                     <NavLink
                       to="/dashboard"
-                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                      className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
                     >
                       Dashboard
                     </NavLink>
@@ -128,7 +118,7 @@ const Navigation = () => {
                   <li>
                     <button
                       onClick={logout}
-                      className="bg-secondary-500 text-white px-4 py-2 rounded-full hover:bg-secondary-600 transition duration-300"
+                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                     >
                       Logout
                     </button>
@@ -165,30 +155,20 @@ const Navigation = () => {
                   </NavLink>
                 </li>
                 {!user ? (
-                  <>
-                    <li>
-                      <button
-                        onClick={() => setShowLoginForm(true)}
-                        className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
-                      >
-                        Login
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => setShowRegisterForm(true)}
-                        className="bg-accent-500 text-white block w-full text-left px-4 py-2 hover:bg-accent-600"
-                      >
-                        Register
-                      </button>
-                    </li>
-                  </>
+                  <li>
+                    <button
+                      onClick={() => setShowRegisterForm(true)}
+                      className="bg-accent-500 text-white block w-full text-left px-4 py-2 hover:bg-accent-600"
+                    >
+                      Register
+                    </button>
+                  </li>
                 ) : (
                   <>
                     <li>
                       <NavLink
                         to="/dashboard"
-                        className="text-white block px-4 py-2 hover:bg-primary-700"
+                        className="bg-accent-500 text-white block px-4 py-2 hover:bg-accent-600"
                       >
                         Dashboard
                       </NavLink>
@@ -196,7 +176,7 @@ const Navigation = () => {
                     <li>
                       <button
                         onClick={logout}
-                        className="bg-secondary-500 text-white block w-full text-left px-4 py-2 hover:bg-secondary-600"
+                        className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
                       >
                         Logout
                       </button>

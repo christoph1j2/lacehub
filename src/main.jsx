@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import Homepage from "./pages/homepage/Index.jsx";
 import { AuthProvider } from "./pages/registration/useAuth.jsx";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
-// import App from "./App.jsx";
+// import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
@@ -18,7 +18,14 @@ createRoot(document.getElementById("root")).render(
             <Route path="/" element={<Homepage />} />
             <Route path="contacts" element={<Contacts />} />
           </Route>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/dashboard"
+            element={
+              // <ProtectedRoute>
+              <Dashboard />
+              // </ProtectedRoute>
+            }
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

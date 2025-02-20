@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       // Replace this with your actual API call
-      const response = await fetch("https://api.lacehub.cz/api/login", {
+      const response = await fetch("https://api.lacehub.cz/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),

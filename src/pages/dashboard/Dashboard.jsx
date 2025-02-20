@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router"; // Added useNavigate´
+import { useNavigate } from "react-router";
 import { useAuth } from "../registration/useAuth";
+
 import {
   HomeIcon,
   QuestionMarkCircleIcon,
@@ -12,22 +13,17 @@ import {
 } from "@heroicons/react/24/outline";
 
 // const useAuth = () => {
-//   const navigate = useNavigate(); // Hook for navigation
 //   return {
 //     user: {
-//       username: "MockUser",
+//       username: "Ernst christ ma rad deti",
 //       email: "mockuser@example.com",
-//     },
-//     logout: () => {
-//       // Implement logout logic here (e.g., clear tokens, user data)
-//       console.log("Logout function called");
-//       navigate("/"); // Redirect to homepage after logout
 //     },
 //   };
 // };
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("inventory");
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState([]);
@@ -35,11 +31,23 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [matchingStatus, setMatchingStatus] = useState(null);
 
+  // useAuth(()) => {};
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`https://api.lacehub.cz/api/${activeTab}`);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+
+        const response = await fetch(`https://api.lacehub.cz/${activeTab}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -49,22 +57,26 @@ const Dashboard = () => {
       } catch (err) {
         setError("Failed to fetch data");
         setData([]);
+        if (err.message === "No authentication token found") {
+          navigate("/");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, navigate]);
 
   const handleMatchWTB = async () => {
     setMatchingStatus("matching");
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("https://api.lacehub.cz/api/match", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add any necessary authentication headers
+          Authorization: `Bearer ${token}`,
         },
       });
       if (!response.ok) {
@@ -72,19 +84,13 @@ const Dashboard = () => {
       }
       const result = await response.json();
       setMatchingStatus("success");
-      // Handle successful matching (e.g., show matched items)
+      // Handle successful matching result
+      console.log(result);
     } catch (err) {
       setMatchingStatus("error");
+      console.error("Matching error:", err);
     }
   };
-
-  if (!user) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-primary-100 text-primary-800 text-2xl">
-        Loading...
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-screen bg-primary-100">
@@ -101,19 +107,21 @@ const Dashboard = () => {
               { name: "Settings", icon: Cog6ToothIcon },
               { name: "Support", icon: LifebuoyIcon },
             ].map((item) => (
-              <a
+              <button
                 key={item.name}
-                href="#"
-                className="flex items-center text-xl text-secondary-100 hover:text-white transition-colors"
+                className="flex items-center text-xl text-secondary-100 hover:text-white transition-colors w-full"
               >
                 <item.icon className="h-6 w-6 mr-3" />
                 {item.name}
-              </a>
+              </button>
             ))}
           </nav>
         </div>
         <button
-          onClick={logout}
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
           className="flex items-center text-xl text-secondary-100 hover:text-white transition-colors"
         >
           <ArrowRightOnRectangleIcon className="h-6 w-6 mr-3" />
@@ -138,13 +146,10 @@ const Dashboard = () => {
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary-400" />
               </div>
             </div>
-            <Link
-              to="/user-settings"
-              className="flex items-center ml-4 hover:bg-primary-600 rounded-full px-3 py-1 transition-colors"
-            >
-              <span className="mr-2 text-lg">{user.username}</span>
+            <div className="flex items-center ml-4 hover:bg-primary-600 rounded-full px-3 py-1 transition-colors">
+              <span className="mr-2 text-lg">{user?.username}</span>
               <UserCircleIcon className="h-10 w-10 text-secondary-500" />
-            </Link>
+            </div>
           </div>
         </header>
 
@@ -180,7 +185,8 @@ const Dashboard = () => {
                   : "Match your WTB list"}
               </button>
             </div>
-            {/* Matching Status Message */}
+
+            {/* Status Messages */}
             {matchingStatus === "error" && (
               <div
                 className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
@@ -205,6 +211,7 @@ const Dashboard = () => {
                 </span>
               </div>
             )}
+
             {/* Content Card */}
             <div className="bg-white rounded-lg shadow-lg p-8">
               <h2 className="text-3xl font-bold text-secondary-800 mb-6">
@@ -215,9 +222,12 @@ const Dashboard = () => {
                 Welcome to your {activeTab} dashboard. Here you can manage your
                 sneaker collection and trades.
               </p>
+
+              {/* Data Display */}
               {loading ? (
-                <div className="text-center">
-                  <p className="text-lg text-primary-600">Loading...</p>
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+                  <p className="text-lg text-primary-600 mt-4">Loading...</p>
                 </div>
               ) : error ? (
                 <div
