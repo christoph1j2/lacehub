@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, NavLink } from "react-router-dom"; // Import NavLink
 import { useAuth } from "../registration/useAuth";
 import {
   HomeIcon,
@@ -79,6 +79,11 @@ const Dashboard = () => {
     }
   };
 
+  if (!user) {
+    navigate("/");
+    return null;
+  }
+
   return (
     <div className="flex h-screen bg-primary-100">
       {/* Sidebar */}
@@ -89,18 +94,19 @@ const Dashboard = () => {
           </h1>
           <nav className="space-y-6">
             {[
-              { name: "Dashboard", icon: HomeIcon },
+              { name: "Homepage", icon: HomeIcon, path: "/" }, // Change name and add path
               { name: "How it works", icon: QuestionMarkCircleIcon },
               { name: "Settings", icon: Cog6ToothIcon },
               { name: "Support", icon: LifebuoyIcon },
             ].map((item) => (
-              <button
+              <NavLink // Use NavLink instead of button
                 key={item.name}
+                to={item.path} // Add the "to" prop
                 className="flex items-center text-xl text-secondary-100 hover:text-white transition-colors w-full"
               >
                 <item.icon className="h-6 w-6 mr-3" />
                 {item.name}
-              </button>
+              </NavLink>
             ))}
           </nav>
         </div>
@@ -141,7 +147,7 @@ const Dashboard = () => {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 flex flex-col overflow-hidden">
           <div className="max-w-7xl mx-auto px-4">
             {/* Tab Buttons and CTA */}
             <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex justify-between items-center">
