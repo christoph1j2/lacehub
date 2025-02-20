@@ -3,16 +3,17 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../pages/registration/useAuth";
 import RegisterForm from "../pages/registration/RegisterForm";
 import LoginForm from "../pages/registration/LoginForm";
-import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation } from "react-router-dom";
 
 const Navigation = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showRegisterForm, setShowRegisterForm] = useState(false);
-  const [showLoginForm, setShowLoginForm] = useState(false); // Initialize to false
+  const [showLoginForm, setShowLoginForm] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // New state for dropdown
   const location = useLocation();
 
   useEffect(() => {
@@ -110,18 +111,35 @@ const Navigation = () => {
                   <li>
                     <NavLink
                       to="/dashboard"
-                      className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
+                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                     >
                       Dashboard
                     </NavLink>
                   </li>
-                  <li>
-                    <button
-                      onClick={logout}
-                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
-                    >
-                      Logout
+                  <li
+                    className="relative"
+                    onMouseEnter={() => setIsDropdownOpen(true)}
+                    onMouseLeave={() => setIsDropdownOpen(false)}
+                  >
+                    <button className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700">
+                      {user.username} {/* Display username */}
                     </button>
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                        <NavLink
+                          to="/settings"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Settings
+                        </NavLink>
+                        <button
+                          onClick={logout}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
                   </li>
                 </>
               )}
