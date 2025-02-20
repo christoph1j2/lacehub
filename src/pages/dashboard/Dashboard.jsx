@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, NavLink } from "react-router";
+import { useNavigate, NavLink } from "react-router-dom";
 import { useAuth } from "../registration/useAuth";
 import {
   HomeIcon,
@@ -20,6 +20,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [matchingStatus, setMatchingStatus] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar toggle
 
   const apiEndpoints = {
     wtb: "https://api.lacehub.cz/wtb/user",
@@ -93,7 +94,11 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen bg-primary-100">
       {/* Sidebar */}
-      <div className="w-72 bg-primary-800 text-white h-full p-6 flex flex-col justify-between">
+      <div
+        className={`w-72 bg-primary-800 text-white h-full p-6 flex flex-col justify-between transition-transform duration-300 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0 fixed md:static top-0 left-0 z-40`}
+      >
         <div>
           <h1 className="text-3xl font-bold text-secondary-100 mb-10">
             LaceHub
@@ -133,6 +138,17 @@ const Dashboard = () => {
         {/* Top Bar */}
         <header className="bg-primary-500 text-white shadow-lg p-4">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
+            {/* Hamburger menu for small screens */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="md:hidden text-white focus:outline-none"
+            >
+              {isSidebarOpen ? (
+                <XMarkIcon className="h-8 w-8" />
+              ) : (
+                <Bars3Icon className="h-8 w-8" />
+              )}
+            </button>
             <div className="flex-1 max-w-2xl">
               <div className="relative">
                 <input
@@ -146,7 +162,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center ml-4 hover:bg-primary-600 rounded-full px-3 py-1 transition-colors">
-              <span className="mr-2 text-lg">{user?.username}</span>
+              <span className="mr-2 text-lg">Welcome, {user?.username}</span>
               <UserCircleIcon className="h-10 w-10 text-secondary-500" />
             </div>
           </div>
@@ -156,8 +172,8 @@ const Dashboard = () => {
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto px-4">
             {/* Tab Buttons and CTA */}
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex justify-between items-center">
-              <div className="flex space-x-4 w-full">
+            <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex flex-col md:flex-row justify-between items-center">
+              <div className="flex space-x-4 w-full mb-4 md:mb-0">
                 {["WTB list", "WTS list", "Inventory"].map((tab) => {
                   const tabKey = tab.toLowerCase().split(" ")[0];
                   return (
@@ -178,7 +194,7 @@ const Dashboard = () => {
               <button
                 onClick={handleMatchWTB}
                 disabled={matchingStatus === "matching"}
-                className="px-6 py-3 bg-accent-500 text-white rounded-full font-medium text-lg hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-accent-500 text-white rounded-full font-medium text-lg hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 {matchingStatus === "matching"
                   ? "Matching..."

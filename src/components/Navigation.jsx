@@ -3,7 +3,7 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../pages/registration/useAuth";
 import RegisterForm from "../pages/registration/RegisterForm";
 import LoginForm from "../pages/registration/LoginForm";
-import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation } from "react-router-dom";
 
 const Navigation = () => {
   const { user, logout } = useAuth();
