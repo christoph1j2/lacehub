@@ -60,7 +60,7 @@ const LoginForm = ({ onClose, onRegisterClick }) => {
       setShowSuccess(true);
 
       // Update authentication state
-      login(data);
+      await login(data);
 
       // Close form after showing success message
       setTimeout(() => {

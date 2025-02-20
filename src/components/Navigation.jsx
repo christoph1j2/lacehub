@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useAuth } from "./useAuth";
+import { useAuth } from "../pages/registration/useAuth";
 
 const LoginForm = ({ onClose, onRegisterClick }) => {
   const { login } = useAuth();

@@ -12,12 +12,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData) => {
     try {
-      // Expected userData from backend:
-      // { message: "Login successful", user: { ... }, accessToken: "..." }
+      // Store user and token from the API response
       setUser(userData.user);
       localStorage.setItem("user", JSON.stringify(userData.user));
       localStorage.setItem("token", userData.accessToken);
-      navigate("/dashboard"); // Redirect after successful login
+
+      // Log for debugging
+      console.log("Login successful:", userData);
+
+      // Navigate to dashboard
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -28,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    navigate("/"); // Redirect to homepage after logout
+    navigate("/");
   };
 
   const isAuthenticated = () => {
