@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../registration/useAuth";
 
 import {
@@ -12,15 +12,6 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 
-// const useAuth = () => {
-//   return {
-//     user: {
-//       username: "Ernst christ ma rad deti",
-//       email: "mockuser@example.com",
-//     },
-//   };
-// };
-
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -30,8 +21,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [matchingStatus, setMatchingStatus] = useState(null);
-
-  // useAuth(()) => {};
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,7 +73,6 @@ const Dashboard = () => {
       }
       const result = await response.json();
       setMatchingStatus("success");
-      // Handle successful matching result
       console.log(result);
     } catch (err) {
       setMatchingStatus("error");

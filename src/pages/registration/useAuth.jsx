@@ -5,33 +5,22 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // Check if user data exists in localStorage on initial load
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const navigate = useNavigate();
 
-  const login = async (credentials) => {
+  const login = async (userData) => {
     try {
-      // Replace this with your actual API call
-      const response = await fetch("https://api.lacehub.cz/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      });
-
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-
-      const userData = await response.json();
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("token", userData.token);
-      navigate("/dashboard"); // Redirect to dashboard after successful login
+      // Expected userData from backend:
+      // { message: "Login successful", user: { ... }, accessToken: "..." }
+      setUser(userData.user);
+      localStorage.setItem("user", JSON.stringify(userData.user));
+      localStorage.setItem("token", userData.accessToken);
+      navigate("/dashboard"); // Redirect after successful login
     } catch (error) {
       console.error("Login error:", error);
-      // Handle login error (e.g., show error message to user)
+      throw error;
     }
   };
 
