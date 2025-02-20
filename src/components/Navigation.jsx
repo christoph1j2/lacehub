@@ -1,174 +1,215 @@
-import { useState } from "react";
-import axios from "axios";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { useState, useEffect } from "react";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../pages/registration/useAuth";
+import RegisterForm from "../pages/registration/RegisterForm";
+import LoginForm from "../pages/registration/LoginForm";
+import { NavLink, useLocation } from "react-router";
 
-const LoginForm = ({ onClose, onRegisterClick }) => {
-  const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+const Navigation = () => {
+  const { user, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false); // Initialize to false
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const location = useLocation();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.password) newErrors.password = "Password is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-        "https://api.lacehub.cz/auth/login",
-        formData,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      const data = response.data;
-      if (!data || !data.accessToken) {
-        throw new Error(data.message || "Login failed");
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY === 0) {
+        setIsScrolled(false);
+        setIsVisible(true);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+        setIsScrolled(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
       }
+      setLastScrollY(currentScrollY);
+    };
 
-      // Show success message
-      setShowSuccess(true);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
-      // Update authentication state via the useAuth hook
-      await login(data);
-
-      // Close form after showing success message
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-    } catch (error) {
-      setErrors({
-        submit:
-          error.response?.data?.message ||
-          error.message ||
-          "Login failed. Please check your credentials.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
   };
+
+  const navClass =
+    location.pathname !== "/"
+      ? "bg-primary-600"
+      : isScrolled
+      ? "bg-primary-600"
+      : "bg-transparent hover:bg-primary-600";
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-8 w-full max-w-md relative animate-fadeIn">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          <XMarkIcon className="size-6" />
-        </button>
+    <>
+      <nav
+        className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${navClass} ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="text-white font-bold text-2xl duration-300">
+              <NavLink to="/">LaceHub</NavLink>
+            </div>
 
-        <h2 className="text-3xl font-bold text-center mb-8">Welcome Back</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary-600 focus:border-transparent transition-shadow"
-              placeholder="your@email.com"
-              required
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary-600 focus:border-transparent transition-shadow"
-              placeholder="Enter your password"
-              required
-            />
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-            )}
-          </div>
-
-          {errors.submit && (
-            <p className="text-red-500 text-sm text-center">{errors.submit}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-secondary-600 text-white px-6 py-3 rounded-full hover:bg-secondary-500 transition-all duration-300 font-semibold mt-8 hover:shadow-lg disabled:opacity-50"
-          >
-            {isLoading ? "Signing In..." : "Sign In"}
-          </button>
-
-          <p className="text-center text-sm text-gray-500 mt-4">
-            Dont have an account?{" "}
             <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onRegisterClick();
-              }}
-              className="text-secondary-600 hover:text-secondary-500 font-medium"
+              className="md:hidden text-white"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
             >
-              Register
+              {isOpen ? (
+                <XMarkIcon className="h-8 w-8" />
+              ) : (
+                <Bars3Icon className="h-8 w-8" />
+              )}
             </button>
-          </p>
-        </form>
-      </div>
 
-      {showSuccess && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-fadeIn">
-          Successfully logged in! Welcome back!
+            {/* Desktop menu */}
+            <ul className="hidden md:flex space-x-6 items-center">
+              <li>
+                <NavLink
+                  to="/how-it-works"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                >
+                  How Does It Work?
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/about"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                >
+                  About Us
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/contacts"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                >
+                  Contact Us
+                </NavLink>
+              </li>
+              {!user ? (
+                <li>
+                  <button
+                    onClick={() => setShowRegisterForm(true)}
+                    className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
+                  >
+                    Register
+                  </button>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <NavLink
+                      to="/dashboard"
+                      className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
+                    >
+                      Dashboard
+                    </NavLink>
+                  </li>
+                  <li>
+                    <button
+                      onClick={logout}
+                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </>
+              )}
+            </ul>
+
+            {/* Mobile menu */}
+            {isOpen && (
+              <ul className="md:hidden absolute top-16 left-0 right-0 py-4 bg-primary-600 space-y-4 shadow-lg">
+                <li>
+                  <NavLink
+                    to="/how-it-works"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                  >
+                    How Does It Work?
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/about"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                  >
+                    About Us
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/contacts"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                  >
+                    Contact Us
+                  </NavLink>
+                </li>
+                {!user ? (
+                  <li>
+                    <button
+                      onClick={() => setShowRegisterForm(true)}
+                      className="bg-accent-500 text-white block w-full text-left px-4 py-2 hover:bg-accent-600"
+                    >
+                      Register
+                    </button>
+                  </li>
+                ) : (
+                  <>
+                    <li>
+                      <NavLink
+                        to="/dashboard"
+                        className="bg-accent-500 text-white block px-4 py-2 hover:bg-accent-600"
+                      >
+                        Dashboard
+                      </NavLink>
+                    </li>
+                    <li>
+                      <button
+                        onClick={logout}
+                        className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </>
+                )}
+              </ul>
+            )}
+          </div>
         </div>
+      </nav>
+
+      {showRegisterForm && (
+        <RegisterForm
+          onClose={() => setShowRegisterForm(false)}
+          onLoginClick={() => {
+            setShowRegisterForm(false);
+            setShowLoginForm(true);
+          }}
+        />
       )}
-    </div>
+
+      {showLoginForm && (
+        <LoginForm
+          onClose={() => setShowLoginForm(false)}
+          onRegisterClick={() => {
+            setShowLoginForm(false);
+            setShowRegisterForm(true);
+          }}
+        />
+      )}
+    </>
   );
 };
 
-export default LoginForm;
+export default Navigation;
