@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, NavLink } from "react-router-dom"; // Import NavLink
+import { useNavigate, NavLink } from "react-router"; // Import NavLink
 import { useAuth } from "../registration/useAuth";
 import {
   HomeIcon,
