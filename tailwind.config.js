@@ -58,51 +58,6 @@ export default {
     "md:translate-x-0",
     "translate-y-0",
     "-translate-y-full",
-
-    // Backgrounds
-    "bg-primary-50",
-    "bg-primary-100",
-    "bg-primary-200",
-    "bg-primary-300",
-    "bg-primary-400",
-    "bg-primary-500",
-    "bg-primary-600",
-    "bg-primary-700",
-    "bg-primary-800",
-    "bg-primary-900",
-
-    "bg-secondary-500",
-    "bg-secondary-600",
-    "bg-secondary-700",
-
-    "bg-accent-500",
-    "bg-accent-600",
-
-    "bg-transparent",
-
-    // Hover states
-    "hover:bg-primary-200",
-    "hover:bg-primary-600",
-    "hover:bg-primary-800",
-    "hover:bg-secondary-600",
-    "hover:bg-accent-600",
-
-    // Text colors
-    "text-primary-700",
-    "text-primary-900",
-    "text-white",
-
-    // Borders
-    "border-primary-200",
-    "border-primary-300",
-    "border-extraColor1-500",
-
-    // Background opacity
-    "bg-opacity-50",
-
-    // Other dynamic classes
-    "opacity-50",
-    "cursor-not-allowed",
   ],
   plugins: [],
 };
