@@ -115,6 +115,7 @@ export class AuthController {
     @Post('refresh-token')
     @ApiOperation({ summary: 'Refresh access token' })
     @ApiResponse({ status: 200, description: 'Access token refreshed' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 401, description: 'Refresh token not found' })
     async refreshToken(@Req() req) {
         console.log('Cookies:', req.cookies);
