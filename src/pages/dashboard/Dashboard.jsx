@@ -18,7 +18,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("wtb");
   const [searchQuery, setSearchQuery] = useState("");
-  const [data, setData] = useState([]);
+  const [data, setData] = useState();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [matchingStatus, setMatchingStatus] = useState(null);
