@@ -118,7 +118,7 @@ const Dashboard = () => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 w-64 bg-primary-800 text-white shadow-xl transition-transform duration-300 ease-in-out z-40`}
       >
-        <div className="flex flex-col h-full p-6">
+        <div className="flex flex-col h-full p-6 bg-primary-500">
           <div className="space-y-6">
             <h1 className="text-2xl font-bold text-white">LaceHub</h1>
             <nav className="space-y-4">
