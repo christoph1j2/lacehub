@@ -10,6 +10,6 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ["lacehub.cz"], // Add your host here
+    allowedHosts: ["lacehub.cz", "www.lacehub.cz"], // Add your host here
   },
 });
