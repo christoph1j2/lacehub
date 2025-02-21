@@ -120,7 +120,7 @@ const Dashboard = () => {
       >
         <div className="flex flex-col h-full p-6">
           <div className="space-y-6">
-            <h1 className="text-2xl font-bold">LaceHub</h1>
+            <h1 className="text-2xl font-bold text-white">LaceHub</h1>
             <nav className="space-y-4">
               {navItems.map((item) => (
                 <button
@@ -153,7 +153,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="bg-white shadow-sm p-4">
+        <header className="bg-white shadow-md p-4">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-4">
             <div className="relative flex-1 w-full">
               <input
@@ -165,11 +165,11 @@ const Dashboard = () => {
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-primary-900">
+            <div className="flex items-center gap-3 bg-secondary-100 px-4 py-2 rounded-lg">
+              <span className="text-secondary-900">
                 Welcome, {user?.username}
               </span>
-              <User className="h-8 w-8 text-primary-600" />
+              <User className="h-8 w-8 text-secondary-600" />
             </div>
           </div>
         </header>
@@ -178,7 +178,7 @@ const Dashboard = () => {
         <main className="flex-1 overflow-y-auto p-6 bg-primary-100">
           <div className="max-w-7xl mx-auto">
             {/* Tabs and Action Button */}
-            <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-l-4 border-secondary-600">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 grid grid-cols-3 gap-3">
                   {["WTB list", "WTS list", "Inventory"].map((tab) => {
@@ -186,9 +186,9 @@ const Dashboard = () => {
                     return (
                       <button
                         key={tab}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        className={`px-4 py-3 rounded-lg font-medium transition-all ${
                           activeTab === tabKey
-                            ? "bg-secondary-600 text-white"
+                            ? "bg-secondary-600 text-white shadow-md"
                             : "bg-primary-100 text-primary-900 hover:bg-primary-200"
                         }`}
                         onClick={() => setActiveTab(tabKey)}
@@ -201,7 +201,7 @@ const Dashboard = () => {
                 <button
                   onClick={handleMatchWTB}
                   disabled={matchingStatus === "matching"}
-                  className="min-w-[200px] px-6 py-2 bg-accent-600 text-white rounded-lg font-medium hover:bg-accent-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  className="min-w-[200px] px-6 py-3 bg-accent-600 text-white rounded-lg font-medium hover:bg-accent-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   {matchingStatus === "matching"
                     ? "Matching..."
@@ -213,7 +213,7 @@ const Dashboard = () => {
             {/* Status Messages */}
             {matchingStatus === "error" && (
               <div
-                className="bg-extraColor1-100 border border-extraColor1-400 text-extraColor1-700 px-4 py-3 rounded mb-6"
+                className="bg-extraColor1-100 border-l-4 border-extraColor1-600 text-extraColor1-700 px-4 py-3 rounded shadow-md mb-6"
                 role="alert"
               >
                 <strong className="font-bold">Error!</strong>
@@ -225,7 +225,7 @@ const Dashboard = () => {
             )}
             {matchingStatus === "success" && (
               <div
-                className="bg-primary-100 border border-primary-400 text-primary-700 px-4 py-3 rounded mb-6"
+                className="bg-primary-100 border-l-4 border-primary-600 text-primary-700 px-4 py-3 rounded shadow-md mb-6"
                 role="alert"
               >
                 <strong className="font-bold">Success!</strong>
@@ -237,12 +237,12 @@ const Dashboard = () => {
             )}
 
             {/* Content */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 border-t-4 border-accent-600">
               <h2 className="text-2xl font-bold text-primary-900 mb-4">
                 {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}{" "}
                 Dashboard
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-primary-600 mb-6">
                 Welcome to your {activeTab} dashboard. Here you can manage your
                 sneaker collection and trades.
               </p>
@@ -254,7 +254,7 @@ const Dashboard = () => {
                 </div>
               ) : error ? (
                 <div
-                  className="bg-extraColor1-100 border border-extraColor1-400 text-extraColor1-700 px-4 py-3 rounded"
+                  className="bg-extraColor1-100 border-l-4 border-extraColor1-600 text-extraColor1-700 px-4 py-3 rounded shadow-md"
                   role="alert"
                 >
                   <strong className="font-bold">Error!</strong>
@@ -265,7 +265,7 @@ const Dashboard = () => {
                   {data.map((item, index) => (
                     <li
                       key={index}
-                      className="bg-primary-50 border border-primary-200 rounded-lg p-4"
+                      className="bg-primary-50 border-l-4 border-primary-400 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow"
                     >
                       <h3 className="font-bold text-primary-800">
                         {item.title}
@@ -275,7 +275,7 @@ const Dashboard = () => {
                   ))}
                 </ul>
               ) : (
-                <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+                <div className="bg-primary-50 border-l-4 border-primary-400 rounded-lg p-4 shadow-md">
                   <p className="font-medium text-primary-800">
                     No data available
                   </p>

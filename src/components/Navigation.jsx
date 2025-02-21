@@ -83,7 +83,7 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <NavLink
                   to="/dashboard"
-                  className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-2 rounded-full transition-colors"
+                  className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-2 rounded-full transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   Dashboard
                 </NavLink>
@@ -125,25 +125,25 @@ const Navigation = () => {
 
           {/* Mobile Navigation */}
           {isOpen && (
-            <div className="absolute top-full left-0 right-0 bg-primary-600 md:hidden">
-              <div className="px-4 py-3 space-y-3">
+            <div className="absolute top-full left-0 right-0 h-[75vh] bg-primary-600 md:hidden overflow-y-auto shadow-lg">
+              <div className="px-6 py-6 pb-12 space-y-4">
                 <NavLink
                   to="/how-it-works"
-                  className="block text-white hover:text-primary-200"
+                  className="block text-white hover:text-primary-200 py-2"
                   onClick={() => setIsOpen(false)}
                 >
                   How It Works
                 </NavLink>
                 <NavLink
                   to="/about"
-                  className="block text-white hover:text-primary-200"
+                  className="block text-white hover:text-primary-200 py-2"
                   onClick={() => setIsOpen(false)}
                 >
                   About
                 </NavLink>
                 <NavLink
                   to="/contacts"
-                  className="block text-white hover:text-primary-200"
+                  className="block text-white hover:text-primary-200 py-2"
                   onClick={() => setIsOpen(false)}
                 >
                   Contact
@@ -152,19 +152,19 @@ const Navigation = () => {
                   <>
                     <NavLink
                       to="/dashboard"
-                      className="block bg-accent-600 text-white px-4 py-2 rounded-full text-center"
+                      className="block bg-accent-600 text-white px-6 py-3 rounded-full text-center shadow-md"
                       onClick={() => setIsOpen(false)}
                     >
                       Dashboard
                     </NavLink>
-                    <div className="pt-2 border-t border-primary-500">
-                      <div className="flex items-center space-x-2 text-white mb-2">
+                    <div className="pt-4 mt-4 border-t border-primary-500">
+                      <div className="flex items-center space-x-2 text-white mb-4 bg-secondary-600 p-3 rounded-lg">
                         <User className="h-5 w-5" />
                         <span>{user.username}</span>
                       </div>
                       <NavLink
                         to="/settings"
-                        className="block text-white hover:text-primary-200"
+                        className="block text-white hover:text-primary-200 py-2"
                         onClick={() => setIsOpen(false)}
                       >
                         Settings
@@ -174,7 +174,7 @@ const Navigation = () => {
                           logout();
                           setIsOpen(false);
                         }}
-                        className="block text-white hover:text-primary-200 w-full text-left"
+                        className="block text-white hover:text-primary-200 w-full text-left py-2"
                       >
                         Logout
                       </button>
@@ -183,7 +183,7 @@ const Navigation = () => {
                 ) : (
                   <button
                     onClick={() => {}}
-                    className="block w-full bg-accent-600 text-white px-4 py-2 rounded-full text-center"
+                    className="block w-full bg-accent-600 text-white px-6 py-3 rounded-full text-center shadow-md"
                   >
                     Register
                   </button>
