@@ -99,7 +99,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-primary-100">
+    <div className="flex min-h-screen">
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -114,7 +114,7 @@ const Dashboard = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 transform ${
+        className={`fixed md:relative inset-y-0 left-0 transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 w-64 bg-primary-600 text-white shadow-xl transition-transform duration-300 ease-in-out z-40`}
       >
@@ -129,8 +129,7 @@ const Dashboard = () => {
                     if (item.path) navigate(item.path);
                     setIsSidebarOpen(false);
                   }}
-                  className="flex items-center space-x-3 text-white w-full p-3 rounded-lg
-                    bg-primary-700 hover:bg-primary-800 transition-colors"
+                  className="flex items-center space-x-3 text-white w-full p-3 rounded-lg bg-primary-700 hover:bg-primary-800 transition-colors"
                 >
                   <item.icon className="h-5 w-5" />
                   <span>{item.name}</span>
@@ -143,8 +142,7 @@ const Dashboard = () => {
               logout();
               navigate("/");
             }}
-            className="mt-auto flex items-center space-x-3 text-white w-full p-3 rounded-lg
-              bg-primary-800 hover:bg-primary-900 transition-colors"
+            className="mt-auto flex items-center space-x-3 text-white w-full p-3 rounded-lg bg-primary-800 hover:bg-primary-900 transition-colors"
           >
             <LogOut className="h-5 w-5" />
             <span>Logout</span>
@@ -152,17 +150,16 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 bg-primary-50">
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col w-full md:w-[calc(100%-16rem)] ml-0 md:ml-64 bg-primary-50">
         {/* Header */}
-        <header className="bg-white shadow-md p-4">
+        <header className="sticky top-0 z-30 bg-white shadow-md p-4">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-4">
             <div className="relative flex-1 w-full">
               <input
                 type="text"
                 placeholder="Search for your sneaker"
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-primary-300 
-                  focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-primary-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -176,10 +173,10 @@ const Dashboard = () => {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
             {/* Tabs and Action Button */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 grid grid-cols-3 gap-3">
                   {["WTB list", "WTS list", "Inventory"].map((tab) => {
@@ -202,9 +199,7 @@ const Dashboard = () => {
                 <button
                   onClick={handleMatchWTB}
                   disabled={matchingStatus === "matching"}
-                  className="min-w-[200px] px-6 py-3 bg-accent-500 text-white rounded-lg 
-                    font-medium hover:bg-accent-600 transition-colors disabled:opacity-50 
-                    disabled:cursor-not-allowed whitespace-nowrap"
+                  className="min-w-[200px] px-6 py-3 bg-accent-500 text-white rounded-lg font-medium hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                   {matchingStatus === "matching"
                     ? "Matching..."
@@ -216,8 +211,7 @@ const Dashboard = () => {
             {/* Status Messages */}
             {matchingStatus === "error" && (
               <div
-                className="bg-extraColor1-100 border-l-4 border-extraColor1-500 
-                  text-extraColor1-700 px-4 py-3 rounded shadow-md mb-6"
+                className="bg-extraColor1-100 border-l-4 border-extraColor1-500 text-extraColor1-700 px-4 py-3 rounded shadow-md"
                 role="alert"
               >
                 <strong className="font-bold">Error!</strong>
@@ -254,8 +248,7 @@ const Dashboard = () => {
                   {data.map((item, index) => (
                     <li
                       key={index}
-                      className="bg-primary-50 rounded-lg p-4 shadow-md hover:shadow-lg 
-                        transition-shadow border border-primary-200"
+                      className="bg-primary-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow border border-primary-200"
                     >
                       <h3 className="font-bold text-primary-900">
                         {item.title}
