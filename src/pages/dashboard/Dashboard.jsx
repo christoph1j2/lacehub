@@ -46,7 +46,10 @@ const Dashboard = () => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
+
         const result = await response.json();
+        //log for debugging
+        console.log(result);
         setData(result);
         setError(null);
       } catch (err) {
@@ -118,7 +121,7 @@ const Dashboard = () => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 w-64 bg-primary-800 text-white shadow-xl transition-transform duration-300 ease-in-out z-40`}
       >
-        <div className="flex flex-col h-full p-6 bg-primary-500">
+        <div className="flex flex-col h-full p-6 bg-primary-700">
           <div className="space-y-6">
             <h1 className="text-2xl font-bold text-white">LaceHub</h1>
             <nav className="space-y-4">
@@ -153,7 +156,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 bg-primary-100">
         {/* Header */}
-        <header className="bg-primary-500 shadow-md p-4">
+        <header className="bg-primary-700 shadow-md p-4">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-4">
             <div className="relative flex-1 w-full">
               <input
