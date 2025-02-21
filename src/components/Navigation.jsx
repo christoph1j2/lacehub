@@ -3,17 +3,18 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../pages/registration/useAuth";
 import RegisterForm from "../pages/registration/RegisterForm";
 import LoginForm from "../pages/registration/LoginForm";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router";
 
 const Navigation = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showRegisterForm, setShowRegisterForm] = useState(false);
-  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false); // Ensure false by default
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // New state for dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // For user dropdown
   const location = useLocation();
 
   useEffect(() => {
@@ -101,28 +102,22 @@ const Navigation = () => {
                 <li>
                   <button
                     onClick={() => setShowRegisterForm(true)}
-                    className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
+                    className="bg-accent-500 text-white px-4 py-2 rounded-full transition duration-300"
                   >
                     Register
                   </button>
                 </li>
               ) : (
                 <>
-                  <li>
-                    <NavLink
-                      to="/dashboard"
-                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
-                    >
-                      Dashboard
-                    </NavLink>
-                  </li>
+                  {/* Instead of a full-width Dashboard link, we show just a dropdown */}
                   <li
                     className="relative"
                     onMouseEnter={() => setIsDropdownOpen(true)}
                     onMouseLeave={() => setIsDropdownOpen(false)}
                   >
-                    <button className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700">
-                      {user.username} {/* Display username */}
+                    <button className="flex items-center text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700">
+                      <span>{user.username}</span>
+                      <UserCircleIcon className="h-6 w-6 ml-2" />
                     </button>
                     {isDropdownOpen && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
@@ -134,7 +129,7 @@ const Navigation = () => {
                         </NavLink>
                         <button
                           onClick={logout}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           Logout
                         </button>
@@ -152,6 +147,7 @@ const Navigation = () => {
                   <NavLink
                     to="/how-it-works"
                     className="text-white block px-4 py-2 hover:bg-primary-700"
+                    onClick={() => setIsOpen(false)}
                   >
                     How Does It Work?
                   </NavLink>
@@ -160,6 +156,7 @@ const Navigation = () => {
                   <NavLink
                     to="/about"
                     className="text-white block px-4 py-2 hover:bg-primary-700"
+                    onClick={() => setIsOpen(false)}
                   >
                     About Us
                   </NavLink>
@@ -168,6 +165,7 @@ const Navigation = () => {
                   <NavLink
                     to="/contacts"
                     className="text-white block px-4 py-2 hover:bg-primary-700"
+                    onClick={() => setIsOpen(false)}
                   >
                     Contact Us
                   </NavLink>
@@ -175,7 +173,10 @@ const Navigation = () => {
                 {!user ? (
                   <li>
                     <button
-                      onClick={() => setShowRegisterForm(true)}
+                      onClick={() => {
+                        setShowRegisterForm(true);
+                        setIsOpen(false);
+                      }}
                       className="bg-accent-500 text-white block w-full text-left px-4 py-2 hover:bg-accent-600"
                     >
                       Register
@@ -186,14 +187,18 @@ const Navigation = () => {
                     <li>
                       <NavLink
                         to="/dashboard"
-                        className="bg-accent-500 text-white block px-4 py-2 hover:bg-accent-600"
+                        className="text-white block px-4 py-2 hover:bg-primary-700"
+                        onClick={() => setIsOpen(false)}
                       >
                         Dashboard
                       </NavLink>
                     </li>
                     <li>
                       <button
-                        onClick={logout}
+                        onClick={() => {
+                          logout();
+                          setIsOpen(false);
+                        }}
                         className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
                       >
                         Logout
@@ -216,7 +221,6 @@ const Navigation = () => {
           }}
         />
       )}
-
       {showLoginForm && (
         <LoginForm
           onClose={() => setShowLoginForm(false)}

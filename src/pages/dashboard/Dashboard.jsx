@@ -1,288 +1,236 @@
 import { useState, useEffect } from "react";
-import { useNavigate, NavLink } from "react-router";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useAuth } from "../registration/useAuth";
-import {
-  HomeIcon,
-  QuestionMarkCircleIcon,
-  Cog6ToothIcon,
-  LifebuoyIcon,
-  MagnifyingGlassIcon,
-  ArrowRightOnRectangleIcon,
-  UserCircleIcon,
-} from "@heroicons/react/24/outline";
-
-const Dashboard = () => {
+import { useAuth } from "../pages/registration/useAuth";
+import RegisterForm from "../pages/registration/RegisterForm";
+import LoginForm from "../pages/registration/LoginForm";
+import { NavLink, useLocation } from "react-router";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
+const Navigation = () => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("wtb"); // Default to WTB
-  const [searchQuery, setSearchQuery] = useState("");
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [matchingStatus, setMatchingStatus] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar toggle
-
-  const apiEndpoints = {
-    wtb: "https://api.lacehub.cz/wtb/user",
-    wts: "https://api.lacehub.cz/wts/user",
-    inventory: "https://api.lacehub.cz/user-inventory/user",
-  };
+  const [isOpen, setIsOpen] = useState(false);
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false); // Ensure false by default
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // For user dropdown
+  const location = useLocation();
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No authentication token found");
-        }
-
-        const response = await fetch(apiEndpoints[activeTab], {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const result = await response.json();
-        setData(result);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch data");
-        setData([]);
-        if (err.message === "No authentication token found") {
-          navigate("/");
-        }
-      } finally {
-        setLoading(false);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY === 0) {
+        setIsScrolled(false);
+        setIsVisible(true);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+        setIsScrolled(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
       }
+      setLastScrollY(currentScrollY);
     };
 
-    fetchData();
-  }, [activeTab, navigate]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
-  const handleMatchWTB = async () => {
-    setMatchingStatus("matching");
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("https://api.lacehub.cz/api/match", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Matching process failed");
-      }
-      const result = await response.json();
-      setMatchingStatus("success");
-      console.log(result);
-    } catch (err) {
-      setMatchingStatus("error");
-      console.error("Matching error:", err);
-    }
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
   };
 
-  if (!user) {
-    navigate("/");
-    return null;
-  }
+  const navClass =
+    location.pathname !== "/"
+      ? "bg-primary-600"
+      : isScrolled
+      ? "bg-primary-600"
+      : "bg-transparent hover:bg-primary-600";
 
   return (
-    <div className="flex h-screen bg-primary-100">
-      {/* Sidebar */}
-      <div
-        className={`w-72 bg-primary-800 text-white h-full p-6 flex flex-col justify-between transition-transform duration-300 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 fixed md:static top-0 left-0 z-40`}
+    <>
+      <nav
+        className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${navClass} ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
       >
-        <div>
-          <h1 className="text-3xl font-bold text-secondary-100 mb-10">
-            LaceHub
-          </h1>
-          <nav className="space-y-6">
-            {[
-              { name: "Homepage", icon: HomeIcon, path: "/" },
-              { name: "How it works", icon: QuestionMarkCircleIcon },
-              { name: "Settings", icon: Cog6ToothIcon },
-              { name: "Support", icon: LifebuoyIcon },
-            ].map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                className="flex items-center text-xl text-secondary-100 hover:text-white transition-colors w-full"
-              >
-                <item.icon className="h-6 w-6 mr-3" />
-                {item.name}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-        <button
-          onClick={() => {
-            logout();
-            navigate("/");
-          }}
-          className="flex items-center text-xl text-secondary-100 hover:text-white transition-colors"
-        >
-          <ArrowRightOnRectangleIcon className="h-6 w-6 mr-3" />
-          Logout
-        </button>
-      </div>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="text-white font-bold text-2xl duration-300">
+              <NavLink to="/">LaceHub</NavLink>
+            </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="bg-primary-500 text-white shadow-lg p-4">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            {/* Hamburger menu for small screens */}
             <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="md:hidden text-white focus:outline-none"
+              className="md:hidden text-white"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
             >
-              {isSidebarOpen ? (
+              {isOpen ? (
                 <XMarkIcon className="h-8 w-8" />
               ) : (
                 <Bars3Icon className="h-8 w-8" />
               )}
             </button>
-            <div className="flex-1 max-w-2xl">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search for your sneaker"
-                  className="w-full pl-10 pr-4 py-2 rounded-full bg-white text-primary-800 placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-secondary-300"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary-400" />
-              </div>
-            </div>
-            <div className="flex items-center ml-4 hover:bg-primary-600 rounded-full px-3 py-1 transition-colors">
-              <span className="mr-2 text-lg">Welcome, {user?.username}</span>
-              <UserCircleIcon className="h-10 w-10 text-secondary-500" />
-            </div>
-          </div>
-        </header>
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto px-4">
-            {/* Tab Buttons and CTA */}
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex flex-col md:flex-row justify-between items-center">
-              <div className="flex space-x-4 w-full mb-4 md:mb-0">
-                {["WTB list", "WTS list", "Inventory"].map((tab) => {
-                  const tabKey = tab.toLowerCase().split(" ")[0];
-                  return (
-                    <button
-                      key={tab}
-                      className={`px-6 py-3 rounded-full font-medium transition-colors text-lg flex-grow text-center ${
-                        activeTab === tabKey
-                          ? "bg-secondary-500 text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                      onClick={() => setActiveTab(tabKey)}
-                    >
-                      {tab}
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                onClick={handleMatchWTB}
-                disabled={matchingStatus === "matching"}
-                className="px-6 py-3 bg-accent-500 text-white rounded-full font-medium text-lg hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-              >
-                {matchingStatus === "matching"
-                  ? "Matching..."
-                  : "Match your WTB list"}
-              </button>
-            </div>
-
-            {/* Status Messages */}
-            {matchingStatus === "error" && (
-              <div
-                className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-                role="alert"
-              >
-                <strong className="font-bold">Error!</strong>
-                <span className="block sm:inline">
-                  {" "}
-                  The matching process failed. Please try again later.
-                </span>
-              </div>
-            )}
-            {matchingStatus === "success" && (
-              <div
-                className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
-                role="alert"
-              >
-                <strong className="font-bold">Success!</strong>
-                <span className="block sm:inline">
-                  {" "}
-                  Matching process completed successfully.
-                </span>
-              </div>
-            )}
-
-            {/* Content Card */}
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-3xl font-bold text-secondary-800 mb-6">
-                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}{" "}
-                Dashboard
-              </h2>
-              <p className="text-lg text-gray-600 mb-4">
-                Welcome to your {activeTab} dashboard. Here you can manage your
-                sneaker collection and trades.
-              </p>
-
-              {/* Data Display */}
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="text-lg text-primary-600 mt-4">Loading...</p>
-                </div>
-              ) : error ? (
-                <div
-                  className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-                  role="alert"
+            {/* Desktop menu */}
+            <ul className="hidden md:flex space-x-6 items-center">
+              <li>
+                <NavLink
+                  to="/how-it-works"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                 >
-                  <strong className="font-bold">Error!</strong>
-                  <span className="block sm:inline"> {error}</span>
-                </div>
-              ) : data.length > 0 ? (
-                <ul className="space-y-4">
-                  {data.map((item, index) => (
-                    <li
-                      key={index}
-                      className="bg-primary-50 border border-primary-200 rounded-md p-4"
-                    >
-                      <h3 className="font-bold text-primary-800">
-                        {item.title}
-                      </h3>
-                      <p className="text-primary-600">{item.description}</p>
-                    </li>
-                  ))}
-                </ul>
+                  How Does It Work?
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/about"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                >
+                  About Us
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/contacts"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                >
+                  Contact Us
+                </NavLink>
+              </li>
+              {!user ? (
+                <li>
+                  <button
+                    onClick={() => setShowRegisterForm(true)}
+                    className="bg-accent-500 text-white px-4 py-2 rounded-full transition duration-300"
+                  >
+                    Register
+                  </button>
+                </li>
               ) : (
-                <div className="bg-primary-50 border border-primary-200 rounded-md p-4 text-primary-800">
-                  <p className="font-medium">No data available</p>
-                  <p>
-                    Your {activeTab} data will be displayed here once you add
-                    some items.
-                  </p>
-                </div>
+                <>
+                  {/* Instead of a full-width Dashboard link, we show just a dropdown */}
+                  <li
+                    className="relative"
+                    onMouseEnter={() => setIsDropdownOpen(true)}
+                    onMouseLeave={() => setIsDropdownOpen(false)}
+                  >
+                    <button className="flex items-center text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700">
+                      <span>{user.username}</span>
+                      <UserCircleIcon className="h-6 w-6 ml-2" />
+                    </button>
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                        <NavLink
+                          to="/settings"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Settings
+                        </NavLink>
+                        <button
+                          onClick={logout}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                </>
               )}
-            </div>
+            </ul>
+
+            {/* Mobile menu */}
+            {isOpen && (
+              <ul className="md:hidden absolute top-16 left-0 right-0 py-4 bg-primary-600 space-y-4 shadow-lg">
+                <li>
+                  <NavLink
+                    to="/how-it-works"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    How Does It Work?
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/about"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    About Us
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/contacts"
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Contact Us
+                  </NavLink>
+                </li>
+                {!user ? (
+                  <li>
+                    <button
+                      onClick={() => {
+                        setShowRegisterForm(true);
+                        setIsOpen(false);
+                      }}
+                      className="bg-accent-500 text-white block w-full text-left px-4 py-2 hover:bg-accent-600"
+                    >
+                      Register
+                    </button>
+                  </li>
+                ) : (
+                  <>
+                    <li>
+                      <NavLink
+                        to="/dashboard"
+                        className="text-white block px-4 py-2 hover:bg-primary-700"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Dashboard
+                      </NavLink>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsOpen(false);
+                        }}
+                        className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </>
+                )}
+              </ul>
+            )}
           </div>
-        </main>
-      </div>
-    </div>
+        </div>
+      </nav>
+
+      {showRegisterForm && (
+        <RegisterForm
+          onClose={() => setShowRegisterForm(false)}
+          onLoginClick={() => {
+            setShowRegisterForm(false);
+            setShowLoginForm(true);
+          }}
+        />
+      )}
+      {showLoginForm && (
+        <LoginForm
+          onClose={() => setShowLoginForm(false)}
+          onRegisterClick={() => {
+            setShowLoginForm(false);
+            setShowRegisterForm(true);
+          }}
+        />
+      )}
+    </>
   );
 };
 
-export default Dashboard;
+export default Navigation;
