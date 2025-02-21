@@ -11,7 +11,7 @@ import {
   LogOut,
   User,
 } from "lucide-react";
-import { useAuth } from "../pages/registration/useAuth";
+import { useAuth } from "../registration/useAuth";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
