@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate, NavLink } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../registration/useAuth";
+
 import {
   HomeIcon,
   QuestionMarkCircleIcon,
@@ -14,18 +15,12 @@ import {
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("wtb"); // Default to WTB
+  const [activeTab, setActiveTab] = useState("inventory");
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [matchingStatus, setMatchingStatus] = useState(null);
-
-  const apiEndpoints = {
-    wtb: "https://api.lacehub.cz/wtb/user",
-    wts: "https://api.lacehub.cz/wts/user",
-    inventory: "https://api.lacehub.cz/user-inventory/user",
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +31,7 @@ const Dashboard = () => {
           throw new Error("No authentication token found");
         }
 
-        const response = await fetch(apiEndpoints[activeTab], {
+        const response = await fetch(`https://api.lacehub.cz/${activeTab}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -85,11 +80,6 @@ const Dashboard = () => {
     }
   };
 
-  if (!user) {
-    navigate("/");
-    return null;
-  }
-
   return (
     <div className="flex h-screen bg-primary-100">
       {/* Sidebar */}
@@ -100,19 +90,18 @@ const Dashboard = () => {
           </h1>
           <nav className="space-y-6">
             {[
-              { name: "Homepage", icon: HomeIcon, path: "/" },
+              { name: "Dashboard", icon: HomeIcon },
               { name: "How it works", icon: QuestionMarkCircleIcon },
               { name: "Settings", icon: Cog6ToothIcon },
               { name: "Support", icon: LifebuoyIcon },
             ].map((item) => (
-              <NavLink
+              <button
                 key={item.name}
-                to={item.path}
                 className="flex items-center text-xl text-secondary-100 hover:text-white transition-colors w-full"
               >
                 <item.icon className="h-6 w-6 mr-3" />
                 {item.name}
-              </NavLink>
+              </button>
             ))}
           </nav>
         </div>
@@ -157,23 +146,22 @@ const Dashboard = () => {
           <div className="max-w-7xl mx-auto px-4">
             {/* Tab Buttons and CTA */}
             <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex justify-between items-center">
-              <div className="flex space-x-4 w-full">
-                {["WTB list", "WTS list", "Inventory"].map((tab) => {
-                  const tabKey = tab.toLowerCase().split(" ")[0];
-                  return (
-                    <button
-                      key={tab}
-                      className={`px-6 py-3 rounded-full font-medium transition-colors text-lg flex-grow text-center ${
-                        activeTab === tabKey
-                          ? "bg-secondary-500 text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                      onClick={() => setActiveTab(tabKey)}
-                    >
-                      {tab}
-                    </button>
-                  );
-                })}
+              <div className="flex space-x-4">
+                {["WTB list", "WTS list", "Inventory"].map((tab) => (
+                  <button
+                    key={tab}
+                    className={`px-6 py-3 rounded-full font-medium transition-colors text-lg ${
+                      activeTab === tab.toLowerCase().split(" ")[0]
+                        ? "bg-secondary-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                    onClick={() =>
+                      setActiveTab(tab.toLowerCase().split(" ")[0])
+                    }
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
               <button
                 onClick={handleMatchWTB}
