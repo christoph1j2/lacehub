@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
-import { Menu, X, User } from "lucide-react";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../pages/registration/useAuth";
+import RegisterForm from "../pages/registration/RegisterForm";
+import LoginForm from "../pages/registration/LoginForm";
 import { NavLink, useLocation } from "react-router";
-import RegisterForm from "../pages/registration/RegisterForm"; // Import RegisterForm
-import LoginForm from "../pages/registration/LoginForm"; // Import LoginForm
 
 const Navigation = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [showRegisterForm, setShowRegisterForm] = useState(false); // Add this line
-  const [showLoginForm, setShowLoginForm] = useState(false); // Add this line
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false); // Initialize to false
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -34,6 +33,10 @@ const Navigation = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
 
   const navClass =
     location.pathname !== "/"
@@ -57,159 +60,154 @@ const Navigation = () => {
 
             <button
               className="md:hidden text-white"
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={toggleMenu}
               aria-label="Toggle menu"
             >
               {isOpen ? (
-                <X className="h-8 w-8" />
+                <XMarkIcon className="h-8 w-8" />
               ) : (
-                <Menu className="h-8 w-8" />
+                <Bars3Icon className="h-8 w-8" />
               )}
             </button>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
-              <NavLink
-                to="/how-it-works"
-                className="text-white hover:text-primary-200 transition-colors"
-              >
-                How It Works
-              </NavLink>
-              <NavLink
-                to="/about"
-                className="text-white hover:text-primary-200 transition-colors"
-              >
-                About
-              </NavLink>
-              <NavLink
-                to="/contacts"
-                className="text-white hover:text-primary-200 transition-colors"
-              >
-                Contact
-              </NavLink>
-
-              {user ? (
-                <div className="flex items-center space-x-4">
-                  <NavLink
-                    to="/dashboard"
-                    className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-2 rounded-full transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
-                    Dashboard
-                  </NavLink>
-                  <div className="relative">
-                    <button
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="flex items-center space-x-2 bg-secondary-600 text-white px-4 py-2 rounded-full hover:bg-secondary-700 transition-colors"
-                    >
-                      <User className="h-5 w-5" />
-                      <span>{user.username}</span>
-                    </button>
-                    {isDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50">
-                        <NavLink
-                          to="/settings"
-                          className="block px-4 py-2 text-primary-800 hover:bg-primary-100"
-                        >
-                          Settings
-                        </NavLink>
-                        <button
-                          onClick={logout}
-                          className="block w-full text-left px-4 py-2 text-primary-800 hover:bg-primary-100"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowRegisterForm(true)} // Set showRegisterForm to true
-                  className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-2 rounded-full transition-colors"
+            {/* Desktop menu */}
+            <ul className="hidden md:flex space-x-6 items-center">
+              <li>
+                <NavLink
+                  to="/how-it-works"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
                 >
-                  Register
-                </button>
+                  How Does It Work?
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/about"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                >
+                  About Us
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/contacts"
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                >
+                  Contact Us
+                </NavLink>
+              </li>
+              {!user ? (
+                <li>
+                  <button
+                    onClick={() => setShowRegisterForm(true)}
+                    className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
+                  >
+                    Register
+                  </button>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <NavLink
+                      to="/dashboard"
+                      className="bg-accent-500 text-white px-4 py-2 rounded-full hover:bg-accent-600 transition duration-300"
+                    >
+                      Dashboard
+                    </NavLink>
+                  </li>
+                  <li>
+                    <button
+                      onClick={logout}
+                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </>
               )}
-            </div>
+            </ul>
 
-            {/* Mobile Navigation */}
+            {/* Mobile menu */}
             {isOpen && (
-              <div className="absolute top-full left-0 right-0 h-[75vh] bg-primary-600 md:hidden overflow-y-auto shadow-lg">
-                <div className="px-6 py-6 pb-12 space-y-4">
+              <ul className="md:hidden absolute top-16 left-0 right-0 py-4 bg-primary-600 space-y-4 shadow-lg">
+                <li>
                   <NavLink
                     to="/how-it-works"
-                    className="block text-white hover:text-primary-200 py-2"
-                    onClick={() => setIsOpen(false)}
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
                   >
-                    How It Works
+                    How Does It Work?
                   </NavLink>
+                </li>
+                <li>
                   <NavLink
                     to="/about"
-                    className="block text-white hover:text-primary-200 py-2"
-                    onClick={() => setIsOpen(false)}
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
                   >
-                    About
+                    About Us
                   </NavLink>
+                </li>
+                <li>
                   <NavLink
                     to="/contacts"
-                    className="block text-white hover:text-primary-200 py-2"
-                    onClick={() => setIsOpen(false)}
+                    className="text-white block px-4 py-2 hover:bg-primary-700"
                   >
-                    Contact
+                    Contact Us
                   </NavLink>
-                  {user ? (
-                    <>
-                      <NavLink
-                        to="/dashboard"
-                        className="block bg-accent-600 text-white px-6 py-3 rounded-full text-center shadow-md"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Dashboard
-                      </NavLink>
-                      <div className="pt-4 mt-4 border-t border-primary-500">
-                        <div className="flex items-center space-x-2 text-white mb-4 bg-secondary-600 p-3 rounded-lg">
-                          <User className="h-5 w-5" />
-                          <span>{user.username}</span>
-                        </div>
-                        <NavLink
-                          to="/settings"
-                          className="block text-white hover:text-primary-200 py-2"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          Settings
-                        </NavLink>
-                        <button
-                          onClick={() => {
-                            logout();
-                            setIsOpen(false);
-                          }}
-                          className="block text-white hover:text-primary-200 w-full text-left py-2"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    </>
-                  ) : (
+                </li>
+                {!user ? (
+                  <li>
                     <button
-                      onClick={() => {
-                        setShowRegisterForm(true);
-                        setIsOpen(false);
-                      }}
-                      className="block w-full bg-accent-600 text-white px-6 py-3 rounded-full text-center shadow-md"
+                      onClick={() => setShowRegisterForm(true)}
+                      className="bg-accent-500 text-white block w-full text-left px-4 py-2 hover:bg-accent-600"
                     >
                       Register
                     </button>
-                  )}
-                </div>
-              </div>
+                  </li>
+                ) : (
+                  <>
+                    <li>
+                      <NavLink
+                        to="/dashboard"
+                        className="bg-accent-500 text-white block px-4 py-2 hover:bg-accent-600"
+                      >
+                        Dashboard
+                      </NavLink>
+                    </li>
+                    <li>
+                      <button
+                        onClick={logout}
+                        className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </>
+                )}
+              </ul>
             )}
           </div>
         </div>
       </nav>
+
       {showRegisterForm && (
-        <RegisterForm onClose={() => setShowRegisterForm(false)} />
+        <RegisterForm
+          onClose={() => setShowRegisterForm(false)}
+          onLoginClick={() => {
+            setShowRegisterForm(false);
+            setShowLoginForm(true);
+          }}
+        />
       )}
-      {showLoginForm && <LoginForm onClose={() => setShowLoginForm(false)} />}
+
+      {showLoginForm && (
+        <LoginForm
+          onClose={() => setShowLoginForm(false)}
+          onRegisterClick={() => {
+            setShowLoginForm(false);
+            setShowRegisterForm(true);
+          }}
+        />
+      )}
     </>
   );
 };
