@@ -11,7 +11,7 @@ import {
   LogOut,
   User,
 } from "lucide-react";
-import { useAuth } from "../registration/useAuth";
+import { useAuth } from "../hooks/useAuth";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -99,11 +99,11 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-primary-100">
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed top-4 left-4 z-50 md:hidden bg-secondary-500 text-white p-2 rounded-lg shadow-lg hover:bg-secondary-600"
+        className="fixed top-4 left-4 z-50 md:hidden bg-primary-800 text-white p-2 rounded-lg shadow-lg hover:bg-primary-700 transition-colors"
       >
         {isSidebarOpen ? (
           <X className="h-6 w-6" />
@@ -114,9 +114,9 @@ const Dashboard = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:relative inset-y-0 left-0 transform ${
+        className={`fixed md:static inset-y-0 left-0 transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 w-64 bg-primary-600 text-white shadow-xl transition-transform duration-300 ease-in-out z-40`}
+        } md:translate-x-0 w-64 bg-primary-800 text-white shadow-xl transition-transform duration-300 ease-in-out z-40`}
       >
         <div className="flex flex-col h-full p-6">
           <div className="space-y-6">
@@ -129,7 +129,7 @@ const Dashboard = () => {
                     if (item.path) navigate(item.path);
                     setIsSidebarOpen(false);
                   }}
-                  className="flex items-center space-x-3 text-white w-full p-3 rounded-lg bg-primary-700 hover:bg-primary-800 transition-colors"
+                  className="flex items-center space-x-3 text-white w-full p-2 rounded-lg hover:bg-primary-700 transition-colors"
                 >
                   <item.icon className="h-5 w-5" />
                   <span>{item.name}</span>
@@ -142,7 +142,7 @@ const Dashboard = () => {
               logout();
               navigate("/");
             }}
-            className="mt-auto flex items-center space-x-3 text-white w-full p-3 rounded-lg bg-primary-800 hover:bg-primary-900 transition-colors"
+            className="mt-auto flex items-center space-x-3 text-white w-full p-2 rounded-lg hover:bg-primary-900 transition-colors"
           >
             <LogOut className="h-5 w-5" />
             <span>Logout</span>
@@ -150,33 +150,35 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col w-full md:w-[calc(100%-16rem)] ml-0 md:ml-64 bg-primary-50">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0 bg-primary-100">
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-white shadow-md p-4">
+        <header className="bg-primary-500 shadow-md p-4">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-4">
             <div className="relative flex-1 w-full">
               <input
                 type="text"
                 placeholder="Search for your sneaker"
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-primary-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border-0 focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
-            <div className="flex items-center gap-3 bg-primary-500 text-white px-4 py-2 rounded-lg">
-              <span>Welcome, {user?.username}</span>
-              <User className="h-6 w-6" />
+            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-lg">
+              <span className="text-primary-900">
+                Welcome, {user?.username}
+              </span>
+              <User className="h-8 w-8 text-primary-600" />
             </div>
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto p-6 bg-primary-100">
+          <div className="max-w-7xl mx-auto">
             {/* Tabs and Action Button */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 grid grid-cols-3 gap-3">
                   {["WTB list", "WTS list", "Inventory"].map((tab) => {
@@ -184,10 +186,10 @@ const Dashboard = () => {
                     return (
                       <button
                         key={tab}
-                        className={`px-4 py-3 rounded-lg font-medium transition-colors ${
+                        className={`px-4 py-3 rounded-lg font-medium transition-all ${
                           activeTab === tabKey
-                            ? "bg-secondary-500 text-white"
-                            : "bg-primary-100 text-primary-900 hover:bg-primary-200"
+                            ? "bg-secondary-500 text-white hover:bg-secondary-600"
+                            : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
                         }`}
                         onClick={() => setActiveTab(tabKey)}
                       >
@@ -199,11 +201,11 @@ const Dashboard = () => {
                 <button
                   onClick={handleMatchWTB}
                   disabled={matchingStatus === "matching"}
-                  className="min-w-[200px] px-6 py-3 bg-accent-500 text-white rounded-lg font-medium hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  className="min-w-[200px] px-6 py-3 bg-accent-500 text-white rounded-lg font-medium hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-md"
                 >
                   {matchingStatus === "matching"
                     ? "Matching..."
-                    : "Match your WTB list"}
+                    : "Match your WTS list"}
                 </button>
               </div>
             </div>
@@ -211,7 +213,7 @@ const Dashboard = () => {
             {/* Status Messages */}
             {matchingStatus === "error" && (
               <div
-                className="bg-extraColor1-100 border-l-4 border-extraColor1-500 text-extraColor1-700 px-4 py-3 rounded shadow-md"
+                className="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded shadow-md mb-6"
                 role="alert"
               >
                 <strong className="font-bold">Error!</strong>
@@ -221,25 +223,40 @@ const Dashboard = () => {
                 </span>
               </div>
             )}
+            {matchingStatus === "success" && (
+              <div
+                className="bg-primary-100 border-l-4 border-primary-500 text-primary-700 px-4 py-3 rounded shadow-md mb-6"
+                role="alert"
+              >
+                <strong className="font-bold">Success!</strong>
+                <span className="block sm:inline">
+                  {" "}
+                  Matching process completed successfully.
+                </span>
+              </div>
+            )}
 
             {/* Content */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-2xl font-bold text-primary-900 mb-4">
                 {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}{" "}
                 Dashboard
               </h2>
-              <p className="text-primary-700 mb-6">
+              <p className="text-gray-600 mb-6">
                 Welcome to your {activeTab} dashboard. Here you can manage your
                 sneaker collection and trades.
               </p>
 
               {loading ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
                   <p className="text-lg text-primary-600 mt-4">Loading...</p>
                 </div>
               ) : error ? (
-                <div className="bg-extraColor1-100 border-l-4 border-extraColor1-500 text-extraColor1-700 px-4 py-3 rounded shadow-md">
+                <div
+                  className="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded shadow-md"
+                  role="alert"
+                >
                   <strong className="font-bold">Error!</strong>
                   <span className="block sm:inline"> {error}</span>
                 </div>
@@ -250,19 +267,19 @@ const Dashboard = () => {
                       key={index}
                       className="bg-primary-50 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow border border-primary-200"
                     >
-                      <h3 className="font-bold text-primary-900">
+                      <h3 className="font-bold text-primary-800">
                         {item.title}
                       </h3>
-                      <p className="text-primary-700">{item.description}</p>
+                      <p className="text-gray-600">{item.description}</p>
                     </li>
                   ))}
                 </ul>
               ) : (
                 <div className="bg-primary-50 rounded-lg p-4 shadow-md">
-                  <p className="font-medium text-primary-900">
+                  <p className="font-medium text-primary-800">
                     No data available
                   </p>
-                  <p className="text-primary-700">
+                  <p className="text-gray-600">
                     Your {activeTab} data will be displayed here once you add
                     some items.
                   </p>
