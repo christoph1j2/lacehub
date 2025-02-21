@@ -51,7 +51,7 @@ const Dashboard = () => {
         //log for debugging
         console.log(result);
         setData(result);
-        setData("text/plain", result);
+        // setData("text/plain", result);
         setError(null);
       } catch (err) {
         setError("Failed to fetch data");
