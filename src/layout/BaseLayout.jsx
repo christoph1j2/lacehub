@@ -5,7 +5,8 @@ import { Outlet } from "react-router";
 
 function BaseLayout() {
   return (
-    <div className="min-h-screen bg-[url('/images/backgroung1.webp')] bg-fixed bg-no-repeat bg-cover">
+    //? Background = bg-gray-800
+    <div className="min-h-screen bg-gray-800 bg-fixed bg-no-repeat bg-cover">
       <Navigation />
       <main className="flex-1">
         <Outlet />

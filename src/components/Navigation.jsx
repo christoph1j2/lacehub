@@ -38,12 +38,13 @@ const Navigation = () => {
     setIsOpen(!isOpen);
   };
 
+  //! tady vsude, kde byla zelena, tak >>>zmena barvy<<<
   const navClass =
     location.pathname !== "/"
-      ? "bg-primary-600"
+      ? "bg-orange-700"
       : isScrolled
-      ? "bg-primary-600"
-      : "bg-transparent hover:bg-primary-600";
+      ? "bg-orange-700"
+      : "bg-transparent hover:bg-orange-700";
 
   return (
     <>
@@ -75,7 +76,8 @@ const Navigation = () => {
               <li>
                 <NavLink
                   to="/how-it-works"
-                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                  //!tady
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                 >
                   How Does It Work?
                 </NavLink>
@@ -83,7 +85,8 @@ const Navigation = () => {
               <li>
                 <NavLink
                   to="/about"
-                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                  //!tady
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                 >
                   About Us
                 </NavLink>
@@ -91,7 +94,8 @@ const Navigation = () => {
               <li>
                 <NavLink
                   to="/contacts"
-                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                  //!tady
+                  className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                 >
                   Contact Us
                 </NavLink>
@@ -118,7 +122,8 @@ const Navigation = () => {
                   <li>
                     <button
                       onClick={logout}
-                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-primary-700"
+                      //!tady
+                      className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                     >
                       Logout
                     </button>
@@ -129,11 +134,13 @@ const Navigation = () => {
 
             {/* Mobile menu */}
             {isOpen && (
-              <ul className="md:hidden absolute top-16 left-0 right-0 py-4 bg-primary-600 space-y-4 shadow-lg">
+              //!tady
+              <ul className="md:hidden absolute top-16 left-0 right-0 py-4 bg-orange-700 space-y-4 shadow-lg">
                 <li>
                   <NavLink
                     to="/how-it-works"
-                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                    //!tady
+                    className="text-white block px-4 py-2 hover:bg-orange-800"
                   >
                     How Does It Work?
                   </NavLink>
@@ -141,7 +148,8 @@ const Navigation = () => {
                 <li>
                   <NavLink
                     to="/about"
-                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                    //!tady
+                    className="text-white block px-4 py-2 hover:bg-orange-800"
                   >
                     About Us
                   </NavLink>
@@ -149,7 +157,8 @@ const Navigation = () => {
                 <li>
                   <NavLink
                     to="/contacts"
-                    className="text-white block px-4 py-2 hover:bg-primary-700"
+                    //!tady
+                    className="text-white block px-4 py-2 hover:bg-orange-800"
                   >
                     Contact Us
                   </NavLink>
@@ -176,7 +185,8 @@ const Navigation = () => {
                     <li>
                       <button
                         onClick={logout}
-                        className="text-white block w-full text-left px-4 py-2 hover:bg-primary-700"
+                        //!tady
+                        className="text-white block w-full text-left px-4 py-2 hover:bg-orange-800"
                       >
                         Logout
                       </button>

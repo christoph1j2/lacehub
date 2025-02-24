@@ -5,3 +5,20 @@
 .container {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
+
+.parallax-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+@layer utilities {
+  .delay-200 {
+    transition-delay: 200ms;
+  }
+  .delay-400 {
+    transition-delay: 400ms;
+  }
+  .delay-600 {
+    transition-delay: 600ms;
+  }
+}
