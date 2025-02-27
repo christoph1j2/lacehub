@@ -38,6 +38,12 @@ export class MatchesService {
             relations: ['wtb', 'wtb.product'], // Include WTB items and their products
         });
 
+        // Check if buyer exists and has wtb items
+        if (!buyer || !buyer.wtb || buyer.wtb.length === 0) {
+            // Return empty array if buyer has no wtb items
+            return [];
+        }
+
         // Get all potential sellers (everyone except the buyer)
         const sellers = await this.userRepository.find({
             where: { id: Not(buyerId) }, // Exclude the buyer
@@ -50,6 +56,11 @@ export class MatchesService {
         // For each potential seller, check if there's an overlap between
         // what buyer wants and what seller offers
         for (const seller of sellers) {
+            // Skip sellers with no wts items to avoid null/undefined issues
+            if (!seller.wts || seller.wts.length === 0) {
+                continue;
+            }
+
             // Find overlapping items (items that buyer wants and seller has)
             const overlap = this.calculateOverlap(buyer.wtb, seller.wts);
 
@@ -62,16 +73,21 @@ export class MatchesService {
                     seller,
                     overlap, // Items that match between buyer and seller
                     matchScore, // How good the match is (higher is better)
-                    credibilityScore: seller.credibility_score, // Seller reputation
+                    credibilityScore: seller.credibility_score || 0, // Seller reputation (default to 0 if null)
                 });
             }
+        }
+
+        // If no matches were found, return empty array
+        if (matches.length === 0) {
+            return [];
         }
 
         // Sort matches by score (highest first) and then by credibility
         matches.sort(
             (a, b) =>
                 b.matchScore - a.matchScore || // First by match score
-                b.credibilityScore - a.credibilityScore, // Then by credibility
+                (b.credibilityScore || 0) - (a.credibilityScore || 0), // Then by credibility, defaulting to 0 if null
         );
 
         // Take only the top 5 matches
@@ -108,7 +124,7 @@ export class MatchesService {
                 this.notificationsService.create(
                     buyer.id, // Notify the buyer
                     'match_found', // Type of notification
-                    `Match found with ${savedMatch.seller.username}! Credibility: ${savedMatch.seller.credibility_score}`,
+                    `Match found with ${savedMatch.seller.username}! Credibility: ${savedMatch.seller.credibility_score || 0}`,
                     savedMatch.id, // CRITICAL: Link notification to match ID
                 ),
             ),
@@ -131,6 +147,12 @@ export class MatchesService {
             relations: ['wts', 'wts.product'], // Include WTS items and their products
         });
 
+        // Check if seller exists and has wts items
+        if (!seller || !seller.wts || seller.wts.length === 0) {
+            // Return empty array if seller has no wts items
+            return [];
+        }
+
         // Get all potential buyers (everyone except the seller)
         const buyers = await this.userRepository.find({
             where: { id: Not(sellerId) }, // Exclude the seller
@@ -143,26 +165,39 @@ export class MatchesService {
         // For each potential buyer, check if there's an overlap between
         // what seller offers and what buyer wants
         for (const buyer of buyers) {
+            // Skip buyers with no wtb items to avoid null/undefined issues
+            if (!buyer.wtb || buyer.wtb.length === 0) {
+                continue;
+            }
+
             // Find overlapping items (items that seller offers and buyer wants)
             const overlap = this.calculateOverlap(buyer.wtb, seller.wts);
 
-            // Calculate match score as percentage of seller's items that match
-            const matchScore = overlap.length / seller.wts.length;
+            // Only add to matches if there's an actual overlap
+            if (overlap.length > 0) {
+                // Calculate match score as percentage of seller's items that match
+                const matchScore = overlap.length / seller.wts.length;
 
-            // Add to potential matches (even if overlap is empty - different from buyer logic)
-            matches.push({
-                buyer,
-                overlap, // Items that match between buyer and seller
-                matchScore, // How good the match is (higher is better)
-                credibilityScore: buyer.credibility_score, // Buyer reputation
-            });
+                // Add to potential matches
+                matches.push({
+                    buyer,
+                    overlap, // Items that match between buyer and seller
+                    matchScore, // How good the match is (higher is better)
+                    credibilityScore: buyer.credibility_score || 0, // Buyer reputation (default to 0 if null)
+                });
+            }
+        }
+
+        // If no matches were found, return empty array
+        if (matches.length === 0) {
+            return [];
         }
 
         // Sort matches by score (highest first) and then by credibility
         matches.sort(
             (a, b) =>
                 b.matchScore - a.matchScore || // First by match score
-                b.credibilityScore - a.credibilityScore, // Then by credibility
+                (b.credibilityScore || 0) - (a.credibilityScore || 0), // Then by credibility, using 0 as default
         );
 
         // Take only the top 5 matches
@@ -176,8 +211,12 @@ export class MatchesService {
                     const overlapItems = match.overlap;
                     // For each overlapping item, create a match record
                     return overlapItems.map((item) => ({
-                        wtb: item.wtb, // The wanted item
-                        wts: item.wts, // The selling item
+                        wtb: item, // The wanted item
+                        wts: seller.wts.find(
+                            (wts) =>
+                                wts.product.sku === item.product.sku &&
+                                wts.size === item.size,
+                        ), // The matching selling item
                         buyer: match.buyer,
                         seller: seller,
                         match_score: match.matchScore,
@@ -195,7 +234,7 @@ export class MatchesService {
                 this.notificationsService.create(
                     seller.id, // Notify the seller
                     'match_found', // Type of notification
-                    `You have a match with ${savedMatch.buyer.username}! Credibility: ${savedMatch.buyer.credibility_score}`,
+                    `You have a match with ${savedMatch.buyer.username}! Credibility: ${savedMatch.buyer.credibility_score || 0}`,
                     savedMatch.id, // CRITICAL: Link notification to match ID
                 ),
             ),
