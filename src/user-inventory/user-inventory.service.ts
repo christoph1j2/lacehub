@@ -13,7 +13,7 @@ import { User } from '../entities/user.entity';
 import { WtbService } from '../wtb/wtb.service';
 import { WtsService } from '../wts/wts.service';
 
-import * as XLSX from 'xlsx';
+//import * as XLSX from 'xlsx';
 
 @Injectable()
 export class UserInventoryService {
@@ -203,7 +203,7 @@ export class UserInventoryService {
     }
 
     //! TODO: I don't know how to test this without frontend, future feature
-    async upload(fileBuffer: Buffer, userId: number): Promise<any> {
+    /* async upload(fileBuffer: Buffer, userId: number): Promise<any> {
         const workbook = XLSX.read(fileBuffer);
         const sheetName = workbook.SheetNames[0];
         const data: any[] = XLSX.utils.sheet_to_json(
@@ -260,5 +260,5 @@ export class UserInventoryService {
         }
 
         return { successes, errors };
-    }
+    } */
 }

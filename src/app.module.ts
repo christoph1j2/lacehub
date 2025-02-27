@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -20,6 +20,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as os from 'os';
+import { XssMiddleware } from './common/middleware/xss.middleware';
 
 const localIP = getLocalIP();
 //const isServerIP = localIP === '172.20.0.9';
@@ -67,7 +68,11 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
         MailService,
     ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(XssMiddleware).forRoutes('*');
+    }
+}
 
 function getLocalIP(): string | null {
     const interfaces = os.networkInterfaces();

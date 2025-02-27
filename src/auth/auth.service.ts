@@ -11,7 +11,7 @@ import { LoginUserDto } from '../users/dto/login-user.dto';
 import { randomBytes } from 'crypto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { MoreThan, Repository, Not, IsNull } from 'typeorm';
 import { MailService } from '../mail/mail.service';
 
 @Injectable()
@@ -209,9 +209,18 @@ export class AuthService {
     }
 
     async validateRefreshToken(refreshToken: string): Promise<User | null> {
-        const users = await this.usersRepository.find();
+        // Only fetch users who have a non-null refreshToken
+        const users = await this.usersRepository.find({
+            where: {
+                refreshToken: Not(IsNull()),
+            },
+        });
+
         for (const user of users) {
-            if (await bcrypt.compare(refreshToken, user.refreshToken)) {
+            if (
+                user.refreshToken &&
+                (await bcrypt.compare(refreshToken, user.refreshToken))
+            ) {
                 return user;
             }
         }
