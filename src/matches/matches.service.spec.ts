@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
-import { MatchesService } from './matches.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository, Not } from 'typeorm';
+import { MatchesService } from './matches.service';
 import { User } from '../entities/user.entity';
 import { Wtb } from '../entities/wtb.entity';
 import { Wts } from '../entities/wts.entity';
 import { Match } from '../entities/match.entity';
-import { Product } from '../entities/product.entity';
 import { NotificationsService } from '../notifications/notifications.service';
-import { Repository } from 'typeorm';
 
 describe('MatchesService', () => {
     let matchesService: MatchesService;
@@ -18,33 +17,52 @@ describe('MatchesService', () => {
     let matchRepository: Repository<Match>;
     let notificationsService: NotificationsService;
 
+    // Mock repositories and services
+    const mockUserRepository = () => ({
+        findOne: jest.fn(),
+        find: jest.fn(),
+    });
+
+    const mockWtbRepository = () => ({
+        find: jest.fn(),
+    });
+
+    const mockWtsRepository = () => ({
+        find: jest.fn(),
+    });
+
+    const mockMatchRepository = () => ({
+        save: jest.fn(),
+    });
+
+    const mockNotificationsService = () => ({
+        create: jest.fn().mockResolvedValue(undefined),
+    });
+
+    // Setup testing module before each test
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 MatchesService,
                 {
                     provide: getRepositoryToken(User),
-                    useClass: Repository,
+                    useFactory: mockUserRepository,
                 },
                 {
                     provide: getRepositoryToken(Wtb),
-                    useClass: Repository,
+                    useFactory: mockWtbRepository,
                 },
                 {
                     provide: getRepositoryToken(Wts),
-                    useClass: Repository,
+                    useFactory: mockWtsRepository,
                 },
                 {
                     provide: getRepositoryToken(Match),
-                    useValue: {
-                        save: jest.fn().mockResolvedValue([]), // Mock save method
-                    },
+                    useFactory: mockMatchRepository,
                 },
                 {
                     provide: NotificationsService,
-                    useValue: {
-                        create: jest.fn(),
-                    },
+                    useFactory: mockNotificationsService,
                 },
             ],
         }).compile();
@@ -60,384 +78,366 @@ describe('MatchesService', () => {
             module.get<NotificationsService>(NotificationsService);
     });
 
+    // Mock data helpers - creates realistic test data
+    const createProductMock = (sku: string) => ({
+        sku,
+        name: `Product ${sku}`,
+        brand: 'TestBrand',
+    });
+
+    const createUserMock = (id: number, name: string, credibility: number) => ({
+        id,
+        username: name,
+        credibility_score: credibility,
+        wtb: [],
+        wts: [],
+    });
+
+    const createWtbItemMock = (
+        id: number,
+        sku: string,
+        size: string,
+        userId: number,
+    ) => ({
+        id,
+        size,
+        product: createProductMock(sku),
+        user: { id: userId },
+    });
+
+    const createWtsItemMock = (
+        id: number,
+        sku: string,
+        size: string,
+        userId: number,
+    ) => ({
+        id,
+        size,
+        product: createProductMock(sku),
+        user: { id: userId },
+    });
+
     describe('findMatchesForBuyer', () => {
-        it('should handle large and complex match scenarios', async () => {
-            const buyerId = 1;
+        it('should return top 5 matches sorted by match score and credibility', async () => {
+            // Create mock buyer with WTB items
+            const mockBuyer = createUserMock(1, 'Buyer1', 85);
+            mockBuyer.wtb = [
+                createWtbItemMock(1, 'SKU001', 'M', 1),
+                createWtbItemMock(2, 'SKU002', 'L', 1),
+                createWtbItemMock(3, 'SKU003', 'XL', 1),
+            ];
 
-            // Create a more extensive set of products
-            const products = [
-                { sku: 'SHOE001', name: 'Running Shoes' },
-                { sku: 'SHOE002', name: 'Hiking Boots' },
-                { sku: 'SHOE003', name: 'Casual Sneakers' },
-                { sku: 'SHOE004', name: 'Basketball Shoes' },
-                { sku: 'SHOE005', name: 'Soccer Cleats' },
-                { sku: 'SHOE006', name: 'Tennis Shoes' },
-            ].map((p) => ({ sku: p.sku, name: p.name }) as Product);
+            // Create multiple sellers with different matching items
+            const mockSeller1 = createUserMock(2, 'Seller1', 90);
+            mockSeller1.wts = [
+                createWtsItemMock(1, 'SKU001', 'M', 2), // Match
+                createWtsItemMock(2, 'SKU004', 'S', 2), // No match
+            ];
 
-            // Buyer's wish to buy (WTB) list with multiple items
-            const mockBuyer = {
-                id: buyerId,
-                wtb: [
-                    { product: products[0], size: '10', quantity: 2 } as Wtb,
-                    { product: products[1], size: '11', quantity: 1 } as Wtb,
-                    { product: products[2], size: '9', quantity: 3 } as Wtb,
-                    { product: products[3], size: '12', quantity: 1 } as Wtb,
-                ],
-            } as User;
+            const mockSeller2 = createUserMock(3, 'Seller2', 95);
+            mockSeller2.wts = [
+                createWtsItemMock(3, 'SKU001', 'M', 3), // Match
+                createWtsItemMock(4, 'SKU002', 'L', 3), // Match
+                createWtsItemMock(5, 'SKU003', 'XL', 3), // Match - 100% match
+            ];
 
-            // Multiple sellers with varying product overlaps
-            const mockSellers = [
+            const mockSeller3 = createUserMock(4, 'Seller3', 80);
+            mockSeller3.wts = [
+                createWtsItemMock(6, 'SKU001', 'M', 4), // Match
+                createWtsItemMock(7, 'SKU002', 'L', 4), // Match - 66% match
+            ];
+
+            const mockSeller4 = createUserMock(5, 'Seller4', 99);
+            mockSeller4.wts = [
+                createWtsItemMock(8, 'SKU004', 'S', 5), // No match - 0% match
+            ];
+
+            const mockSeller5 = createUserMock(6, 'Seller5', 85);
+            mockSeller5.wts = [
+                createWtsItemMock(9, 'SKU001', 'S', 6), // No match (wrong size)
+            ];
+
+            const mockSeller6 = createUserMock(7, 'Seller6', 88);
+            mockSeller6.wts = [
+                createWtsItemMock(10, 'SKU001', 'M', 7), // Match - 33% match
+            ];
+
+            // Setup mocks
+            userRepository.findOne = jest.fn().mockResolvedValue(mockBuyer);
+            userRepository.find = jest
+                .fn()
+                .mockResolvedValue([
+                    mockSeller1,
+                    mockSeller2,
+                    mockSeller3,
+                    mockSeller4,
+                    mockSeller5,
+                    mockSeller6,
+                ]);
+
+            // Mock saved matches
+            const savedMatchesMock = [
                 {
-                    id: 2,
-                    username: 'Seller1',
-                    credibility_score: 4.7,
-                    wts: [
-                        {
-                            product: products[0],
-                            size: '10',
-                            quantity: 3,
-                        } as Wts,
-                        {
-                            product: products[1],
-                            size: '11',
-                            quantity: 2,
-                        } as Wts,
-                        { product: products[5], size: '9', quantity: 1 } as Wts,
-                    ],
+                    id: 1,
+                    wtb: mockBuyer.wtb[0],
+                    wts: mockSeller1.wts[0],
+                    buyer: mockBuyer,
+                    seller: mockSeller1,
+                    match_score: 1 / 3, // One match out of three items
+                    createdAt: expect.any(Date),
+                    status: 'pending',
                 },
-                {
-                    id: 3,
-                    username: 'Seller2',
-                    credibility_score: 4.5,
-                    wts: [
-                        { product: products[2], size: '9', quantity: 4 } as Wts,
-                        {
-                            product: products[3],
-                            size: '12',
-                            quantity: 2,
-                        } as Wts,
-                    ],
-                },
-                {
-                    id: 4,
-                    username: 'Seller3',
-                    credibility_score: 3.9,
-                    wts: [
-                        {
-                            product: products[0],
-                            size: '10',
-                            quantity: 1,
-                        } as Wts,
-                        {
-                            product: products[4],
-                            size: '10',
-                            quantity: 3,
-                        } as Wts,
-                    ],
-                },
-                {
-                    id: 5,
-                    username: 'Seller4',
-                    credibility_score: 3.7,
-                    wts: [
-                        {
-                            product: products[0],
-                            size: '10',
-                            quantity: 1,
-                        } as Wts,
-                        {
-                            product: products[4],
-                            size: '10',
-                            quantity: 3,
-                        } as Wts,
-                    ],
-                },
-                {
-                    id: 6,
-                    username: 'Seller5',
-                    credibility_score: 3.2,
-                    wts: [
-                        {
-                            product: products[0],
-                            size: '10',
-                            quantity: 1,
-                        } as Wts,
-                    ],
-                },
-                {
-                    id: 7,
-                    username: 'Seller6',
-                    credibility_score: 3.6,
-                    wts: [
-                        {
-                            product: products[4],
-                            size: '10',
-                            quantity: 3,
-                        } as Wts,
-                    ],
-                },
-                {
-                    id: 8,
-                    username: 'Seller7',
-                    credibility_score: 0,
-                    wts: [
-                        {
-                            product: products[4],
-                            size: '10',
-                            quantity: 3,
-                        } as Wts,
-                    ],
-                },
-            ] as User[];
+                // More saved matches would be here in real implementation
+            ];
+            matchRepository.save = jest
+                .fn()
+                .mockResolvedValue(savedMatchesMock);
 
-            jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockBuyer);
-            jest.spyOn(userRepository, 'find').mockResolvedValue(mockSellers);
+            // Call the method
+            const result = await matchesService.findMatchesForBuyer(1);
 
-            const result = await matchesService.findMatchesForBuyer(buyerId);
+            // Assertions
+            expect(userRepository.findOne).toHaveBeenCalledWith({
+                where: { id: 1 },
+                relations: ['wtb', 'wtb.product'],
+            });
 
-            // Expectations for a more complex scenario
-            expect(result.length).toBeLessThanOrEqual(5); // Two sellers with significant matches
-            expect(result[0].seller.id).toBe(2); // Seller1 should be first (most matches)
-            expect(result[1].seller.id).toBe(3); // Seller2 should be second
+            expect(userRepository.find).toHaveBeenCalledWith({
+                where: { id: Not(1) },
+                relations: ['wts', 'wts.product'],
+            });
 
-            // Check match scores
-            expect(result[0].matchScore).toBeGreaterThanOrEqual(0.5);
-            expect(result[1].matchScore).toBeGreaterThanOrEqual(0.25);
+            // Should return top 5 matches sorted by match score then credibility
+            // Should expect 5 matches only if there are at least 5 sellers with matches
+            expect(result.length).toBeLessThanOrEqual(5);
+            expect(result.length).toBe(4); // 4 sellers have matches in this test case
+            expect(result[0].seller.username).toBe('Seller2'); // 100% match, high credibility
+            expect(result[1].seller.username).toBe('Seller3'); // 66% match
+            expect(result[2].seller.username).toBe('Seller1'); // 33% match
+            expect(result[3].seller.username).toBe('Seller6'); // 33% match
 
+            // Match repository should be called with array of matches
             expect(matchRepository.save).toHaveBeenCalled();
-            expect(notificationsService.create).toHaveBeenCalledWith(
-                buyerId,
-                'match_found',
-                expect.stringContaining('Seller1'),
+
+            // Notifications should be created for each match
+            expect(notificationsService.create).toHaveBeenCalledTimes(
+                savedMatchesMock.length,
             );
         });
 
-        it('should handle scenarios with minimal or no matches', async () => {
-            const buyerId = 1;
+        it('should handle case when buyer has no WTB items', async () => {
+            // Create mock buyer with no WTB items
+            const mockBuyer = createUserMock(1, 'EmptyBuyer', 80);
+            mockBuyer.wtb = [];
 
-            // Create products with no overlap
-            const products = [
-                { sku: 'SHOE001', name: 'Running Shoes' },
-                { sku: 'SHOE002', name: 'Hiking Boots' },
-                { sku: 'SHOE003', name: 'Casual Sneakers' },
-            ].map((p) => ({ sku: p.sku, name: p.name }) as Product);
+            // Setup mocks
+            userRepository.findOne = jest.fn().mockResolvedValue(mockBuyer);
+            userRepository.find = jest.fn().mockResolvedValue([]);
 
-            const mockBuyer = {
-                id: buyerId,
-                wtb: [
-                    { product: products[0], size: '10' } as Wtb,
-                    { product: products[1], size: '11' } as Wtb,
-                ],
-            } as User;
+            // Mock empty saved matches
+            matchRepository.save = jest.fn().mockResolvedValue([]);
 
-            const mockSellers = [
-                {
-                    id: 2,
-                    username: 'Seller1',
-                    credibility_score: 4.7,
-                    wts: [{ product: products[2], size: '9' } as Wts],
-                },
-            ] as User[];
+            // Call the method
+            const result = await matchesService.findMatchesForBuyer(1);
 
-            jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockBuyer);
-            jest.spyOn(userRepository, 'find').mockResolvedValue(mockSellers);
-
-            const result = await matchesService.findMatchesForBuyer(buyerId);
-
-            expect(result).toHaveLength(0);
-            expect(matchRepository.save).toHaveBeenCalledWith([]);
-            expect(notificationsService.create).not.toHaveBeenCalled();
-        });
-        it('should return top matches sorted by match score and credibility score', async () => {
-            const buyerId = 1;
-
-            const mockProduct1 = { sku: 'SKU1' } as Product;
-            const mockProduct2 = { sku: 'SKU2' } as Product;
-            const mockProduct3 = { sku: 'SKU3' } as Product;
-            const mockProduct4 = { sku: 'SKU4' } as Product;
-
-            const mockBuyer = {
-                id: buyerId,
-                wtb: [
-                    { product: mockProduct1, size: 'M' } as Wtb,
-                    { product: mockProduct2, size: 'L' } as Wtb,
-                ],
-            } as User;
-
-            const mockSellers = [
-                {
-                    id: 2,
-                    username: 'Seller1',
-                    credibility_score: 4.5,
-                    wts: [
-                        { product: mockProduct1, size: 'M' } as Wts,
-                        { product: mockProduct3, size: 'S' } as Wts,
-                    ],
-                },
-                {
-                    id: 3,
-                    username: 'Seller2',
-                    credibility_score: 3.8,
-                    wts: [
-                        { product: mockProduct2, size: 'L' } as Wts,
-                        { product: mockProduct4, size: 'XL' } as Wts,
-                    ],
-                },
-            ] as User[];
-
-            jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockBuyer);
-            jest.spyOn(userRepository, 'find').mockResolvedValue(mockSellers);
-
-            const result = await matchesService.findMatchesForBuyer(buyerId);
-
-            expect(result).toHaveLength(2); // Two matches
-            expect(result[0].seller.id).toBe(2); // Seller1 should have the higher match score
-            expect(result[1].seller.id).toBe(3);
-            expect(matchRepository.save).toHaveBeenCalled();
-        });
-
-        it('should handle no matches gracefully', async () => {
-            const buyerId = 1;
-
-            const mockProduct1 = { sku: 'SKU1' } as Product;
-            const mockProduct3 = { sku: 'SKU3' } as Product;
-
-            const mockBuyer = {
-                id: buyerId,
-                wtb: [{ product: mockProduct1, size: 'M' } as Wtb],
-            } as User;
-
-            const mockSellers = [
-                {
-                    id: 2,
-                    username: 'Seller1',
-                    credibility_score: 4.5,
-                    wts: [{ product: mockProduct3, size: 'L' } as Wts],
-                },
-            ] as User[];
-
-            jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockBuyer);
-            jest.spyOn(userRepository, 'find').mockResolvedValue(mockSellers);
-
-            const result = await matchesService.findMatchesForBuyer(buyerId);
-
-            expect(result).toHaveLength(0); // No matches
+            // Assertions
+            expect(result).toEqual([]);
             expect(matchRepository.save).toHaveBeenCalledWith([]);
             expect(notificationsService.create).not.toHaveBeenCalled();
         });
 
-        it('should save matches to the database and send notifications', async () => {
-            const buyerId = 1;
+        it('should handle case when no sellers match', async () => {
+            // Create mock buyer with WTB items
+            const mockBuyer = createUserMock(1, 'LonelyBuyer', 90);
+            mockBuyer.wtb = [createWtbItemMock(1, 'UniqueItem', 'XS', 1)];
 
-            const mockProduct1 = { sku: 'SKU1' } as Product;
+            // Create sellers with no matching items
+            const mockSeller = createUserMock(2, 'NoMatchSeller', 85);
+            mockSeller.wts = [createWtsItemMock(1, 'DifferentItem', 'L', 2)];
 
-            const mockBuyer = {
-                id: buyerId,
-                wtb: [{ product: mockProduct1, size: 'M' } as Wtb],
-            } as User;
+            // Setup mocks
+            userRepository.findOne = jest.fn().mockResolvedValue(mockBuyer);
+            userRepository.find = jest.fn().mockResolvedValue([mockSeller]);
 
-            const mockSeller = {
-                id: 2,
-                username: 'Seller1',
-                credibility_score: 4.5,
-                wts: [{ product: mockProduct1, size: 'M' } as Wts],
-            } as User;
+            // Mock empty saved matches
+            matchRepository.save = jest.fn().mockResolvedValue([]);
 
-            jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockBuyer);
-            jest.spyOn(userRepository, 'find').mockResolvedValue([mockSeller]);
+            // Call the method
+            const result = await matchesService.findMatchesForBuyer(1);
 
-            const result = await matchesService.findMatchesForBuyer(buyerId);
-
-            expect(result).toHaveLength(1);
-            expect(matchRepository.save).toHaveBeenCalledTimes(1);
-            expect(notificationsService.create).toHaveBeenCalledWith(
-                buyerId,
-                'match_found',
-                expect.stringContaining('Seller1'),
-            );
+            // Assertions
+            expect(result).toEqual([]);
+            expect(matchRepository.save).toHaveBeenCalledWith([]);
+            expect(notificationsService.create).not.toHaveBeenCalled();
         });
     });
 
+    describe('findMatchesForSeller', () => {
+        it('should return top 5 matches sorted by match score and credibility', async () => {
+            // Create mock seller with WTS items
+            const mockSeller = createUserMock(1, 'Seller1', 85);
+            mockSeller.wts = [
+                createWtsItemMock(1, 'SKU001', 'M', 1),
+                createWtsItemMock(2, 'SKU002', 'L', 1),
+            ];
+
+            // Create multiple buyers with different matching items
+            const mockBuyer1 = createUserMock(2, 'Buyer1', 90);
+            mockBuyer1.wtb = [
+                createWtbItemMock(1, 'SKU001', 'M', 2), // Match
+            ];
+
+            const mockBuyer2 = createUserMock(3, 'Buyer2', 95);
+            mockBuyer2.wtb = [
+                createWtbItemMock(2, 'SKU001', 'M', 3), // Match
+                createWtbItemMock(3, 'SKU002', 'L', 3), // Match - 100% match
+            ];
+
+            const mockBuyer3 = createUserMock(4, 'Buyer3', 75);
+            mockBuyer3.wtb = [
+                createWtbItemMock(4, 'SKU003', 'XL', 4), // No match
+            ];
+
+            // Setup mocks
+            userRepository.findOne = jest.fn().mockResolvedValue(mockSeller);
+            userRepository.find = jest
+                .fn()
+                .mockResolvedValue([mockBuyer1, mockBuyer2, mockBuyer3]);
+
+            // Mock saved matches
+            const savedMatchesMock = [
+                {
+                    id: 1,
+                    wtb: { wtb: mockBuyer1.wtb[0] },
+                    wts: { wts: mockSeller.wts[0] },
+                    buyer: mockBuyer1,
+                    seller: mockSeller,
+                    match_score: 0.5, // One match out of two items
+                    createdAt: expect.any(Date),
+                    status: 'pending',
+                },
+                // More saved matches would be here in real implementation
+            ];
+            matchRepository.save = jest
+                .fn()
+                .mockResolvedValue(savedMatchesMock);
+
+            // Call the method
+            const result = await matchesService.findMatchesForSeller(1);
+
+            // Assertions
+            expect(userRepository.findOne).toHaveBeenCalledWith({
+                where: { id: 1 },
+                relations: ['wts', 'wts.product'],
+            });
+
+            expect(userRepository.find).toHaveBeenCalledWith({
+                where: { id: Not(1) },
+                relations: ['wtb', 'wtb.product'],
+            });
+
+            // Should return top 3 matches (all buyers)
+            expect(result).toHaveLength(3);
+            expect(result[0].buyer.username).toBe('Buyer2'); // 100% match, high credibility
+            expect(result[1].buyer.username).toBe('Buyer1'); // 50% match
+            expect(result[2].buyer.username).toBe('Buyer3'); // 0% match
+
+            // Match repository should be called with array of matches
+            expect(matchRepository.save).toHaveBeenCalled();
+
+            // Notifications should be created for each match
+            expect(notificationsService.create).toHaveBeenCalledTimes(
+                savedMatchesMock.length,
+            );
+        });
+
+        it('should handle case when seller has no WTS items', async () => {
+            // Create mock seller with no WTS items
+            const mockSeller = createUserMock(1, 'EmptySeller', 80);
+            mockSeller.wts = [];
+
+            // Setup mocks
+            userRepository.findOne = jest.fn().mockResolvedValue(mockSeller);
+            userRepository.find = jest.fn().mockResolvedValue([]);
+
+            // Mock empty saved matches
+            matchRepository.save = jest.fn().mockResolvedValue([]);
+
+            // Call the method
+            const result = await matchesService.findMatchesForSeller(1);
+
+            // Assertions for empty results
+            expect(matchRepository.save).toHaveBeenCalledWith([]);
+            expect(notificationsService.create).not.toHaveBeenCalled();
+        });
+    });
+
+    // Testing the private method by using a workaround to access it
     describe('calculateOverlap', () => {
-        it('should correctly calculate overlaps between WTB and WTS lists', () => {
-            const mockProduct1 = { sku: 'SKU1' } as Product;
-
-            const mockWtb: Wtb[] = [
-                {
-                    product: mockProduct1,
-                    size: 'M',
-                } as Wtb,
+        it('should correctly identify overlapping items', () => {
+            // Create test data
+            const wtbItems = [
+                createWtbItemMock(1, 'SKU001', 'M', 1),
+                createWtbItemMock(2, 'SKU002', 'L', 1),
+                createWtbItemMock(3, 'SKU003', 'XL', 1),
             ];
 
-            const mockWts: Wts[] = [
-                {
-                    product: mockProduct1,
-                    size: 'M',
-                } as Wts,
-                {
-                    product: { sku: 'SKU3' } as Product,
-                    size: 'XL',
-                } as Wts,
+            const wtsItems = [
+                createWtsItemMock(1, 'SKU001', 'M', 2), // Match
+                createWtsItemMock(2, 'SKU002', 'L', 2), // Match
+                createWtsItemMock(3, 'SKU003', 'S', 2), // No match (different size)
+                createWtsItemMock(4, 'SKU004', 'XL', 2), // No match (different SKU)
             ];
 
-            const overlap = (matchesService as any).calculateOverlap(
-                mockWtb,
-                mockWts,
+            // Access the private method using type casting
+            const result = (matchesService as any).calculateOverlap(
+                wtbItems,
+                wtsItems,
             );
 
-            expect(overlap).toHaveLength(1);
-            expect(overlap[0].product.sku).toBe('SKU1');
-            expect(overlap[0].size).toBe('M');
+            // Assertions
+            expect(result).toHaveLength(2);
+            expect(result[0].product.sku).toBe('SKU001');
+            expect(result[1].product.sku).toBe('SKU002');
+            // Ensure items with different size aren't matched
+            expect(
+                result.find((item) => item.product.sku === 'SKU003'),
+            ).toBeUndefined();
         });
 
-        it('should return an empty array if no overlaps are found', () => {
-            const mockWtb: Wtb[] = [
-                {
-                    product: { sku: 'SKU1' } as Product,
-                    size: 'M',
-                } as Wtb,
-            ];
-            const mockWts: Wts[] = [
-                {
-                    product: { sku: 'SKU2' } as Product,
-                    size: 'L',
-                } as Wts,
-            ];
+        it('should return empty array when no overlaps exist', () => {
+            const wtbItems = [createWtbItemMock(1, 'SKU001', 'M', 1)];
 
-            const overlap = (matchesService as any).calculateOverlap(
-                mockWtb,
-                mockWts,
+            const wtsItems = [createWtsItemMock(1, 'SKU002', 'L', 2)];
+
+            const result = (matchesService as any).calculateOverlap(
+                wtbItems,
+                wtsItems,
             );
-
-            expect(overlap).toHaveLength(0);
+            expect(result).toEqual([]);
         });
-        it('should handle multiple overlap scenarios', () => {
-            const products = [
-                { sku: 'SHOE001', name: 'Running Shoes' },
-                { sku: 'SHOE002', name: 'Hiking Boots' },
-                { sku: 'SHOE003', name: 'Casual Sneakers' },
-            ].map((p) => ({ sku: p.sku, name: p.name }) as Product);
 
-            const mockWtb: Wtb[] = [
-                { product: products[0], size: '10' } as Wtb,
-                { product: products[1], size: '11' } as Wtb,
-                { product: products[2], size: '9' } as Wtb,
-            ];
+        it('should handle empty input arrays', () => {
+            const emptyWtb: Wtb[] = [];
+            const emptyWts: Wts[] = [];
+            const wtsItems = [createWtsItemMock(1, 'SKU001', 'M', 2)];
 
-            const mockWts: Wts[] = [
-                { product: products[0], size: '10' } as Wts,
-                { product: products[1], size: '11' } as Wts,
-                { product: products[2], size: '8' } as Wts,
-            ];
-
-            const overlap = (matchesService as any).calculateOverlap(
-                mockWtb,
-                mockWts,
+            const result1 = (matchesService as any).calculateOverlap(
+                emptyWtb,
+                wtsItems,
+            );
+            const result2 = (matchesService as any).calculateOverlap(
+                [createWtbItemMock(1, 'SKU001', 'M', 1)],
+                emptyWts,
+            );
+            const result3 = (matchesService as any).calculateOverlap(
+                emptyWtb,
+                emptyWts,
             );
 
-            expect(overlap).toHaveLength(2);
-            expect(overlap.map((o) => o.product.sku)).toContain('SHOE001');
-            expect(overlap.map((o) => o.product.sku)).toContain('SHOE002');
+            expect(result1).toEqual([]);
+            expect(result2).toEqual([]);
+            expect(result3).toEqual([]);
         });
     });
 });
