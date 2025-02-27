@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import rateLimit from 'express-rate-limit';
+//import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
 async function bootstrap() {
@@ -28,11 +28,11 @@ async function bootstrap() {
     }
 
     // Rate limiter
-    const limiter = rateLimit({
+    /*const limiter = rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
         max: 500, // limit each IP to 500 requests per windowMs
     });
-    app.use(limiter);
+    app.use(limiter);*/
 
     // CORS
     app.enableCors({

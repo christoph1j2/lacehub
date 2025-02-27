@@ -21,6 +21,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as os from 'os';
 import { XssMiddleware } from './common/middleware/xss.middleware';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 const localIP = getLocalIP();
 //const isServerIP = localIP === '172.20.0.9';
@@ -37,6 +38,14 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
             store: 'RedisStore',
             host: isServerIP ? 'cache' : 'localhost',
             port: 6379,
+        }),
+        ThrottlerModule.forRoot({
+            throttlers: [
+                {
+                    ttl: 60000, // 60 seconds
+                    limit: 60, // 60 requests per minute (1 req/sec average)
+                },
+            ],
         }),
         DatabaseModule,
         UsersModule,
@@ -64,6 +73,10 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
         {
             provide: APP_GUARD,
             useClass: RolesGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
         },
         MailService,
     ],
