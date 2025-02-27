@@ -2,15 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Match } from '../entities/match.entity';
 import { User } from '../entities/user.entity';
-import { Wtb } from '../entities/wtb.entity';
-import { Wts } from '../entities/wts.entity';
+import { Wtb } from '../entities/wtb.entity'; // Want to Buy
+import { Wts } from '../entities/wts.entity'; // Want to Sell
 import { NotificationsService } from '../notifications/notifications.service';
 import { Not, Repository } from 'typeorm';
 
-//! TODO: playwright
+//? TODO: playwright
 @Injectable()
 export class MatchesService {
     constructor(
+        // Inject repositories for all required entities
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         @InjectRepository(Wtb)
@@ -19,157 +20,200 @@ export class MatchesService {
         private readonly wtsRepository: Repository<Wts>,
         @InjectRepository(Match)
         private readonly matchRepository: Repository<Match>,
-
+        // Inject notification service to create notifications for matches
         private readonly notificationsService: NotificationsService,
     ) {}
 
+    /**
+     * Finds potential matches for a buyer based on what they want to buy
+     * and what others want to sell
+     *
+     * @param buyerId - ID of the buyer to find matches for
+     * @returns Array of top 5 matches sorted by match score and credibility
+     */
     async findMatchesForBuyer(buyerId: number): Promise<any> {
+        // Get buyer with their Want-To-Buy items
         const buyer = await this.userRepository.findOne({
             where: { id: buyerId },
-            relations: ['wtb', 'wtb.product'],
+            relations: ['wtb', 'wtb.product'], // Include WTB items and their products
         });
 
+        // Get all potential sellers (everyone except the buyer)
         const sellers = await this.userRepository.find({
-            where: { id: Not(buyerId) },
-            relations: ['wts', 'wts.product'],
+            where: { id: Not(buyerId) }, // Exclude the buyer
+            relations: ['wts', 'wts.product'], // Include WTS items and their products
         });
 
+        // Array to store potential matches
         const matches = [];
+
+        // For each potential seller, check if there's an overlap between
+        // what buyer wants and what seller offers
         for (const seller of sellers) {
+            // Find overlapping items (items that buyer wants and seller has)
             const overlap = this.calculateOverlap(buyer.wtb, seller.wts);
 
             if (overlap.length > 0) {
+                // Calculate match score as percentage of buyer's wants fulfilled
                 const matchScore = overlap.length / buyer.wtb.length;
 
+                // Add to potential matches
                 matches.push({
                     seller,
-                    overlap,
-                    matchScore,
-                    credibilityScore: seller.credibility_score,
+                    overlap, // Items that match between buyer and seller
+                    matchScore, // How good the match is (higher is better)
+                    credibilityScore: seller.credibility_score, // Seller reputation
                 });
             }
         }
 
-        // Sort and pick top 5 matches
+        // Sort matches by score (highest first) and then by credibility
         matches.sort(
             (a, b) =>
-                b.matchScore - a.matchScore ||
-                b.credibilityScore - a.credibilityScore,
+                b.matchScore - a.matchScore || // First by match score
+                b.credibilityScore - a.credibilityScore, // Then by credibility
         );
 
+        // Take only the top 5 matches
         const topMatches = matches.slice(0, 5);
 
-        // Only create notification and save matches if there are matches
-        if (topMatches.length > 0) {
-            // Create single grouped notification for the buyer
-            const notificationContent = topMatches
-                .map(
-                    (match, index) =>
-                        `#${index + 1}: ${match.seller.username} (${match.matchScore.toFixed(
-                            2,
-                        )} matches, Credibility: ${match.credibilityScore})`,
-                )
-                .join('\n');
-
-            await this.notificationsService.create(
-                buyer.id,
-                'match_found',
-                `Top 5 Matches Found for Your WTB List:\n\n${notificationContent}`,
-            );
-
-            // Save matches to the database
-            await this.matchRepository.save(
-                topMatches
-                    .map((match) => {
-                        const overlapItems = match.overlap;
-                        return overlapItems.map((item) => ({
-                            wtb: item,
-                            wts: match.seller.wts.find(
-                                (wts) =>
-                                    wts.product.sku === item.product.sku &&
-                                    wts.size === item.size,
-                            ),
-                            buyer: buyer,
-                            seller: match.seller,
-                            match_score: match.matchScore,
-                            createdAt: new Date(),
-                            status: 'pending',
-                        }));
-                    })
-                    .flat(), // Flatten the array to handle multiple overlaps per match.
-            );
-        } else {
-            // If no matches, save an empty array to satisfy the repository save method
-            await this.matchRepository.save([]);
-        }
-
-        return topMatches;
-    }
-
-    async findMatchesForSeller(sellerId: number): Promise<any> {
-        const seller = await this.userRepository.findOne({
-            where: { id: sellerId },
-            relations: ['wts', 'wts.product'],
-        });
-
-        const buyers = await this.userRepository.find({
-            where: { id: Not(sellerId) },
-            relations: ['wtb', 'wtb.product'],
-        });
-
-        const matches = [];
-        for (const buyer of buyers) {
-            const overlap = this.calculateOverlap(buyer.wtb, seller.wts);
-            const matchScore = overlap.length / seller.wts.length;
-
-            matches.push({
-                buyer,
-                overlap,
-                matchScore,
-                credibilityScore: buyer.credibility_score,
-            });
-        }
-
-        // Sort and pick top 5 matches
-        matches.sort(
-            (a, b) =>
-                b.matchScore - a.matchScore ||
-                b.credibilityScore - a.credibilityScore,
-        );
-
-        const topMatches = matches.slice(0, 5);
-
-        // Notify seller for each match (optional: could also aggregate like buyers)
-        for (const match of topMatches) {
-            await this.notificationsService.create(
-                seller.id,
-                'match_found',
-                `You have a match with ${match.buyer.username}! Credibility: ${match.credibilityScore}`,
-            );
-        }
-
-        // Save matches to the database
-        await this.matchRepository.save(
+        // IMPORTANT: We need to save match records in database BEFORE creating notifications
+        // This ensures each notification has a valid match_id reference
+        const savedMatches = await this.matchRepository.save(
             topMatches
                 .map((match) => {
                     const overlapItems = match.overlap;
+                    // For each overlapping item, create a match record
                     return overlapItems.map((item) => ({
-                        wtb: item.wtb,
-                        wts: item.wts,
-                        buyer: match.buyer,
+                        wtb: item, // The wanted item
+                        wts: match.seller.wts.find(
+                            (wts) =>
+                                wts.product.sku === item.product.sku &&
+                                wts.size === item.size,
+                        ), // The matching selling item
+                        buyer: buyer,
                         seller: match.seller,
                         match_score: match.matchScore,
                         createdAt: new Date(),
-                        status: 'pending',
+                        status: 'pending', // Initial status
                     }));
                 })
-                .flat(), // Flatten the array to handle multiple overlaps per match.
+                .flat(), // Flatten the nested arrays
         );
 
-        return topMatches;
+        // Now create notifications for each saved match
+        // We must use the saved match IDs to link notifications to matches
+        await Promise.all(
+            savedMatches.map((savedMatch) =>
+                this.notificationsService.create(
+                    buyer.id, // Notify the buyer
+                    'match_found', // Type of notification
+                    `Match found with ${savedMatch.seller.username}! Credibility: ${savedMatch.seller.credibility_score}`,
+                    savedMatch.id, // CRITICAL: Link notification to match ID
+                ),
+            ),
+        );
+
+        return topMatches; // Return top matches for display
     }
 
+    /**
+     * Finds potential matches for a seller based on what they want to sell
+     * and what others want to buy
+     *
+     * @param sellerId - ID of the seller to find matches for
+     * @returns Array of top 5 matches sorted by match score and credibility
+     */
+    async findMatchesForSeller(sellerId: number): Promise<any> {
+        // Get seller with their Want-To-Sell items
+        const seller = await this.userRepository.findOne({
+            where: { id: sellerId },
+            relations: ['wts', 'wts.product'], // Include WTS items and their products
+        });
+
+        // Get all potential buyers (everyone except the seller)
+        const buyers = await this.userRepository.find({
+            where: { id: Not(sellerId) }, // Exclude the seller
+            relations: ['wtb', 'wtb.product'], // Include WTB items and their products
+        });
+
+        // Array to store potential matches
+        const matches = [];
+
+        // For each potential buyer, check if there's an overlap between
+        // what seller offers and what buyer wants
+        for (const buyer of buyers) {
+            // Find overlapping items (items that seller offers and buyer wants)
+            const overlap = this.calculateOverlap(buyer.wtb, seller.wts);
+
+            // Calculate match score as percentage of seller's items that match
+            const matchScore = overlap.length / seller.wts.length;
+
+            // Add to potential matches (even if overlap is empty - different from buyer logic)
+            matches.push({
+                buyer,
+                overlap, // Items that match between buyer and seller
+                matchScore, // How good the match is (higher is better)
+                credibilityScore: buyer.credibility_score, // Buyer reputation
+            });
+        }
+
+        // Sort matches by score (highest first) and then by credibility
+        matches.sort(
+            (a, b) =>
+                b.matchScore - a.matchScore || // First by match score
+                b.credibilityScore - a.credibilityScore, // Then by credibility
+        );
+
+        // Take only the top 5 matches
+        const topMatches = matches.slice(0, 5);
+
+        // IMPORTANT: We need to save match records in database BEFORE creating notifications
+        // This ensures each notification has a valid match_id reference
+        const savedMatches = await this.matchRepository.save(
+            topMatches
+                .map((match) => {
+                    const overlapItems = match.overlap;
+                    // For each overlapping item, create a match record
+                    return overlapItems.map((item) => ({
+                        wtb: item.wtb, // The wanted item
+                        wts: item.wts, // The selling item
+                        buyer: match.buyer,
+                        seller: seller,
+                        match_score: match.matchScore,
+                        createdAt: new Date(),
+                        status: 'pending', // Initial status
+                    }));
+                })
+                .flat(), // Flatten the nested arrays
+        );
+
+        // Now create notifications for each saved match
+        // We must use the saved match IDs to link notifications to matches
+        await Promise.all(
+            savedMatches.map((savedMatch) =>
+                this.notificationsService.create(
+                    seller.id, // Notify the seller
+                    'match_found', // Type of notification
+                    `You have a match with ${savedMatch.buyer.username}! Credibility: ${savedMatch.buyer.credibility_score}`,
+                    savedMatch.id, // CRITICAL: Link notification to match ID
+                ),
+            ),
+        );
+
+        return topMatches; // Return top matches for display
+    }
+
+    /**
+     * Calculates the overlap between what a buyer wants and what a seller offers
+     *
+     * @param wtbList - List of items buyer wants to buy
+     * @param wtsList - List of items seller wants to sell
+     * @returns Array of overlapping items (WTB items that have matching WTS items)
+     */
     private calculateOverlap(wtbList: Wtb[], wtsList: Wts[]): any[] {
+        // Find items from wtbList that have a matching item in wtsList
+        // Item matches if both product SKU and size are the same
         return wtbList.filter((wtb) =>
             wtsList.some(
                 (wts) =>

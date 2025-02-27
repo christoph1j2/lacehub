@@ -9,6 +9,16 @@
             "name": "lacehub",
             "database": "lacehub",
             "username": "postgres"
+        },
+        {
+            "previewLimit": 50,
+            "server": "databaze.lacehub.cz",
+            "port": 5432,
+            "askForPassword": true,
+            "driver": "PostgreSQL",
+            "name": "lacehub_prod",
+            "database": "lacehub",
+            "username": "postgres"
         }
     ]
 }

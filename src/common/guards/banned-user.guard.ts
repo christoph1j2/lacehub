@@ -4,6 +4,7 @@ import {
     ForbiddenException,
 } from '@nestjs/common';
 
+//!fix
 export class BannedUserGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean {
         /*const request = context.switchToHttp().getRequest();

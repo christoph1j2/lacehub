@@ -108,7 +108,7 @@ describe('AuthService', () => {
                     });
 
                     // Explicitly return different tokens based on the options
-                    if (options?.expiresIn === '15m') {
+                    if (options?.expiresIn === '1d') {
                         return 'mockAccessToken';
                     }
                     if (options?.expiresIn === '7d') {
