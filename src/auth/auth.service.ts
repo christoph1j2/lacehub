@@ -114,10 +114,9 @@ export class AuthService {
     }
 
     async sendVerificationEmail(user: User) {
-        // TODO: send email, in prod use email service
-        const verificationUrl = `http://localhost:3000/auth/verify-email?token=${user.verificationToken}`;
+        //const verificationUrl = `http://localhost:3000/auth/verify-email?token=${user.verificationToken}`;
+        const verificationUrl = `https://www.lacehub.cz/auth/verify-email?token=${user.verificationToken}`;
         console.log(`Verification URL (placeholder): ${verificationUrl}`);
-        //* To be replaced by SMTP sending logic
 
         await this.mailService.sendVerificationEmail(
             user.email,
@@ -150,10 +149,9 @@ export class AuthService {
     }
 
     async sendPasswordResetEmail(user: User) {
-        // TODO: send email, in prod use email service
-        const resetUrl = `http://localhost:3000/auth/reset-password?token=${user.resetToken}`;
+        //const resetUrl = `http://localhost:3000/auth/reset-password?token=${user.resetToken}`;
+        const resetUrl = `https://www.lacehub.cz/auth/reset-password?token=${user.resetToken}`;
         console.log(`Password reset URL (placeholder): ${resetUrl}`);
-        //* To be replaced by SMTP sending logic
 
         await this.mailService.sendPasswordResetEmail(
             user.email,

@@ -20,7 +20,6 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard/jwt-auth.guard';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as os from 'os';
-import { BannedUserGuard } from './common/guards/banned-user.guard';
 
 const localIP = getLocalIP();
 //const isServerIP = localIP === '172.20.0.9';
@@ -64,10 +63,6 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
         {
             provide: APP_GUARD,
             useClass: RolesGuard,
-        },
-        {
-            provide: APP_GUARD,
-            useClass: BannedUserGuard,
         },
         MailService,
     ],
