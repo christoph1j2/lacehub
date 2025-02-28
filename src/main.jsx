@@ -4,10 +4,12 @@ import Contacts from "./pages/contacs/Contacts.jsx";
 import BaseLayout from "./layout/BaseLayout.jsx";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Homepage from "./pages/homepage/Index.jsx";
-import { AuthProvider } from "./pages/registration/useAuth.jsx";
+import { AuthProvider } from "./hooks/useAuth.jsx";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
-// import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import "./index.css";
+
+//Admin routes
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -21,9 +23,9 @@ createRoot(document.getElementById("root")).render(
           <Route
             path="/dashboard"
             element={
-              // <ProtectedRoute>
-              <Dashboard />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
             }
           />
         </Routes>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useAuth } from "./useAuth"; // Adjust the import path as needed
+import { useAuth } from "../../hooks/useAuth"; // Adjust the import path as needed
 
 const LoginForm = ({ onClose, onRegisterClick }) => {
   const { login } = useAuth();
