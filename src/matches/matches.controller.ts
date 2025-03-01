@@ -5,6 +5,7 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard/jwt-auth.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { BannedUserGuard } from '../common/guards/banned-user.guard';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('matches')
 @Controller('matches')
@@ -13,7 +14,8 @@ export class MatchesController {
     constructor(private readonly matchesService: MatchesService) {}
 
     @Get('/my-buyer-matches')
-    @UseGuards(BannedUserGuard)
+    @UseGuards(BannedUserGuard, ThrottlerGuard)
+    @Throttle({ match: { ttl: 120000, limit: 1 } })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns matches for authenticated buyer' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -32,7 +34,7 @@ export class MatchesController {
     }
 
     @Get('/my-seller-matches')
-    @UseGuards(BannedUserGuard)
+    @UseGuards(BannedUserGuard, ThrottlerGuard)
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns matches for authenticated seller' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })

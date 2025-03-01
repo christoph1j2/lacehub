@@ -8,6 +8,7 @@ import {
     Req,
     Res,
     UnauthorizedException,
+    UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -15,6 +16,7 @@ import { LoginUserDto } from '../users/dto/login-user.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -25,6 +27,8 @@ export class AuthController {
     ) {}
 
     @Public()
+    @UseGuards(ThrottlerGuard)
+    @Throttle({ auth: { ttl: 300000, limit: 10 } })
     @Post('login')
     @ApiOperation({
         summary: 'Login user, returns access and refresh tokens, sets cookie',
@@ -53,6 +57,8 @@ export class AuthController {
     }
 
     @Public()
+    @UseGuards(ThrottlerGuard)
+    @Throttle({ auth: { ttl: 300000, limit: 10 } })
     @Post('register')
     @ApiOperation({
         summary: 'Register user, requires username, email, and password',

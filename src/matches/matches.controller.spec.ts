@@ -5,6 +5,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard/jwt-auth.guard';
 import { BannedUserGuard } from '../common/guards/banned-user.guard';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 describe('MatchesController', () => {
     let controller: MatchesController;
@@ -38,6 +39,27 @@ describe('MatchesController', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
+            imports: [
+                ThrottlerModule.forRoot({
+                    throttlers: [
+                        {
+                            name: 'default',
+                            ttl: 60000, // 60 seconds
+                            limit: 60, // 60 requests per minute (1 req/sec average)
+                        },
+                        {
+                            name: 'auth',
+                            ttl: 300000, // 5 minutes
+                            limit: 10, // 10 login attempts per 5 minutes
+                        },
+                        {
+                            name: 'match',
+                            ttl: 120000, // 2 minutes
+                            limit: 1, // 1 match request per 2 minutes
+                        },
+                    ],
+                }),
+            ],
             controllers: [MatchesController],
             providers: [
                 {

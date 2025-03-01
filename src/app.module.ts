@@ -42,8 +42,19 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
         ThrottlerModule.forRoot({
             throttlers: [
                 {
+                    name: 'default',
                     ttl: 60000, // 60 seconds
                     limit: 60, // 60 requests per minute (1 req/sec average)
+                },
+                {
+                    name: 'auth',
+                    ttl: 300000, // 5 minutes
+                    limit: 10, // 10 login attempts per 5 minutes
+                },
+                {
+                    name: 'match',
+                    ttl: 120000, // 2 minutes
+                    limit: 1, // 1 match request per 2 minutes
                 },
             ],
         }),

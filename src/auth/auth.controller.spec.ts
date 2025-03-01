@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 describe('AuthController', () => {
     let controller: AuthController;
@@ -29,6 +30,27 @@ describe('AuthController', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
+            imports: [
+                ThrottlerModule.forRoot({
+                    throttlers: [
+                        {
+                            name: 'default',
+                            ttl: 60000, // 60 seconds
+                            limit: 60, // 60 requests per minute (1 req/sec average)
+                        },
+                        {
+                            name: 'auth',
+                            ttl: 300000, // 5 minutes
+                            limit: 10, // 10 login attempts per 5 minutes
+                        },
+                        {
+                            name: 'match',
+                            ttl: 120000, // 2 minutes
+                            limit: 1, // 1 match request per 2 minutes
+                        },
+                    ],
+                }),
+            ],
             controllers: [AuthController],
             providers: [
                 {
@@ -94,7 +116,26 @@ describe('AuthController', () => {
                 accessToken: loginResult.accessToken,
             });
         });
+        it('should handle throttled login requests', async () => {
+            // Mock a throttled request scenario
+            const loginUserDto: LoginUserDto = {
+                email: 'test@example.com',
+                password: 'password123',
+            };
 
+            // Simulate throttler rejection
+            mockAuthService.login.mockRejectedValue(
+                new BadRequestException('Too many requests'),
+            );
+
+            const res = { cookie: jest.fn() };
+
+            await expect(controller.login(loginUserDto, res)).rejects.toThrow(
+                BadRequestException,
+            );
+
+            expect(res.cookie).not.toHaveBeenCalled();
+        });
         it('should handle invalid credentials', async () => {
             const loginUserDto: LoginUserDto = {
                 email: 'test@example.com',
