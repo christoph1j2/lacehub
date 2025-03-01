@@ -46,7 +46,7 @@ export class AppController {
             () => this.db.pingCheck('database'),
             async () =>
                 this.disk.checkStorage('storage', {
-                    path: 'X:/',
+                    path: '/',
                     thresholdPercent: 0.5,
                 }),
         ]);
