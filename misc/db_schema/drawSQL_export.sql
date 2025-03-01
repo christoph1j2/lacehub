@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS "matches"(
     "wts_id" BIGINT NOT NULL REFERENCES wts(id), --?
     "buyer_id" BIGINT NOT NULL REFERENCES users(id),
     "seller_id" BIGINT NOT NULL REFERENCES users(id),
-    "match_score" INTEGER NOT NULL CHECK (match_score BETWEEN 0 AND 100),
+    "match_score" DOUBLE NOT NULL CHECK (match_score BETWEEN 0 AND 100),
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" VARCHAR(255) NOT NULL DEFAULT 'pending'
 );
