@@ -33,8 +33,6 @@ export class ReportsController {
             'Report user, required report text, reportedUserId as parameter',
     })
     @ApiResponse({ status: 201, description: 'Report created successfully' })
-    @ApiResponse({ status: 400, description: 'Report text is required' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async create(
         @Body() fileReportDto: FileReportDto,
         @Param('reportedUserId') reportedUserId: number,
@@ -61,10 +59,6 @@ export class ReportsController {
     @ApiOperation({
         summary: 'Get reports filed by specific user, only for admin',
     })
-    @ApiResponse({ status: 200, description: 'Reports found' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Reports not found' })
     async findByReporterUserId(
         @Query('userId') userId: number,
     ): Promise<Report[]> {
@@ -77,10 +71,6 @@ export class ReportsController {
     @ApiOperation({
         summary: 'Get reports filed by specific user for specific user',
     })
-    @ApiResponse({ status: 200, description: 'Reports found' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Reports not found' })
     async findByReporterUserIdForUser(@Req() req): Promise<Report[]> {
         return await this.reportsService.findByReporterUserId(req.user.id);
     }
@@ -89,10 +79,6 @@ export class ReportsController {
     @Roles('admin')
     @Get()
     @ApiOperation({ summary: 'Get all reports for admin ui' })
-    @ApiResponse({ status: 200, description: 'Reports found' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Reports not found' })
     @ApiBearerAuth()
     async findAll(): Promise<Report[]> {
         return await this.reportsService.findAll();
@@ -103,10 +89,6 @@ export class ReportsController {
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get specific report by id, for admin ui' })
-    @ApiResponse({ status: 200, description: 'Report found' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Report not found' })
     async findOne(@Param('id') id: number): Promise<Report> {
         return await this.reportsService.findOne(id);
     }
@@ -116,10 +98,6 @@ export class ReportsController {
     @Put(':id/resolve')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Mark report as resolved (admin)' })
-    @ApiResponse({ status: 200, description: 'Report resolved' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Report not found' })
     async resolve(
         @Param('id') id: number,
         @Body() resolveReportDto: ResolveReportDto,

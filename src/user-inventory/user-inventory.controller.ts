@@ -18,12 +18,7 @@ import { UpdateUserInventoryDto } from './dto/update-userInventory.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
-import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('user-inventory')
 @Controller('user-inventory')
@@ -34,10 +29,6 @@ export class UserInventoryController {
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all inventory items, admin only' })
-    @ApiResponse({ status: 200, description: 'Get all inventory items' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async findAll(): Promise<UserInventory[]> {
         return await this.userInventoryService.findAll();
     }
@@ -45,10 +36,6 @@ export class UserInventoryController {
     @Get('user')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all inventory items for a user' })
-    @ApiResponse({ status: 200, description: 'Get all inventory items' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async findByUser(@Request() req) {
         const userId = req.user.id;
         const items = await this.userInventoryService.findByUser(userId);
@@ -70,10 +57,6 @@ export class UserInventoryController {
     @Post()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new inventory item for a user' })
-    @ApiResponse({ status: 201, description: 'Created' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async create(
         @Body() createUserInventoryDto: CreateUserInventoryDto,
         @Req() req,
@@ -87,10 +70,6 @@ export class UserInventoryController {
     @Patch(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update an inventory item for a user' })
-    @ApiResponse({ status: 200, description: 'Updated' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() updateUserInventoryDto: UpdateUserInventoryDto,
@@ -106,10 +85,6 @@ export class UserInventoryController {
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete an inventory item for a user' })
-    @ApiResponse({ status: 200, description: 'Deleted' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async delete(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: { id: number },
@@ -119,20 +94,12 @@ export class UserInventoryController {
 
     @Patch(':id/move-to-wtb')
     @ApiOperation({ summary: 'Move an inventory item to the WTB list' })
-    @ApiResponse({ status: 200, description: 'Moved to WTB list' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async moveToWtb(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
         return await this.userInventoryService.moveToWtb(id, user.id);
     }
 
     @Patch(':id/move-to-wts')
     @ApiOperation({ summary: 'Move an inventory item to the WTS list' })
-    @ApiResponse({ status: 200, description: 'Moved to WTS list' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async moveToWts(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: { id: number },

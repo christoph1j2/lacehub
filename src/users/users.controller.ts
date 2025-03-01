@@ -15,7 +15,7 @@ import {
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -34,8 +34,6 @@ export class UsersController {
     @ApiOperation({
         summary: 'Get user profile, use for displaying personal profile',
     })
-    @ApiResponse({ status: 200, description: 'User profile retrieved' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     getProfile(@Request() req) {
         const userId = req.user.id;
         return this.usersService.findOneById(userId);
@@ -44,9 +42,6 @@ export class UsersController {
     @Get('profile/:id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get user profile by id' })
-    @ApiResponse({ status: 200, description: 'User profile retrieved' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 404, description: 'User not found' })
     async getProfileById(@Param('id', ParseIntPipe) id: number) {
         const userProfile = await this.usersService.findOneById(id);
 
@@ -77,8 +72,6 @@ export class UsersController {
     @Patch('profile')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update user profile' })
-    @ApiResponse({ status: 200, description: 'User profile updated' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     updateProfile(@Request() req, @Body() updateUserDto: UpdateUserDto) {
         return this.usersService.update(req.user.id, updateUserDto);
     }
@@ -86,8 +79,6 @@ export class UsersController {
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get a user by id' })
-    @ApiResponse({ status: 200, description: 'User retrieved' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async findOneById(@Param('id', ParseIntPipe) id: number) {
         return await this.usersService.findOneById(id);
     }
@@ -95,8 +86,6 @@ export class UsersController {
     @Get(':email')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get user by email' })
-    @ApiResponse({ status: 200, description: 'User retrieved' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async findOneByEmail(@Param('email') email: string) {
         return await this.usersService.findOneByEmail(email);
     }
@@ -104,8 +93,6 @@ export class UsersController {
     @Get(':username')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get user by username' })
-    @ApiResponse({ status: 200, description: 'User retrieved' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async findOne(@Param('username') username: string) {
         return await this.usersService.findOne(username);
     }
@@ -113,8 +100,6 @@ export class UsersController {
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all users' })
-    @ApiResponse({ status: 200, description: 'Users retrieved' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async findAll() {
         return await this.usersService.findAll();
     }
@@ -122,8 +107,6 @@ export class UsersController {
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete users own profile' })
-    @ApiResponse({ status: 200, description: 'User deleted' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async delete(@Request() req) {
         const userId = req.user.id;
         return await this.usersService.delete(userId);
@@ -132,8 +115,6 @@ export class UsersController {
     @Get('search')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Search for users by username or email' })
-    @ApiResponse({ status: 200, description: 'Users retrieved' })
-    @ApiResponse({ status: 404, description: 'User not found' })
     async searchUsers(
         @Query('query') query: string,
         @Query('limit') limit = 10,
@@ -149,8 +130,6 @@ export class UsersController {
     @Put(':id/ban')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Ban a user' })
-    @ApiResponse({ status: 200, description: 'User banned' })
-    @ApiResponse({ status: 404, description: 'User not found' })
     async banUser(
         @Param('id', ParseIntPipe) userId: number,
         @Body('banExpiry') banExpiry: number,
@@ -162,8 +141,6 @@ export class UsersController {
     @Put(':id/unban')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Unban a user' })
-    @ApiResponse({ status: 200, description: 'User unbanned' })
-    @ApiResponse({ status: 404, description: 'User not found' })
     async unbanUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
         return await this.usersService.unbanUser(userId);
     }

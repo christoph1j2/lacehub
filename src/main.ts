@@ -1,7 +1,7 @@
-import { NestFactory } from '@nestjs/core';
+import { DiscoveryService, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule, ApiResponse } from '@nestjs/swagger';
 //import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
@@ -11,6 +11,30 @@ async function bootstrap() {
 
     // Swagger setup
     if (process.env.NODE_ENV !== 'production') {
+        const discoveryService = app.get(DiscoveryService);
+        const controllers = discoveryService.getControllers();
+        for (const controller of controllers) {
+            ApiResponse({ status: 200, description: 'OK' })(
+                controller.metatype,
+            );
+            ApiResponse({ status: 400, description: 'Bad Request' })(
+                controller.metatype,
+            );
+            ApiResponse({ status: 401, description: 'Unauthorized' })(
+                controller.metatype,
+            );
+            ApiResponse({ status: 403, description: 'Forbidden' })(
+                controller.metatype,
+            );
+            ApiResponse({ status: 404, description: 'Not Found' })(
+                controller.metatype,
+            );
+            ApiResponse({
+                status: 429,
+                description: 'Throttle! Too many requests!',
+            })(controller.metatype);
+        }
+
         const config = new DocumentBuilder()
             .setTitle('LaceHub API')
             .setDescription('The LaceHub API description')

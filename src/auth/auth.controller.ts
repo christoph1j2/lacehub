@@ -34,6 +34,10 @@ export class AuthController {
     })
     @ApiResponse({ status: 200, description: 'Login successful' })
     @ApiResponse({ status: 401, description: 'Invalid credentials' })
+    @ApiResponse({
+        status: 429,
+        description: 'Please wait a while before logging in again.',
+    })
     async login(
         @Body() loginUserDto: LoginUserDto,
         @Res({ passthrough: true }) res,
@@ -65,6 +69,10 @@ export class AuthController {
     @ApiResponse({
         status: 401,
         description: 'Username or email already exists',
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Please wait a while before registering in again.',
     })
     async register(@Body() createUserDto: CreateUserDto) {
         return await this.authService.register(createUserDto);
@@ -119,8 +127,6 @@ export class AuthController {
     @Post('refresh-token')
     @ApiOperation({ summary: 'Refresh access token' })
     @ApiResponse({ status: 200, description: 'Access token refreshed' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 401, description: 'Refresh token not found' })
     async refreshToken(@Req() req) {
         console.log('Cookies:', req.cookies);
         console.log('Headers:', req.headers);
@@ -140,7 +146,6 @@ export class AuthController {
     @Post('logout')
     @ApiOperation({ summary: 'Logout user' })
     @ApiResponse({ status: 200, description: 'Logged out successfully' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async logout(@Req() req, @Res() res) {
         const userId = req.user.sub;
         await this.authService.logout(userId);

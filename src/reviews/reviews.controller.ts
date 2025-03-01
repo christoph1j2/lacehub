@@ -53,10 +53,6 @@ export class ReviewsController {
     @ApiOperation({
         summary: 'Get all reviews for a seller, displayed on user profile',
     })
-    @ApiResponse({ status: 200, description: 'Reviews found' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Seller not found' })
     async findAllForSeller(
         @Param('sellerId') sellerId: number,
     ): Promise<Review[]> {
@@ -67,10 +63,6 @@ export class ReviewsController {
     @Get('review/:id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get a review by ID, only for admin' })
-    @ApiResponse({ status: 200, description: 'Review found' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Review not found' })
     async findOne(@Param('id') id: number): Promise<Review> {
         return this.reviewsService.findOne(id);
     }
@@ -78,10 +70,6 @@ export class ReviewsController {
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete users own posted review' })
-    @ApiResponse({ status: 200, description: 'Review deleted' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Review not found' })
     async delete(@Param('id') reviewId: number, @Request() req) {
         const userId = req.user.id;
         return this.reviewsService.delete(reviewId, userId);
@@ -91,10 +79,6 @@ export class ReviewsController {
     @ApiBearerAuth()
     @Roles('admin')
     @ApiOperation({ summary: 'Delete a review by admin' })
-    @ApiResponse({ status: 200, description: 'Review deleted' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Review not found' })
     async deleteAdmin(@Param('id') reviewId: number) {
         const isAdmin = true;
         return this.reviewsService.delete(reviewId, null, isAdmin);

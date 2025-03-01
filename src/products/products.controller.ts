@@ -41,12 +41,6 @@ export class ProductsController {
         summary:
             'Search for products by name/sku/description (will be used for inventory/wtb/wts lists)',
     })
-    @ApiResponse({
-        status: 200,
-        description: 'Products retrieved successfully',
-    })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 404, description: 'Products not found' })
     async searchProducts(
         @Query('query') query: string,
         @Query('limit') limit = 10,
@@ -68,8 +62,6 @@ export class ProductsController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new product, only admin' })
     @ApiResponse({ status: 201, description: 'Product created successfully' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
     create(@Body() createProductDto: CreateProductDto) {
         return this.productsService.create(createProductDto);
     }
@@ -78,11 +70,6 @@ export class ProductsController {
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all products' })
-    @ApiResponse({
-        status: 200,
-        description: 'Products retrieved successfully',
-    })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
     findAll() {
         return this.productsService.findAll();
     }
@@ -91,9 +78,6 @@ export class ProductsController {
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get a product by id' })
-    @ApiResponse({ status: 200, description: 'Product retrieved successfully' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 404, description: 'Product not found' })
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.findOne(+id);
     }
@@ -103,10 +87,6 @@ export class ProductsController {
     @Patch(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a product by id, only admin' })
-    @ApiResponse({ status: 200, description: 'Product updated successfully' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Product not found' })
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() updateProductDto: UpdateProductDto,
@@ -119,10 +99,6 @@ export class ProductsController {
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a product by id, only admin' })
-    @ApiResponse({ status: 200, description: 'Product deleted successfully' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Product not found' })
     delete(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.delete(+id);
     }

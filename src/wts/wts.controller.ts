@@ -18,12 +18,7 @@ import { CreateWTSDto } from './dto/create-wts.dto';
 import { UpdateWTSDto } from './dto/update-wts.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
-import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('wts')
 @Controller('wts')
@@ -34,10 +29,6 @@ export class WtsController {
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all wts items, admin only' })
-    @ApiResponse({ status: 200, description: 'Get all wts items' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async findAll(): Promise<Wts[]> {
         return await this.wtsService.findAll();
     }
@@ -45,10 +36,6 @@ export class WtsController {
     @Get('user')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all wts items for a user' })
-    @ApiResponse({ status: 200, description: 'Get all wts items' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async findByUser(@Request() req) {
         const userId = req.user.id;
         const items = await this.wtsService.findByUser(userId);
@@ -70,10 +57,6 @@ export class WtsController {
     @Post()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new wts item for a user' })
-    @ApiResponse({ status: 201, description: 'Created' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async create(@Body() createWTSDto: CreateWTSDto, @Req() req) {
         return await this.wtsService.create(createWTSDto, req.user.id);
     }
@@ -81,10 +64,6 @@ export class WtsController {
     @Patch(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a wts item for a user' })
-    @ApiResponse({ status: 200, description: 'Updated' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() updateWTSDto: UpdateWTSDto,
@@ -96,10 +75,6 @@ export class WtsController {
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a wts item for a user' })
-    @ApiResponse({ status: 200, description: 'Deleted' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden' })
-    @ApiResponse({ status: 404, description: 'Not found' })
     async delete(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: { id: number },

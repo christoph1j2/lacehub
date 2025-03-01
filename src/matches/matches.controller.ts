@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Controller, Get, Param, ParseIntPipe, HttpException, HttpStatus, UseGuards, Req } from '@nestjs/common';
 import { MatchesService } from './matches.service';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard/jwt-auth.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { BannedUserGuard } from '../common/guards/banned-user.guard';
@@ -18,9 +18,10 @@ export class MatchesController {
     @UseGuards(BannedUserGuard)
     @Throttle({ match: {limit: 1, ttl: 120000} })
     @ApiBearerAuth()
-    @ApiResponse({ status: 200, description: 'Returns matches for authenticated buyer' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiOperation({
+      description: 'Returns matches for authenticated buyer',
+    })
+    @ApiResponse({ status: 429, description: 'You can only match once per 2 minutes.' })
     async getMyBuyerMatches(@Req() request) {
         try {
             // Get the user ID from the authenticated token
@@ -39,8 +40,7 @@ export class MatchesController {
     @Throttle({ match: {limit: 1, ttl: 120000} })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns matches for authenticated seller' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 429, description: 'You can only match once per 2 minutes.' })
     async getMySellerMatches(@Req() request) {
         try {
             // Get the user ID from the authenticated token
@@ -74,9 +74,6 @@ export class MatchesController {
     @Roles('admin')
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Admin access: Returns matches for seller' })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
-    @ApiResponse({ status: 400, description: 'Bad request' })
     async getMatchesForSeller(@Param('sellerId', ParseIntPipe) sellerId: number) {
         try {
             return await this.matchesService.findMatchesForSeller(sellerId);

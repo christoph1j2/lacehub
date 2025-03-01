@@ -11,7 +11,7 @@ import { MatchesModule } from './matches/matches.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
 import { UserInventoryModule } from './user-inventory/user-inventory.module';
-import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE, DiscoveryModule } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { MailService } from './mail/mail.service';
@@ -69,6 +69,7 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
         UserInventoryModule,
         AuthModule,
         ReviewsModule,
+        DiscoveryModule,
     ],
     controllers: [AppController],
     providers: [
