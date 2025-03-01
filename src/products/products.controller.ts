@@ -34,6 +34,35 @@ export class ProductsController {
         private readonly productRepository: Repository<Product>,
     ) {}
 
+    @UseGuards(VerifiedUserGuard)
+    @Get('search')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary:
+            'Search for products by name/sku/description (will be used for inventory/wtb/wts lists)',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Products retrieved successfully',
+    })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'Products not found' })
+    async searchProducts(
+        @Query('query') query: string,
+        @Query('limit') limit = 10,
+        @Query('offset') offset = 0,
+    ): Promise<{ name: string; sku: string }[]> {
+        const products = await this.productsService.searchProducts(
+            query,
+            limit,
+            offset,
+        );
+        return products.map((product) => ({
+            name: product.name,
+            sku: product.sku,
+        }));
+    }
+
     @Post()
     @Roles('admin')
     @ApiBearerAuth()
@@ -96,34 +125,5 @@ export class ProductsController {
     @ApiResponse({ status: 404, description: 'Product not found' })
     delete(@Param('id', ParseIntPipe) id: number) {
         return this.productsService.delete(+id);
-    }
-
-    @UseGuards(VerifiedUserGuard)
-    @Get('search')
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary:
-            'Search for products by name/sku/description (will be used for inventory/wtb/wts lists)',
-    })
-    @ApiResponse({
-        status: 200,
-        description: 'Products retrieved successfully',
-    })
-    @ApiResponse({ status: 401, description: 'Unauthorized' })
-    @ApiResponse({ status: 404, description: 'Products not found' })
-    async searchProducts(
-        @Query('query') query: string,
-        @Query('limit') limit = 10,
-        @Query('offset') offset = 0,
-    ): Promise<{ name: string; sku: string }[]> {
-        const products = await this.productsService.searchProducts(
-            query,
-            limit,
-            offset,
-        );
-        return products.map((product) => ({
-            name: product.name,
-            sku: product.sku,
-        }));
     }
 }
