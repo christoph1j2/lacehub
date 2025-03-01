@@ -11,6 +11,8 @@ import {
     NotFoundException,
     Query,
     Put,
+    HttpException,
+    HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -39,79 +41,6 @@ export class UsersController {
         return this.usersService.findOneById(userId);
     }
 
-    @Get('profile/:id')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get user profile by id' })
-    async getProfileById(@Param('id', ParseIntPipe) id: number) {
-        const userProfile = await this.usersService.findOneById(id);
-
-        if (!userProfile) {
-            throw new NotFoundException('User not found');
-        }
-
-        const reviews = userProfile.reviewsAsSeller.map((review) => ({
-            rating: review.rating,
-            review_text: review.review_text,
-            createdAt: review.createdAt,
-            reviewer: {
-                username: review.reviewer.username,
-            },
-        }));
-
-        return {
-            username: userProfile.username,
-            role: userProfile.role.role_name,
-            verification: userProfile.verified,
-            memberSince: userProfile.created_at,
-            reviews: reviews,
-        };
-    }
-
-    //* according to the dto, should update user name and email, will have to consult with frontend
-    @UseGuards(VerifiedUserGuard)
-    @Patch('profile')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Update user profile' })
-    updateProfile(@Request() req, @Body() updateUserDto: UpdateUserDto) {
-        return this.usersService.update(req.user.id, updateUserDto);
-    }
-
-    @Get(':id')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get a user by id' })
-    async findOneById(@Param('id', ParseIntPipe) id: number) {
-        return await this.usersService.findOneById(id);
-    }
-
-    @Get(':email')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get user by email' })
-    async findOneByEmail(@Param('email') email: string) {
-        return await this.usersService.findOneByEmail(email);
-    }
-
-    @Get(':username')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get user by username' })
-    async findOne(@Param('username') username: string) {
-        return await this.usersService.findOne(username);
-    }
-
-    @Get()
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get all users' })
-    async findAll() {
-        return await this.usersService.findAll();
-    }
-
-    @Delete(':id')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Delete users own profile' })
-    async delete(@Request() req) {
-        const userId = req.user.id;
-        return await this.usersService.delete(userId);
-    }
-
     @Get('search')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Search for users by username or email' })
@@ -126,8 +55,87 @@ export class UsersController {
         }));
     }
 
+    @Get('profile/:id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get user profile by id' })
+    async getProfileById(@Param('id', ParseIntPipe) id: number) {
+        const userProfile = await this.usersService.findOneById(id);
+
+        if (!userProfile) {
+            throw new NotFoundException('User not found');
+        }
+
+        const reviews = userProfile.reviewsAsSeller
+            ? userProfile.reviewsAsSeller.map((review) => ({
+                  rating: review.rating,
+                  review_text: review.review_text,
+                  createdAt: review.created_at,
+                  reviewer: {
+                      username: review.reviewer.username,
+                  },
+              }))
+            : [];
+
+        return {
+            username: userProfile.username,
+            role: userProfile.role.role_name,
+            verification: userProfile.verified,
+            memberSince: userProfile.created_at.toISOString().split('T')[0],
+            reviews: reviews,
+        };
+    }
+
+    //* according to the dto, should update user name and email, will have to consult with frontend
+    @UseGuards(VerifiedUserGuard)
+    @Patch('profile')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update user profile' })
+    updateProfile(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+        return this.usersService.update(req.user.id, updateUserDto);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Delete users own profile' })
+    async delete(@Request() req) {
+        const userId = req.user.id;
+        return await this.usersService.delete(userId);
+    }
+
     @Roles('admin')
-    @Put(':id/ban')
+    @Get('/admin/:id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get a user by id' })
+    async findOneById(@Param('id', ParseIntPipe) id: number) {
+        return await this.usersService.findOneById(id);
+    }
+
+    @Roles('admin')
+    @Get('/admin/:email')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get user by email' })
+    async findOneByEmail(@Param('email') email: string) {
+        return await this.usersService.findOneByEmail(email);
+    }
+
+    @Roles('admin')
+    @Get('/admin/:username')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get user by username' })
+    async findOne(@Param('username') username: string) {
+        return await this.usersService.findOne(username);
+    }
+
+    @Roles('admin')
+    @Get()
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get all users' })
+    async findAll() {
+        return await this.usersService.findAll();
+    }
+
+    @Roles('admin')
+    @Put('/admin/:id/ban')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Ban a user' })
     async banUser(
@@ -138,10 +146,67 @@ export class UsersController {
     }
 
     @Roles('admin')
-    @Put(':id/unban')
+    @Put('/admin/:id/unban')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Unban a user' })
     async unbanUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
         return await this.usersService.unbanUser(userId);
+    }
+
+    @Roles('admin')
+    @Get('/admin/monthly-register')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get monthly registered users' })
+    async getMonthlyRegisteredUsers(
+        @Query('startDate') startDateStr?: string,
+        @Query('endDate') endDateStr?: string,
+    ) {
+        try {
+            const startDate = startDateStr ? new Date(startDateStr) : undefined;
+            const endDate = endDateStr ? new Date(endDateStr) : undefined;
+
+            return await this.usersService.getMonthlyRegisterCount(
+                startDate,
+                endDate,
+            );
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Failed to get monthly registered users',
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+    }
+
+    @Roles('admin')
+    @Get('/admin/total-users')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get total users count' })
+    async getTotalUsers() {
+        try {
+            return await this.usersService.getTotalUserCount();
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Failed to get total users count',
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+    }
+
+    @Roles('admin')
+    @Put('/admin/:id/promote')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Promote a user to admin' })
+    async promoteUser(
+        @Param('id', ParseIntPipe) userId: number,
+    ): Promise<User> {
+        return await this.usersService.promoteUser(userId);
+    }
+
+    @Roles('admin')
+    @Put('/admin/:id/demote')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Demote a user to user' })
+    async demoteUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
+        return await this.usersService.demoteUser(userId);
     }
 }

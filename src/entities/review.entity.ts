@@ -9,23 +9,23 @@ import {
 import { User } from './user.entity';
 
 @Entity('reviews')
-@Unique(['reviewerId', 'sellerId'])
+@Unique(['reviewer_id', 'seller_id'])
 export class Review {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column() // Explicitly add reviewerId as a column
-    reviewerId: number;
+    reviewer_id: number;
 
     @Column() // Explicitly add sellerId as a column
-    sellerId: number;
+    seller_id: number;
 
     @ManyToOne(() => User, (user) => user.reviewsAsReviewer)
-    @JoinColumn({ name: 'reviewerId', referencedColumnName: 'id' })
+    @JoinColumn({ name: 'reviewer_id', referencedColumnName: 'id' })
     reviewer: User;
 
     @ManyToOne(() => User, (user) => user.reviewsAsSeller)
-    @JoinColumn({ name: 'sellerId', referencedColumnName: 'id' })
+    @JoinColumn({ name: 'seller_id', referencedColumnName: 'id' })
     seller: User;
 
     @Column()
@@ -35,5 +35,5 @@ export class Review {
     review_text: string;
 
     @Column()
-    createdAt: Date;
+    created_at: Date;
 }

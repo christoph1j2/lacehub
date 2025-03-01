@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import {
     BadRequestException,
     Inject,
@@ -5,7 +6,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { Between, ILike, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -122,5 +123,96 @@ export class UsersService {
         user.ban_expiration = null;
 
         return await this.usersRepository.save(user);
+    }
+
+    async promoteUser(userId: number): Promise<User> {
+        const user = await this.usersRepository.findOne({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        user.role_id = 1; //? 1 is the ID of the 'admin' role
+
+        return await this.usersRepository.save(user);
+    }
+
+    async demoteUser(userId: number): Promise<User> {
+        const user = await this.usersRepository.findOne({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        user.role_id = 2; //? 2 is the ID of the 'user' role
+
+        return await this.usersRepository.save(user);
+    }
+
+    async getTotalUserCount(): Promise<number> {
+        return await this.usersRepository.count();
+    }
+
+    /**
+     * Gets user registration counts per month for a date range
+     * Useful for generating graphs showing user growth over time
+     *
+     * @param startDate - Beginning of date range (defaults to start of current month)
+     * @param endDate - End of date range (defaults to end of current month)
+     * @returns Object with monthly registration counts
+     */
+    async getMonthlyRegisterCount(
+        startDate?: Date,
+        endDate?: Date,
+    ): Promise<any> {
+        const today = new Date();
+        const start =
+            startDate || new Date(today.getFullYear(), today.getMonth(), 1);
+        start.setHours(0, 0, 0, 0);
+
+        const end =
+            endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        end.setHours(23, 59, 59, 999);
+
+        const users = await this.usersRepository.find({
+            where: {
+                created_at: Between(start, end),
+            },
+        });
+
+        const result = {
+            labels: [],
+            counts: [],
+            totalRegistered: users.length,
+        };
+
+        const monthLabels = [];
+        const monthCounts = {};
+
+        let currentDate = new Date(start);
+        while (currentDate <= end) {
+            const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+            monthLabels.push(monthStr);
+            monthCounts[monthStr] = 0;
+
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+
+        users.forEach((user) => {
+            const registrationDate = new Date(user.created_at);
+            const monthStr = `${registrationDate.getFullYear()}-${String(registrationDate.getMonth() + 1).padStart(2, '0')}`;
+            if (monthCounts[monthStr] !== undefined) {
+                monthCounts[monthStr]++;
+            }
+        });
+
+        result.labels = monthLabels;
+        result.counts = monthLabels.map((month) => monthCounts[month]);
+
+        return result;
     }
 }

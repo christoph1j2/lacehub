@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Match } from '../entities/match.entity';
@@ -5,7 +6,7 @@ import { User } from '../entities/user.entity';
 import { Wtb } from '../entities/wtb.entity'; // Want to Buy
 import { Wts } from '../entities/wts.entity'; // Want to Sell
 import { NotificationsService } from '../notifications/notifications.service';
-import { Not, Repository } from 'typeorm';
+import { Not, Repository, Between } from 'typeorm';
 
 //? TODO: playwright
 @Injectable()
@@ -262,5 +263,74 @@ export class MatchesService {
         );
     }
 
-    //todo other methods for admins
+    /**
+     * Gets match activity counts per day for a date range
+     * Useful for generating graphs showing match activity over time
+     *
+     * @param startDate - Beginning of date range (defaults to start of current week)
+     * @param endDate - End of date range (defaults to end of current week)
+     * @returns Object with daily match counts
+     */
+    async matchActivityPerDay(startDate?: Date, endDate?: Date): Promise<any> {
+        // Default to current week if no dates provided
+        const today = new Date();
+        const start =
+            startDate ||
+            new Date(today.setDate(today.getDate() - today.getDay())); // Start of week (Sunday)
+        start.setHours(0, 0, 0, 0);
+
+        const end =
+            endDate || new Date(new Date(start).setDate(start.getDate() + 6)); // End of week (Saturday)
+        end.setHours(23, 59, 59, 999);
+
+        const matches = await this.matchRepository.find({
+            where: {
+                created_at: Between(start, end),
+            },
+        });
+
+        // Initialize result object with zero counts for each day
+        const result = {
+            labels: [],
+            counts: [],
+            totalMatches: matches.length,
+        };
+
+        // Generate all dates in the range
+        const dateLabels = [];
+        const dateCounts = {};
+
+        // Create a date range array and initialize counts to zero
+        let currentDate = new Date(start);
+        while (currentDate <= end) {
+            const dateStr = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+            dateLabels.push(dateStr);
+            dateCounts[dateStr] = 0;
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Count matches per day
+        matches.forEach((match) => {
+            const matchDate = new Date(match.created_at);
+            const dateStr = matchDate.toISOString().split('T')[0];
+            if (dateCounts[dateStr] !== undefined) {
+                dateCounts[dateStr]++;
+            }
+        });
+
+        // Set the final values
+        result.labels = dateLabels;
+        result.counts = dateLabels.map((date) => dateCounts[date]);
+
+        return result;
+    }
+
+    /**
+     * Returns the total number of matches in the database
+     *
+     * @returns Total number of matches
+     */
+    async totalMatches(): Promise<number> {
+        return this.matchRepository.count();
+    }
 }

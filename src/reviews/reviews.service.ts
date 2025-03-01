@@ -25,30 +25,30 @@ export class ReviewsService {
     /**
      * Creates a new review and updates the seller's credibility score
      *
-     * @param reviewerId - The ID of the user creating the review
-     * @param sellerId - The ID of the seller being reviewed
+     * @param reviewer_id - The ID of the user creating the review
+     * @param seller_id - The ID of the seller being reviewed
      * @param rating - Boolean indicating whether the review is positive (true) or negative (false)
      * @param reviewText - The textual content of the review
      * @returns The newly created review entity
      * @throws BadRequestException if a user tries to review themselves or if users aren't found
      */
     async create(
-        reviewerId: number,
-        sellerId: number,
+        reviewer_id: number,
+        seller_id: number,
         rating: boolean,
         reviewText: string,
     ): Promise<Review> {
         // Prevent self-reviews to maintain system integrity
-        if (reviewerId === sellerId) {
+        if (reviewer_id === seller_id) {
             throw new BadRequestException('You cannot review yourself');
         }
 
         // Retrieve both users to verify they exist
         const reviewer = await this.userRepository.findOne({
-            where: { id: reviewerId },
+            where: { id: reviewer_id },
         });
         const seller = await this.userRepository.findOne({
-            where: { id: sellerId },
+            where: { id: seller_id },
         });
 
         // Validate that both users exist in the system
@@ -58,11 +58,11 @@ export class ReviewsService {
 
         // Create a new review object with the provided data
         const review = this.reviewRepository.create({
-            reviewerId,
-            sellerId,
+            reviewer_id,
+            seller_id,
             rating,
             review_text: reviewText,
-            createdAt: new Date(),
+            created_at: new Date(),
         });
 
         // Save the review to the database first
@@ -87,12 +87,12 @@ export class ReviewsService {
     /**
      * Retrieves all reviews for a specific seller
      *
-     * @param sellerId - The ID of the seller whose reviews to retrieve
+     * @param seller_id - The ID of the seller whose reviews to retrieve
      * @returns An array of Review entities including reviewer information
      */
-    async findAllForSeller(sellerId: number): Promise<Review[]> {
+    async findAllForSeller(seller_id: number): Promise<Review[]> {
         return this.reviewRepository.find({
-            where: { sellerId },
+            where: { seller_id },
             relations: ['reviewer'],
         });
     }
@@ -113,6 +113,15 @@ export class ReviewsService {
             throw new NotFoundException(`Review with ID ${id} not found`);
         }
         return review;
+    }
+
+    /**
+     * Find all reviews in the system
+     *
+     * @returns An array of all Review entities
+     */
+    async findAll(): Promise<Review[]> {
+        return this.reviewRepository.find();
     }
 
     /**
@@ -143,7 +152,7 @@ export class ReviewsService {
         }
 
         // Ensure only the author or an admin can delete the review
-        if (!isAdmin && review.reviewerId !== userId) {
+        if (!isAdmin && review.reviewer_id !== userId) {
             throw new ForbiddenException(
                 'You can only delete your own reviews.',
             );
@@ -151,7 +160,7 @@ export class ReviewsService {
 
         // Find the seller to update their credibility score
         const seller = await this.userRepository.findOne({
-            where: { id: review.sellerId },
+            where: { id: review.seller_id },
         });
 
         // Revert the credibility score effect of this review being deleted:

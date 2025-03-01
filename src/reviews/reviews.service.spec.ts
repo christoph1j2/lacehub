@@ -55,29 +55,29 @@ describe('ReviewsService', () => {
     describe('create', () => {
         it('should create a new review and update seller credibility score for positive review', async () => {
             // Arrange
-            const reviewerId = 1;
-            const sellerId = 2;
+            const reviewer_id = 1;
+            const seller_id = 2;
             const rating = true; // positive review
             const reviewText = 'Great seller!';
 
-            const reviewer = { id: reviewerId } as User;
+            const reviewer = { id: reviewer_id } as User;
             const seller = {
-                id: sellerId,
+                id: seller_id,
                 credibility_score: 5,
             } as User;
             const mockReview = {
                 id: 1,
-                reviewerId,
-                sellerId,
+                reviewer_id,
+                seller_id,
                 rating,
                 review_text: reviewText,
-                createdAt: expect.any(Date),
+                created_at: expect.any(Date),
             } as Review;
 
             userRepository.findOne.mockImplementation(async (options: any) => {
                 const id = options.where.id;
-                if (id === reviewerId) return reviewer;
-                if (id === sellerId) return seller;
+                if (id === reviewer_id) return reviewer;
+                if (id === seller_id) return seller;
                 return null;
             });
 
@@ -90,8 +90,8 @@ describe('ReviewsService', () => {
 
             // Act
             const result = await service.create(
-                reviewerId,
-                sellerId,
+                reviewer_id,
+                seller_id,
                 rating,
                 reviewText,
             );
@@ -99,11 +99,11 @@ describe('ReviewsService', () => {
             // Assert
             expect(userRepository.findOne).toHaveBeenCalledTimes(2);
             expect(reviewRepository.create).toHaveBeenCalledWith({
-                reviewerId,
-                sellerId,
+                reviewer_id,
+                seller_id,
                 rating,
                 review_text: reviewText,
-                createdAt: expect.any(Date),
+                created_at: expect.any(Date),
             });
             expect(reviewRepository.save).toHaveBeenCalledWith(mockReview);
             expect(userRepository.save).toHaveBeenCalledWith({
@@ -115,29 +115,29 @@ describe('ReviewsService', () => {
 
         it('should create a new review and update seller credibility score for negative review', async () => {
             // Arrange
-            const reviewerId = 1;
-            const sellerId = 2;
+            const reviewer_id = 1;
+            const seller_id = 2;
             const rating = false; // negative review
             const reviewText = 'Not a good experience';
 
-            const reviewer = { id: reviewerId } as User;
+            const reviewer = { id: reviewer_id } as User;
             const seller = {
-                id: sellerId,
+                id: seller_id,
                 credibility_score: 5,
             } as User;
             const mockReview = {
                 id: 1,
-                reviewerId,
-                sellerId,
+                reviewer_id,
+                seller_id,
                 rating,
                 review_text: reviewText,
-                createdAt: expect.any(Date),
+                created_at: expect.any(Date),
             } as Review;
 
             userRepository.findOne.mockImplementation(async (options: any) => {
                 const id = options.where.id;
-                if (id === reviewerId) return reviewer;
-                if (id === sellerId) return seller;
+                if (id === reviewer_id) return reviewer;
+                if (id === seller_id) return seller;
                 return null;
             });
 
@@ -150,8 +150,8 @@ describe('ReviewsService', () => {
 
             // Act
             const result = await service.create(
-                reviewerId,
-                sellerId,
+                reviewer_id,
+                seller_id,
                 rating,
                 reviewText,
             );
@@ -166,29 +166,29 @@ describe('ReviewsService', () => {
 
         it('should initialize credibility score if it is null', async () => {
             // Arrange
-            const reviewerId = 1;
-            const sellerId = 2;
+            const reviewer_id = 1;
+            const seller_id = 2;
             const rating = true;
             const reviewText = 'Great seller!';
 
-            const reviewer = { id: reviewerId } as User;
+            const reviewer = { id: reviewer_id } as User;
             const seller = {
-                id: sellerId,
+                id: seller_id,
                 credibility_score: null,
             } as User;
             const mockReview = {
                 id: 1,
-                reviewerId,
-                sellerId,
+                reviewer_id,
+                seller_id,
                 rating,
                 review_text: reviewText,
-                createdAt: expect.any(Date),
+                created_at: expect.any(Date),
             } as Review;
 
             userRepository.findOne.mockImplementation(async (options: any) => {
                 const id = options.where.id;
-                if (id === reviewerId) return reviewer;
-                if (id === sellerId) return seller;
+                if (id === reviewer_id) return reviewer;
+                if (id === seller_id) return seller;
                 return null;
             });
 
@@ -196,7 +196,7 @@ describe('ReviewsService', () => {
             reviewRepository.save.mockResolvedValue(mockReview);
 
             // Act
-            await service.create(reviewerId, sellerId, rating, reviewText);
+            await service.create(reviewer_id, seller_id, rating, reviewText);
 
             // Assert
             expect(userRepository.save).toHaveBeenCalledWith({
@@ -218,34 +218,34 @@ describe('ReviewsService', () => {
 
         it('should throw BadRequestException if reviewer does not exist', async () => {
             // Arrange
-            const reviewerId = 1;
-            const sellerId = 2;
+            const reviewer_id = 1;
+            const seller_id = 2;
             userRepository.findOne.mockImplementation(async (options: any) => {
                 const id = options.where.id;
-                if (id === reviewerId) return null;
-                return { id: sellerId } as User;
+                if (id === reviewer_id) return null;
+                return { id: seller_id } as User;
             });
 
             // Act & Assert
             await expect(
-                service.create(reviewerId, sellerId, true, 'Good seller'),
+                service.create(reviewer_id, seller_id, true, 'Good seller'),
             ).rejects.toThrow(BadRequestException);
             expect(reviewRepository.create).not.toHaveBeenCalled();
         });
 
         it('should throw BadRequestException if seller does not exist', async () => {
             // Arrange
-            const reviewerId = 1;
-            const sellerId = 2;
+            const reviewer_id = 1;
+            const seller_id = 2;
             userRepository.findOne.mockImplementation(async (options: any) => {
                 const id = options.where.id;
-                if (id === reviewerId) return { id: reviewerId } as User;
+                if (id === reviewer_id) return { id: reviewer_id } as User;
                 return null;
             });
 
             // Act & Assert
             await expect(
-                service.create(reviewerId, sellerId, true, 'Good seller'),
+                service.create(reviewer_id, seller_id, true, 'Good seller'),
             ).rejects.toThrow(BadRequestException);
             expect(reviewRepository.create).not.toHaveBeenCalled();
         });
@@ -254,19 +254,19 @@ describe('ReviewsService', () => {
     describe('findAllForSeller', () => {
         it('should return all reviews for a specific seller', async () => {
             // Arrange
-            const sellerId = 1;
+            const seller_id = 1;
             const mockReviews = [
-                { id: 1, sellerId, rating: true },
-                { id: 2, sellerId, rating: false },
+                { id: 1, seller_id, rating: true },
+                { id: 2, seller_id, rating: false },
             ] as Review[];
             reviewRepository.find.mockResolvedValue(mockReviews);
 
             // Act
-            const result = await service.findAllForSeller(sellerId);
+            const result = await service.findAllForSeller(seller_id);
 
             // Assert
             expect(reviewRepository.find).toHaveBeenCalledWith({
-                where: { sellerId },
+                where: { seller_id },
                 relations: ['reviewer'],
             });
             expect(result).toEqual(mockReviews);
@@ -274,11 +274,11 @@ describe('ReviewsService', () => {
 
         it('should return empty array if seller has no reviews', async () => {
             // Arrange
-            const sellerId = 1;
+            const seller_id = 1;
             reviewRepository.find.mockResolvedValue([]);
 
             // Act
-            const result = await service.findAllForSeller(sellerId);
+            const result = await service.findAllForSeller(seller_id);
 
             // Assert
             expect(result).toEqual([]);
@@ -291,8 +291,8 @@ describe('ReviewsService', () => {
             const reviewId = 1;
             const mockReview = {
                 id: reviewId,
-                reviewerId: 2,
-                sellerId: 3,
+                reviewer_id: 2,
+                seller_id: 3,
             } as Review;
             reviewRepository.findOne.mockResolvedValue(mockReview);
 
@@ -324,15 +324,15 @@ describe('ReviewsService', () => {
             // Arrange
             const reviewId = 1;
             const userId = 2;
-            const sellerId = 3;
+            const seller_id = 3;
             const mockReview = {
                 id: reviewId,
-                reviewerId: userId,
-                sellerId,
+                reviewer_id: userId,
+                seller_id,
                 rating: true, // positive review
             } as Review;
             const seller = {
-                id: sellerId,
+                id: seller_id,
                 credibility_score: 10,
             } as User;
 
@@ -348,7 +348,7 @@ describe('ReviewsService', () => {
                 relations: ['seller'],
             });
             expect(userRepository.findOne).toHaveBeenCalledWith({
-                where: { id: sellerId },
+                where: { id: seller_id },
             });
             expect(userRepository.save).toHaveBeenCalledWith({
                 ...seller,
@@ -361,15 +361,15 @@ describe('ReviewsService', () => {
             // Arrange
             const reviewId = 1;
             const userId = 2;
-            const sellerId = 3;
+            const seller_id = 3;
             const mockReview = {
                 id: reviewId,
-                reviewerId: userId,
-                sellerId,
+                reviewer_id: userId,
+                seller_id,
                 rating: false, // negative review
             } as Review;
             const seller = {
-                id: sellerId,
+                id: seller_id,
                 credibility_score: 5,
             } as User;
 
@@ -391,16 +391,16 @@ describe('ReviewsService', () => {
             // Arrange
             const reviewId = 1;
             const adminId = 99;
-            const reviewerId = 2;
-            const sellerId = 3;
+            const reviewer_id = 2;
+            const seller_id = 3;
             const mockReview = {
                 id: reviewId,
-                reviewerId,
-                sellerId,
+                reviewer_id,
+                seller_id,
                 rating: true,
             } as Review;
             const seller = {
-                id: sellerId,
+                id: seller_id,
                 credibility_score: 10,
             } as User;
 
@@ -418,11 +418,11 @@ describe('ReviewsService', () => {
             // Arrange
             const reviewId = 1;
             const userId = 99;
-            const reviewerId = 2; // Different from userId
+            const reviewer_id = 2; // Different from userId
             const mockReview = {
                 id: reviewId,
-                reviewerId,
-                sellerId: 3,
+                reviewer_id,
+                seller_id: 3,
                 rating: true,
             } as Review;
 
@@ -452,11 +452,11 @@ describe('ReviewsService', () => {
             // Arrange
             const reviewId = 1;
             const userId = 2;
-            const sellerId = 3;
+            const seller_id = 3;
             const mockReview = {
                 id: reviewId,
-                reviewerId: userId,
-                sellerId,
+                reviewer_id: userId,
+                seller_id,
                 rating: true,
             } as Review;
 
