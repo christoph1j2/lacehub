@@ -54,9 +54,14 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
                 {
                     name: 'match',
                     ttl: 120000, // 2 minutes
-                    limit: 1, // 1 match request per 2 minutes
+                    limit: 2, // 1 match request per 2 minutes
                 },
             ],
+            generateKey: (context, suffix) => {
+                const throttlerName = suffix?.split(':')[0];
+                const ip = context.switchToHttp().getRequest().ip;
+                return `${throttlerName}:${ip}`;
+            },
         }),
         DatabaseModule,
         UsersModule,

@@ -15,7 +15,7 @@ export class MatchesController {
 
     @Get('/my-buyer-matches')
     @UseGuards(BannedUserGuard, ThrottlerGuard)
-    @Throttle({ match: { ttl: 120000, limit: 1 } })
+    @Throttle({ match: { ttl: 120000, limit: 2 } })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns matches for authenticated buyer' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -35,6 +35,7 @@ export class MatchesController {
 
     @Get('/my-seller-matches')
     @UseGuards(BannedUserGuard, ThrottlerGuard)
+    @Throttle({ match: { ttl: 120000, limit: 2 } })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns matches for authenticated seller' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
