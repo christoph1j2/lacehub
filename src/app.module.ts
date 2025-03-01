@@ -22,6 +22,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import * as os from 'os';
 import { XssMiddleware } from './common/middleware/xss.middleware';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { TerminusModule } from '@nestjs/terminus';
+import { HttpModule } from '@nestjs/axios';
 
 const localIP = getLocalIP();
 //const isServerIP = localIP === '172.20.0.9';
@@ -70,6 +72,8 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
         AuthModule,
         ReviewsModule,
         DiscoveryModule,
+        TerminusModule,
+        HttpModule,
     ],
     controllers: [AppController],
     providers: [
