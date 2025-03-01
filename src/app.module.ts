@@ -48,20 +48,15 @@ const isServerIP = /^172\.20\.0\.[0-9]$/.test(localIP);
                 },
                 {
                     name: 'auth',
-                    ttl: 300000, // 5 minutes
-                    limit: 10, // 10 login attempts per 5 minutes
+                    ttl: 60000,
+                    limit: 60,
                 },
                 {
                     name: 'match',
-                    ttl: 120000, // 2 minutes
-                    limit: 2, // 1 match request per 2 minutes
+                    ttl: 60000,
+                    limit: 60,
                 },
             ],
-            generateKey: (context, suffix) => {
-                const throttlerName = suffix?.split(':')[0];
-                const ip = context.switchToHttp().getRequest().ip;
-                return `${throttlerName}:${ip}`;
-            },
         }),
         DatabaseModule,
         UsersModule,
