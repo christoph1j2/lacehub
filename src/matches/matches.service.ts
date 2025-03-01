@@ -110,7 +110,7 @@ export class MatchesService {
                         buyer: buyer,
                         seller: match.seller,
                         match_score: match.matchScore,
-                        createdAt: new Date(),
+                        created_at: new Date(),
                         status: 'pending', // Initial status
                     }));
                 })
@@ -220,7 +220,7 @@ export class MatchesService {
                         buyer: match.buyer,
                         seller: seller,
                         match_score: match.matchScore,
-                        createdAt: new Date(),
+                        created_at: new Date(),
                         status: 'pending', // Initial status
                     }));
                 })

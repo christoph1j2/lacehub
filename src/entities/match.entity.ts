@@ -34,7 +34,7 @@ export class Match {
     match_score: number;
 
     @Column()
-    createdAt: Date;
+    created_at: Date;
 
     @Column()
     status: string;
