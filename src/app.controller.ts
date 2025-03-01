@@ -42,10 +42,10 @@ export class AppController {
     async check() {
         return this.health.check([
             async () =>
-                this.http.pingCheck('lacehub-frontend', 'https://lacehub.cz/'),
-            () => this.db.pingCheck('database'),
+                this.http.pingCheck('lacehub_frontend', 'https://lacehub.cz/'),
+            () => this.db.pingCheck('lacehub_database'),
             async () =>
-                this.disk.checkStorage('storage', {
+                this.disk.checkStorage('lacehub_storage', {
                     path: '/',
                     thresholdPercent: 0.5,
                 }),
