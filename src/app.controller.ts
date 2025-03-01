@@ -7,7 +7,10 @@ import {
     HealthCheck,
     HealthCheckService,
     HttpHealthIndicator,
+    TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Controller()
 export class AppController {
@@ -16,6 +19,8 @@ export class AppController {
         private readonly health: HealthCheckService,
         private readonly http: HttpHealthIndicator,
         private readonly disk: DiskHealthIndicator,
+        private readonly db: TypeOrmHealthIndicator,
+        @InjectDataSource() private dataSource: DataSource,
     ) {}
 
     @Public()
@@ -34,18 +39,14 @@ export class AppController {
     @Public()
     @Get('health')
     @HealthCheck()
-    check() {
+    async check() {
         return this.health.check([
             async () =>
                 this.http.pingCheck('lacehub-frontend', 'https://lacehub.cz/'),
-            async () =>
-                this.http.pingCheck(
-                    'database-server',
-                    'https://databaze.lacehub.cz',
-                ),
+            () => this.db.pingCheck('database'),
             async () =>
                 this.disk.checkStorage('storage', {
-                    path: '/',
+                    path: 'X:/',
                     thresholdPercent: 0.5,
                 }),
         ]);
