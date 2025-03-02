@@ -8,6 +8,7 @@ import {
     Req,
     Res,
     UnauthorizedException,
+    Redirect,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -80,6 +81,7 @@ export class AuthController {
 
     @Public()
     @Get('verify-email')
+    @Redirect('https://www.lacehub.cz', 302)
     @ApiOperation({
         summary: 'Verify email, requires token (link sent to email)',
     })
@@ -91,7 +93,7 @@ export class AuthController {
             throw new BadRequestException('Invalid token');
         }
 
-        return { message: 'Email verified successfully' };
+        return { message: 'Email verified successfully!' };
     }
 
     @Public()

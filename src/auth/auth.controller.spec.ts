@@ -203,7 +203,7 @@ describe('AuthController', () => {
 
             expect(authService.verifyEmailToken).toHaveBeenCalledWith(token);
             expect(result).toEqual({
-                message: 'Email verified successfully',
+                message: 'Email verified successfully!',
             });
         });
 

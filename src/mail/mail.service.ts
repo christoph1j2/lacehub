@@ -29,7 +29,7 @@ export class MailService {
                 body {
                     font-family: Arial, sans-serif;
                     line-height: 1.6;
-                    color: #333333;
+                    color:rgb(179, 80, 0);
                     margin: 0;
                     padding: 0;
                 }
@@ -39,7 +39,7 @@ export class MailService {
                     padding: 20px;
                 }
                 .header {
-                    background-color: #4a148c;
+                    background-color: rgb(179, 80, 0);
                     padding: 20px;
                     text-align: center;
                 }
@@ -55,7 +55,7 @@ export class MailService {
                 }
                 .button {
                     display: inline-block;
-                    background-color: #4a148c;
+                    background-color: rgb(179, 80, 0);
                     color: #ffffff !important;
                     text-decoration: none;
                     padding: 12px 24px;
@@ -103,7 +103,7 @@ export class MailService {
     }
 
     async sendVerificationEmail(to: string, token: string) {
-        const url = `https://lacehub.cz/auth/verify-email?token=${token}`;
+        const url = `https://api.lacehub.cz/auth/verify-email?token=${token}`;
         const plainText = `Please verify your email by visiting this link: ${url}`;
         const htmlContent = `
             <h2>Email Verification</h2>
@@ -120,7 +120,7 @@ export class MailService {
     }
 
     async sendPasswordResetEmail(to: string, token: string) {
-        const resetUrl = `https://lacehub.cz/auth/reset-password?token=${token}`;
+        const resetUrl = `https://api.lacehub.cz/auth/reset-password?token=${token}`;
         const plainText = `Reset your password by visiting this link: ${resetUrl}`;
         const htmlContent = `
             <h2>Password Reset Request</h2>
