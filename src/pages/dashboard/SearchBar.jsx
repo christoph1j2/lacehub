@@ -75,6 +75,49 @@ const SearchBar = ({ onAddItem }) => {
     }
   };
 
+  const handleAddToList = async (itemData) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(itemData.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: itemData.productId,
+          size: itemData.size,
+          quantity: itemData.quantity,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add item");
+      }
+
+      // Notify parent component to refresh the list
+      if (onAddItem) {
+        onAddItem();
+      }
+
+      const listType = itemData.endpoint.split("/").pop();
+      toast.success(`Item added to your ${listType} list successfully!`);
+    } catch (error) {
+      console.error("Add item error:", error);
+      toast.error("Failed to add item. Please try again.");
+    }
+  };
+
+  const clearSearch = () => {
+    setQuery("");
+    setResults([]);
+    setShowResults(false);
+  };
+
   return (
     <div className="relative w-full" ref={searchRef}>
       <div className="relative">
