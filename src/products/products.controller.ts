@@ -54,6 +54,7 @@ export class ProductsController {
         return products.map((product) => ({
             name: product.name,
             sku: product.sku,
+            id: product.id, // won't be used in the frontend, but it's good to have
         }));
     }
 
