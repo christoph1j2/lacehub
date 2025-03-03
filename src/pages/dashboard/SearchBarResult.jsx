@@ -42,6 +42,19 @@ const SearchBarResult = ({ product, onAddToList }) => {
     }
   };
 
+  const getListTypeName = () => {
+    switch (listType) {
+      case "wtb":
+        return "Want to Buy";
+      case "wts":
+        return "Want to Sell";
+      case "inventory":
+        return "Inventory";
+      default:
+        return "";
+    }
+  };
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -64,25 +77,25 @@ const SearchBarResult = ({ product, onAddToList }) => {
   }, []);
 
   // Sizes for sneakers
-  //   const commonSizes = [
-  //     "US 4.5",
-  //     "US 5",
-  //     "US 5.5",
-  //     "US 6",
-  //     "US 6.5",
-  //     "US 7",
-  //     "US 7.5",
-  //     "US 8",
-  //     "US 8.5",
-  //     "US 9",
-  //     "US 9.5",
-  //     "US 10",
-  //     "US 10.5",
-  //     "US 11",
-  //     "US 11.5",
-  //     "US 12",
-  //     "US 13",
-  //   ];
+  const commonSizes = [
+    "US 4.5",
+    "US 5",
+    "US 5.5",
+    "US 6",
+    "US 6.5",
+    "US 7",
+    "US 7.5",
+    "US 8",
+    "US 8.5",
+    "US 9",
+    "US 9.5",
+    "US 10",
+    "US 10.5",
+    "US 11",
+    "US 11.5",
+    "US 12",
+    "US 13",
+  ];
 
   // Use a placeholder image if none is available
   const imageSrc =
@@ -148,7 +161,74 @@ const SearchBarResult = ({ product, onAddToList }) => {
         )}
       </div>
 
-      {showForm && " "}
+      {showForm && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setShowForm(false)}
+        >
+          <div
+            ref={formRef}
+            className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-semibold text-primary-800 mb-1">
+              Add to {getListTypeName()}
+            </h3>
+            <p className="text-primary-600 text-sm mb-4">{product.name}</p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-primary-700 mb-1">
+                  Size
+                </label>
+                <select
+                  value={size}
+                  onChange={(e) => setSize(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-primary-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400"
+                >
+                  <option value="">Select size</option>
+                  {commonSizes.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-primary-700 mb-1">
+                  Quantity
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-primary-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="px-4 py-2 border border-primary-300 rounded-md text-primary-700 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-secondary-500 rounded-md text-white hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 transition-colors"
+                >
+                  Add
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
