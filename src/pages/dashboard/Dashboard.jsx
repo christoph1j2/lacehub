@@ -7,18 +7,16 @@ import {
   HelpCircle,
   Settings,
   LifeBuoy,
-  Search,
   LogOut,
   User,
-  // ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import SearchBar from "./SearchBar";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("wtb");
-  const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,38 +48,38 @@ const Dashboard = () => {
     };
   }, [isSidebarOpen]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No authentication token found");
-        }
-        const response = await fetch(apiEndpoints[activeTab], {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const result = await response.json();
-        console.log(result);
-        setData(result);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch data");
-        setData([]);
-        if (err.message === "No authentication token found") {
-          navigate("/");
-        }
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
       }
-    };
+      const response = await fetch(apiEndpoints[activeTab], {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
 
+      const result = await response.json();
+      console.log(result);
+      setData(result);
+      setError(null);
+    } catch (err) {
+      setError("Failed to fetch data");
+      setData([]);
+      if (err.message === "No authentication token found") {
+        navigate("/");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [activeTab, navigate]);
 
@@ -119,6 +117,11 @@ const Dashboard = () => {
     { name: "Settings", icon: Settings },
     { name: "Support", icon: LifeBuoy },
   ];
+
+  // Handle item added from search
+  const handleItemAdded = () => {
+    fetchData(); // Refresh the list
+  };
 
   return (
     <div className="flex min-h-screen bg-primary-100">
@@ -179,7 +182,6 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 bg-primary-100">
-        {/* Header - Modified for better mobile layout */}
         {/* Header */}
         <header className="bg-primary-800 shadow-md p-4">
           <div className="max-w-7xl mx-auto">
@@ -210,14 +212,7 @@ const Dashboard = () => {
             {/* Desktop Header - Search and User */}
             <div className="flex flex-col md:flex-row items-center gap-4">
               <div className="relative flex-1 w-full">
-                <input
-                  type="text"
-                  placeholder="Search for your sneaker"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border-0 shadow-sm focus:ring-2 focus:ring-secondary-400 focus:border-transparent transition-all"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary-400" />
+                <SearchBar onAddItem={handleItemAdded} />
               </div>
 
               {/* User Button - Compact and right-aligned */}
