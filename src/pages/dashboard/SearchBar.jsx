@@ -65,6 +65,7 @@ const SearchBar = ({ onAddItem }) => {
       }
 
       const data = await response.json();
+      console.log("Search results:", data); // Debug log
       setResults(data);
     } catch (error) {
       console.error("Search error:", error);
@@ -164,7 +165,7 @@ const SearchBar = ({ onAddItem }) => {
               </div>
             ) : query ? (
               <div className="p-4 text-center text-primary-600">
-                No results found for "{query}"
+                No results found for &quot;{query}&quot;
               </div>
             ) : null}
           </div>

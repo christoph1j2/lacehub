@@ -98,18 +98,20 @@ const SearchBarResult = ({ product, onAddToList }) => {
   ];
 
   // Use a placeholder image if none is available
-  const imageSrc =
-    product.img_url ||
-    "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=200&h=200&q=80";
-
   return (
     <div className="flex items-center bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 p-4 mb-3 group">
       <div className="flex-shrink-0 h-20 w-20 mr-4 overflow-hidden rounded-md bg-gray-100">
         <img
-          src={imageSrc}
+          src={product.img_url}
           alt={product.name}
           className="h-full w-full object-contain"
           loading="lazy"
+          onError={(e) => {
+            const target = e.target;
+            target.onerror = null;
+            target.src =
+              "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=200&h=200&q=80";
+          }}
         />
       </div>
 
@@ -204,7 +206,7 @@ const SearchBarResult = ({ product, onAddToList }) => {
                   type="number"
                   min="1"
                   value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
                   required
                   className="w-full px-3 py-2 border border-primary-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400"
                 />
