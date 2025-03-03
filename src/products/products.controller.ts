@@ -52,9 +52,10 @@ export class ProductsController {
             offset,
         );
         return products.map((product) => ({
+            id: product.id, // won't be used in the frontend, but it's good to have
+            img_url: product.image_link,
             name: product.name,
             sku: product.sku,
-            id: product.id, // won't be used in the frontend, but it's good to have
         }));
     }
 
