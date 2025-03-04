@@ -69,11 +69,19 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'Registration successful' })
     @ApiResponse({
         status: 401,
-        description: 'Username or email already exists',
+        description: 'Username or email already in use',
     })
     @ApiResponse({
         status: 429,
         description: 'Please wait a while before registering in again.',
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid username, email, or password',
+    })
+    @ApiResponse({
+        status: 500,
+        description: 'Username or email already in use',
     })
     async register(@Body() createUserDto: CreateUserDto) {
         return await this.authService.register(createUserDto);
