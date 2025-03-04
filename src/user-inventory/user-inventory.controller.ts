@@ -93,12 +93,14 @@ export class UserInventoryController {
     }
 
     @Patch(':id/move-to-wtb')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Move an inventory item to the WTB list' })
     async moveToWtb(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
         return await this.userInventoryService.moveToWtb(id, user.id);
     }
 
     @Patch(':id/move-to-wts')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Move an inventory item to the WTS list' })
     async moveToWts(
         @Param('id', ParseIntPipe) id: number,
