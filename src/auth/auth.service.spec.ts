@@ -281,7 +281,7 @@ describe('AuthService', () => {
 
             await expect(
                 service.register(invalidCreateUserDto as CreateUserDto),
-            ).rejects.toThrow('Please enter all fields');
+            ).rejects.toThrow('Missing required fields');
         });
 
         it('should throw an error if email format is invalid', async () => {

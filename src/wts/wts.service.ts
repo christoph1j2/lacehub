@@ -15,7 +15,7 @@ import { Product } from '../entities/product.entity';
 export class WtsService {
     constructor(
         @InjectRepository(Wts)
-        private readonly wtbRepository: Repository<Wts>,
+        private readonly wtsRepository: Repository<Wts>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         @InjectRepository(Product)
@@ -23,13 +23,13 @@ export class WtsService {
     ) {}
 
     async findAll(): Promise<Wts[]> {
-        return await this.wtbRepository.find({
+        return await this.wtsRepository.find({
             relations: ['user', 'product'],
         });
     }
 
     async findByUser(userId: number): Promise<Wts[]> {
-        return await this.wtbRepository.find({
+        return await this.wtsRepository.find({
             where: { user: { id: userId } },
             relations: ['user', 'product'],
         });
@@ -59,7 +59,7 @@ export class WtsService {
             );
         }
 
-        const existingWts = await this.wtbRepository.findOne({
+        const existingWts = await this.wtsRepository.findOne({
             where: {
                 user: { id: userId },
                 product: { id: product.id },
@@ -68,17 +68,17 @@ export class WtsService {
         });
         if (existingWts) {
             existingWts.quantity += createWTSDto.quantity;
-            return await this.wtbRepository.save(existingWts);
+            return await this.wtsRepository.save(existingWts);
         }
 
-        const wtb = this.wtbRepository.create({
+        const wts = this.wtsRepository.create({
             user,
             product,
             size: createWTSDto.size,
             quantity: createWTSDto.quantity,
         });
 
-        return await this.wtbRepository.save(wtb);
+        return await this.wtsRepository.save(wts);
     }
 
     async update(
@@ -86,7 +86,7 @@ export class WtsService {
         updateWTSDto: UpdateWTSDto,
         userId: number,
     ): Promise<Wts> {
-        const existingWts = await this.wtbRepository.findOne({
+        const existingWts = await this.wtsRepository.findOne({
             where: { id },
             relations: ['user', 'product'],
         });
@@ -101,16 +101,16 @@ export class WtsService {
             );
         }
 
-        await this.wtbRepository.update(id, updateWTSDto);
+        await this.wtsRepository.update(id, updateWTSDto);
 
-        return await this.wtbRepository.findOne({
+        return await this.wtsRepository.findOne({
             where: { id },
             relations: ['user', 'product'],
         });
     }
 
     async delete(itemId: number, userId: number): Promise<void> {
-        const item = await this.wtbRepository.findOne({
+        const item = await this.wtsRepository.findOne({
             where: { id: itemId },
             relations: ['user'],
         });
@@ -125,6 +125,19 @@ export class WtsService {
             );
         }
 
-        await this.wtbRepository.delete(itemId);
+        await this.wtsRepository.delete(itemId);
+    }
+
+    async topProducts(): Promise<any> {
+        return await this.wtsRepository
+            .createQueryBuilder('wts')
+            .leftJoin('wts.product', 'product')
+            .select(
+                'wts.product_id, product.name as product_name, SUM(wts.quantity) as total',
+            )
+            .groupBy('wts.product_id, product.name')
+            .orderBy('total', 'DESC')
+            .limit(10)
+            .getRawMany();
     }
 }

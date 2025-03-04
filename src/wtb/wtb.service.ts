@@ -127,4 +127,18 @@ export class WtbService {
 
         await this.wtbRepository.delete(itemId);
     }
+
+    // TOP 10 most popular products in inventory (using typeORM)
+    async topProducts(): Promise<any> {
+        return await this.wtbRepository
+            .createQueryBuilder('wtb')
+            .leftJoin('wtb.product', 'product')
+            .select(
+                'wtb.product_id, product.name as product_name, SUM(wtb.quantity) as total',
+            )
+            .groupBy('wtb.product_id, product.name')
+            .orderBy('total', 'DESC')
+            .limit(10)
+            .getRawMany();
+    }
 }

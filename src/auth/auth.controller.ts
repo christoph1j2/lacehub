@@ -80,7 +80,7 @@ export class AuthController {
         description: 'Invalid username, email, or password',
     })
     @ApiResponse({
-        status: 500,
+        status: 409,
         description: 'Username or email already in use',
     })
     async register(@Body() createUserDto: CreateUserDto) {

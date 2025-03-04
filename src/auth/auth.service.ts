@@ -1,4 +1,6 @@
 import {
+    BadRequestException,
+    ConflictException,
     Injectable,
     NotFoundException,
     UnauthorizedException,
@@ -86,13 +88,13 @@ export class AuthService {
 
         // Validate required fields
         if (!username || !email || !password) {
-            throw new Error('Please enter all fields');
+            throw new BadRequestException('Missing required fields');
         }
 
         // validation for email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            throw new Error('Invalid email format');
+            throw new BadRequestException('Invalid email format');
         }
 
         // Check if username or email already exists
@@ -100,7 +102,7 @@ export class AuthService {
         const existingEmail =
             await this.usersService.findOneByEmailWithRole(email);
         if (existingUser || existingEmail) {
-            throw new Error('Username or email already exists');
+            throw new ConflictException('Username or email already exists');
         }
 
         // Proceed with creating the user

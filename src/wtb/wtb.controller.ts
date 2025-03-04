@@ -81,4 +81,12 @@ export class WtbController {
     ) {
         return await this.wtbService.delete(id, user.id);
     }
+
+    @Roles('admin')
+    @Get('admin/get-top-10-items')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get top 10 most popular items' })
+    async getTopProducts() {
+        return await this.wtbService.topProducts();
+    }
 }

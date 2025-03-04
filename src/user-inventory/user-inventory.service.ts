@@ -202,6 +202,20 @@ export class UserInventoryService {
         //? await this.userInventoryRepository.delete(itemId);
     }
 
+    // TOP 10 most popular products in inventory (using typeORM)
+    async topProducts(): Promise<any> {
+        return await this.userInventoryRepository
+            .createQueryBuilder('user_inventory')
+            .leftJoin('user_inventory.product', 'product')
+            .select(
+                'user_inventory.product_id, product.name as product_name, SUM(user_inventory.quantity) as total',
+            )
+            .groupBy('user_inventory.product_id, product.name')
+            .orderBy('total', 'DESC')
+            .limit(10)
+            .getRawMany();
+    }
+
     //! TODO: I don't know how to test this without frontend, future feature
     /* async upload(fileBuffer: Buffer, userId: number): Promise<any> {
         const workbook = XLSX.read(fileBuffer);

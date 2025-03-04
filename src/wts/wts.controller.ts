@@ -81,4 +81,12 @@ export class WtsController {
     ) {
         return await this.wtsService.delete(id, user.id);
     }
+
+    @Roles('admin')
+    @Get('admin/get-top-10-items')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get top 10 most popular items' })
+    async getTopProducts() {
+        return await this.wtsService.topProducts();
+    }
 }
