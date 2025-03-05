@@ -307,3 +307,80 @@ describe('ProductsService', () => {
         });
     });
 });
+
+describe('ProductsService Redis Caching', () => {
+    let service: ProductsService;
+    let productsRepository: Repository<Product>;
+    let cacheManager: any;
+
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                ProductsService,
+                {
+                    provide: getRepositoryToken(Product),
+                    useValue: {
+                        findAndCount: jest.fn(),
+                    },
+                },
+                {
+                    provide: CACHE_MANAGER,
+                    useValue: {
+                        get: jest.fn(),
+                        set: jest.fn(),
+                    },
+                },
+            ],
+        }).compile();
+
+        service = module.get<ProductsService>(ProductsService);
+        productsRepository = module.get<Repository<Product>>(
+            getRepositoryToken(Product),
+        );
+        cacheManager = module.get(CACHE_MANAGER);
+    });
+
+    it('should fetch from database and cache results when cache is empty', async () => {
+        const query = 'test';
+        const limit = 10;
+        const offset = 0;
+        const cacheKey = `search:${query}:${limit}:${offset}`;
+        // Simulate cache miss:
+        cacheManager.get.mockResolvedValue(null);
+        const fakeProducts = [{ id: 1, name: 'Product 1' }];
+        (productsRepository.findAndCount as jest.Mock).mockResolvedValue([
+            fakeProducts,
+            fakeProducts.length,
+        ]);
+
+        const result = await service.searchProducts(query, limit, offset);
+
+        expect(cacheManager.get).toHaveBeenCalledWith(cacheKey);
+        expect(productsRepository.findAndCount).toHaveBeenCalled();
+        expect(cacheManager.set).toHaveBeenCalledWith(
+            cacheKey,
+            { results: fakeProducts, total: fakeProducts.length },
+            300000, // TTL in milliseconds
+        );
+        expect(result).toEqual(fakeProducts);
+    });
+
+    it('should return cached results when available', async () => {
+        const query = 'test';
+        const limit = 10;
+        const offset = 0;
+        const cacheKey = `search:${query}:${limit}:${offset}`;
+        const cachedData = {
+            results: [{ id: 2, name: 'Product 2' }],
+            total: 1,
+        };
+        cacheManager.get.mockResolvedValue(cachedData);
+
+        const result = await service.searchProducts(query, limit, offset);
+
+        expect(cacheManager.get).toHaveBeenCalledWith(cacheKey);
+        // Repository is not called on a cache hit
+        expect(productsRepository.findAndCount).not.toHaveBeenCalled();
+        expect(result).toEqual(cachedData.results);
+    });
+});
