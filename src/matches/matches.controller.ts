@@ -19,7 +19,7 @@ export class MatchesController {
     @Throttle({ match: {limit: 1, ttl: 120000} })
     @ApiBearerAuth()
     @ApiOperation({
-      description: 'Returns matches for authenticated buyer',
+      summary: 'Returns matches for authenticated buyer',
     })
     @ApiResponse({ status: 429, description: 'You can only match once per 2 minutes.' })
     async getMyBuyerMatches(@Req() request) {
@@ -39,6 +39,9 @@ export class MatchesController {
     @UseGuards(BannedUserGuard)
     @Throttle({ match: {limit: 1, ttl: 120000} })
     @ApiBearerAuth()
+    @ApiOperation({
+      summary: 'Returns matches for authenticated seller',
+    })
     @ApiResponse({ status: 200, description: 'Returns matches for authenticated seller' })
     @ApiResponse({ status: 429, description: 'You can only match once per 2 minutes.' })
     async getMySellerMatches(@Req() request) {
@@ -58,6 +61,9 @@ export class MatchesController {
     @Get('/admin/buyer/:buyerId')
     @Roles('admin') // Implement this guard for admin-only access
     @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Admin access: Returns matches for buyer',
+    })
     @ApiResponse({ status: 200, description: 'Admin access: Returns matches for buyer' })
     async getMatchesForBuyer(@Param('buyerId', ParseIntPipe) buyerId: number) {
         try {
@@ -73,6 +79,9 @@ export class MatchesController {
     @Get('/admin/seller/:sellerId')
     @Roles('admin')
     @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Admin access: Returns matches for seller',
+    })
     @ApiResponse({ status: 200, description: 'Admin access: Returns matches for seller' })
     async getMatchesForSeller(@Param('sellerId', ParseIntPipe) sellerId: number) {
         try {
@@ -89,7 +98,7 @@ export class MatchesController {
     @Roles('admin')
     @ApiBearerAuth()
     @ApiOperation({
-    description: 'Returns match activity counts per day for a date range',
+        summary: 'Returns match activity counts per day for a date range (OR 7 days)',
     })
     @ApiResponse({ status: 200, description: 'Returns daily match counts for graphing' })
     @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date in YYYY-MM-DD format' })
@@ -112,7 +121,7 @@ export class MatchesController {
     @Roles('admin')
     @ApiBearerAuth()
     @ApiOperation({
-    description: 'Returns total match count.',
+        summary: 'Returns total match count.',
     })
     async getTotalMatches() {
         try {

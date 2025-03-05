@@ -17,7 +17,7 @@ import {
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -53,6 +53,89 @@ export class UsersController {
         return users.map((user) => ({
             username: user.username,
         }));
+    }
+
+    @Roles('admin')
+    @Get('/admin/active-user-count')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get active user count' })
+    async getActiveUserCount() {
+        return await this.usersService.getActiveUserCount();
+    }
+
+    @Roles('admin')
+    @Get('/admin/active-users')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get active users' })
+    async getActiveUsers() {
+        return await this.usersService.getActiveUsers();
+    }
+
+    @Roles('admin')
+    @Get('/admin/inactive-user-count')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get inactive user count' })
+    async getInactiveUserCount() {
+        return await this.usersService.getInactiveUserCount();
+    }
+
+    @Roles('admin')
+    @Get('/admin/inactive-users')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get inactive users' })
+    async getInactiveUsers() {
+        return await this.usersService.getInactiveUsers();
+    }
+
+    @Roles('admin')
+    @Get('/admin/monthly-register')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get monthly registered users' })
+    @ApiQuery({
+        name: 'startDate',
+        required: false,
+        type: String,
+        description: 'Start date in YYYY-MM-DD format',
+    })
+    @ApiQuery({
+        name: 'endDate',
+        required: false,
+        type: String,
+        description: 'End date in YYYY-MM-DD format',
+    })
+    async getMonthlyRegisteredUsers(
+        @Query('startDate') startDateStr?: string,
+        @Query('endDate') endDateStr?: string,
+    ) {
+        try {
+            const startDate = startDateStr ? new Date(startDateStr) : undefined;
+            const endDate = endDateStr ? new Date(endDateStr) : undefined;
+
+            return await this.usersService.getMonthlyRegisterCount(
+                startDate,
+                endDate,
+            );
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Failed to get monthly registered users',
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+    }
+
+    @Roles('admin')
+    @Get('/admin/total-users')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get total users count' })
+    async getTotalUsers() {
+        try {
+            return await this.usersService.getTotalUserCount();
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Failed to get total users count',
+                HttpStatus.BAD_REQUEST,
+            );
+        }
     }
 
     @Get('profile/:id')
@@ -151,45 +234,6 @@ export class UsersController {
     @ApiOperation({ summary: 'Unban a user' })
     async unbanUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
         return await this.usersService.unbanUser(userId);
-    }
-
-    @Roles('admin')
-    @Get('/admin/monthly-register')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get monthly registered users' })
-    async getMonthlyRegisteredUsers(
-        @Query('startDate') startDateStr?: string,
-        @Query('endDate') endDateStr?: string,
-    ) {
-        try {
-            const startDate = startDateStr ? new Date(startDateStr) : undefined;
-            const endDate = endDateStr ? new Date(endDateStr) : undefined;
-
-            return await this.usersService.getMonthlyRegisterCount(
-                startDate,
-                endDate,
-            );
-        } catch (error) {
-            throw new HttpException(
-                error.message || 'Failed to get monthly registered users',
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-    }
-
-    @Roles('admin')
-    @Get('/admin/total-users')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get total users count' })
-    async getTotalUsers() {
-        try {
-            return await this.usersService.getTotalUserCount();
-        } catch (error) {
-            throw new HttpException(
-                error.message || 'Failed to get total users count',
-                HttpStatus.BAD_REQUEST,
-            );
-        }
     }
 
     @Roles('admin')

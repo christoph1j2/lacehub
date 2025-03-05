@@ -14,8 +14,9 @@ CREATE TABLE IF NOT EXISTS "users"(
     "ban_expiration" TIMESTAMP WITH TIME ZONE,
     "verificationToken" VARCHAR(255),
     "resetToken" VARCHAR(255),
-    "resetTokenExpires" TIMESTAMP,
-    "refreshToken" VARCHAR(255)
+    "resetTokenExpires" TIMESTAMP WITH TIME ZONE,
+    "refreshToken" VARCHAR(255),
+    "last_login" TIMESTAMP WITH TIME ZONE
 );
 ALTER TABLE
     "users" ADD PRIMARY KEY("id");

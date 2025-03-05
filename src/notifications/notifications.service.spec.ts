@@ -75,6 +75,7 @@ describe('NotificationsService', () => {
         matchesAsBuyer: [],
         matchesAsSeller: [],
         refreshToken: '',
+        last_login: undefined,
     };
 
     describe('create', () => {

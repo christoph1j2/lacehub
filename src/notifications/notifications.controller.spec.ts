@@ -57,6 +57,7 @@ describe('NotificationsController', () => {
         matchesAsBuyer: [],
         matchesAsSeller: [],
         refreshToken: '',
+        last_login: undefined,
     };
 
     it('should be defined', () => {

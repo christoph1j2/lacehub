@@ -63,6 +63,9 @@ export class AuthService {
 
         // save refresh token in db
         user.refreshToken = await bcrypt.hash(refreshToken, 10);
+
+        // new login date
+        user.last_login = new Date();
         await this.usersRepository.save(user);
 
         return {

@@ -171,7 +171,8 @@ export class UsersService {
     ): Promise<any> {
         const today = new Date();
         const start =
-            startDate || new Date(today.getFullYear(), today.getMonth(), 1);
+            startDate ||
+            new Date(today.getFullYear(), today.getMonth() - 11, 1);
         start.setHours(0, 0, 0, 0);
 
         const end =
@@ -195,7 +196,9 @@ export class UsersService {
 
         let currentDate = new Date(start);
         while (currentDate <= end) {
-            const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+            const monthStr = `${currentDate.getFullYear()}-${String(
+                currentDate.getMonth() + 1,
+            ).padStart(2, '0')}`;
             monthLabels.push(monthStr);
             monthCounts[monthStr] = 0;
 
@@ -204,7 +207,9 @@ export class UsersService {
 
         users.forEach((user) => {
             const registrationDate = new Date(user.created_at);
-            const monthStr = `${registrationDate.getFullYear()}-${String(registrationDate.getMonth() + 1).padStart(2, '0')}`;
+            const monthStr = `${registrationDate.getFullYear()}-${String(
+                registrationDate.getMonth() + 1,
+            ).padStart(2, '0')}`;
             if (monthCounts[monthStr] !== undefined) {
                 monthCounts[monthStr]++;
             }
@@ -214,5 +219,57 @@ export class UsersService {
         result.counts = monthLabels.map((month) => monthCounts[month]);
 
         return result;
+    }
+
+    // Method for getting count of users logged in in the last 30 days
+    async getActiveUserCount(): Promise<number> {
+        const today = new Date();
+        const monthAgo = new Date();
+        monthAgo.setDate(today.getDate() - 30);
+
+        return await this.usersRepository.count({
+            where: {
+                last_login: Between(monthAgo, today),
+            },
+        });
+    }
+
+    // Method for getting count of users who have not logged in in the last 30 days
+    async getInactiveUserCount(): Promise<number> {
+        const today = new Date();
+        const monthAgo = new Date(today);
+        monthAgo.setDate(today.getDate() - 30);
+
+        return await this.usersRepository.count({
+            where: {
+                last_login: Between(new Date(0), monthAgo),
+            },
+        });
+    }
+
+    // Method for getting users logged in in the last 30 days
+    async getActiveUsers(): Promise<User[]> {
+        const today = new Date();
+        const monthAgo = new Date();
+        monthAgo.setDate(today.getDate() - 30);
+
+        return await this.usersRepository.find({
+            where: {
+                last_login: Between(monthAgo, today),
+            },
+        });
+    }
+
+    // Method for getting users who have not logged in in the last 30 days
+    async getInactiveUsers(): Promise<User[]> {
+        const today = new Date();
+        const monthAgo = new Date(today);
+        monthAgo.setDate(today.getDate() - 30);
+
+        return await this.usersRepository.find({
+            where: {
+                last_login: Between(new Date(0), monthAgo),
+            },
+        });
     }
 }
