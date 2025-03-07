@@ -27,7 +27,7 @@ function Index() {
   }, []);
 
   return (
-    <div className="min-h-screen overflow-hidden parallax-container">
+    <div className="min-h-screen overflow-hidden parallax-container ">
       {/* Hero Section */}
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6">
         {/* Parallax Background Layers */}

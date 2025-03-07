@@ -100,7 +100,7 @@ const Dashboard = () => {
           : "https://api.lacehub.cz/matches/my-seller-matches";
 
       const response = await fetch(matchEndpoint, {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -325,7 +325,8 @@ const Dashboard = () => {
                 <strong className="font-bold">Success!</strong>
                 <span className="block sm:inline">
                   {" "}
-                  Matching process completed successfully.
+                  Matching process completed successfully. Please check your
+                  email.
                 </span>
               </div>
             )}

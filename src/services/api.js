@@ -1,11 +1,29 @@
 // API service for admin panel
 
+// Helper function to get the auth token
+const getToken = () => {
+  return localStorage.getItem("token");
+};
+
+// Helper function to create authenticated fetch options
+const createAuthHeaders = () => {
+  const token = getToken();
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+      "Content-Type": "application/json",
+    },
+  };
+};
+
 // Function to fetch total users count
 export const fetchTotalUsers = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz/users/admin/total-users"
+      "https://api.lacehub.cz/users/admin/total-users",
+      createAuthHeaders()
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -20,8 +38,10 @@ export const fetchTotalUsers = async () => {
 export const fetchActiveUserCount = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz/users/admin/active-user-count"
+      "https://api.lacehub.cz/users/admin/active-user-count",
+      createAuthHeaders()
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -36,8 +56,10 @@ export const fetchActiveUserCount = async () => {
 export const fetchDailyMatches = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz/matches/admin/daily-matches"
+      "https://api.lacehub.cz/matches/admin/daily-matches",
+      createAuthHeaders()
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -52,8 +74,10 @@ export const fetchDailyMatches = async () => {
 export const fetchMonthlyRegistrations = async (startDate, endDate) => {
   try {
     const response = await fetch(
-      `https://api.lacehub.cz/users/admin/monthly-register?startDate=${startDate}&endDate=${endDate}`
+      `https://api.lacehub.cz/users/admin/monthly-register?startDate=${startDate}&endDate=${endDate}`,
+      createAuthHeaders()
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -67,7 +91,11 @@ export const fetchMonthlyRegistrations = async (startDate, endDate) => {
 // Function to fetch all users
 export const fetchAllUsers = async () => {
   try {
-    const response = await fetch("https://api.lacehub.cz/users");
+    const response = await fetch(
+      "https://api.lacehub.cz//users",
+      createAuthHeaders()
+    );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -82,8 +110,10 @@ export const fetchAllUsers = async () => {
 export const fetchActiveUsers = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz/users/admin/active-users"
+      "https://api.lacehub.cz/users/admin/active-users",
+      createAuthHeaders()
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -98,14 +128,34 @@ export const fetchActiveUsers = async () => {
 export const fetchInactiveUsers = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz/users/admin/inactive-users"
+      "https://api.lacehub.cz/users/admin/inactive-users",
+      createAuthHeaders()
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     return await response.json();
   } catch (error) {
     console.error("Error fetching inactive users:", error);
+    return [];
+  }
+};
+
+// Function to fetch banned users
+export const fetchBannedUsers = async () => {
+  try {
+    const response = await fetch(
+      "https://api.lacehub.cz/users/admin/banned-users",
+      createAuthHeaders()
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching banned users:", error);
     return [];
   }
 };
@@ -117,8 +167,10 @@ export const banUser = async (userId) => {
       `https://api.lacehub.cz/users/admin/${userId}/ban`,
       {
         method: "POST",
+        ...createAuthHeaders(),
       }
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -136,8 +188,10 @@ export const unbanUser = async (userId) => {
       `https://api.lacehub.cz/users/admin/${userId}/unban`,
       {
         method: "POST",
+        ...createAuthHeaders(),
       }
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

@@ -4,9 +4,10 @@ import {
   fetchAllUsers,
   fetchActiveUsers,
   fetchInactiveUsers,
+  fetchBannedUsers,
   banUser,
   unbanUser,
-} from "../../services/api";
+} from "../services/api";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -14,98 +15,92 @@ const Users = () => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [activeUsersCount, setActiveUsersCount] = useState(0);
-  const [inactiveUsersCount, setInactiveUsersCount] = useState(0);
-  const [bannedUsersCount, setBannedUsersCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const usersPerPage = 10;
 
-  const fetchUsers = async (tab) => {
-    setIsLoading(true);
-    try {
-      let fetchedUsers = [];
-
-      switch (tab) {
-        case "active":
-          fetchedUsers = await fetchActiveUsers();
-          break;
-        case "inactive":
-          fetchedUsers = await fetchInactiveUsers();
-          break;
-        case "all":
-        default:
-          fetchedUsers = await fetchAllUsers();
-          break;
-      }
-
-      setUsers(fetchedUsers);
-      setFilteredUsers(fetchedUsers);
-
-      // Update counts
-      setTotalUsers(fetchedUsers.length);
-      setActiveUsersCount(
-        fetchedUsers.filter((user) => user.verified && !user.is_banned).length
-      );
-      setInactiveUsersCount(
-        fetchedUsers.filter((user) => !user.verified && !user.is_banned).length
-      );
-      setBannedUsersCount(fetchedUsers.filter((user) => user.is_banned).length);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast("Failed to load users", {
-        description: "Please try again later",
-        type: "error",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Fetch users based on active tab
   useEffect(() => {
-    fetchUsers(activeTab);
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        let fetchedUsers = [];
+
+        switch (activeTab) {
+          case "active":
+            fetchedUsers = await fetchActiveUsers();
+            break;
+          case "inactive":
+            fetchedUsers = await fetchInactiveUsers();
+            break;
+          case "banned":
+            fetchedUsers = await fetchBannedUsers();
+            break;
+          case "all":
+          default:
+            fetchedUsers = await fetchAllUsers();
+            break;
+        }
+
+        setUsers(fetchedUsers);
+        setFilteredUsers(fetchedUsers);
+        setTotalPages(Math.ceil(fetchedUsers.length / usersPerPage));
+        setCurrentPage(1); // Reset to first page when changing tabs
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast("Failed to load users", {
+          description: "Please try again later",
+          type: "error",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, [activeTab]);
 
+  // Filter users by search term
   useEffect(() => {
-    // Filter users based on search term
-    const filtered = users.filter((user) => {
-      return (
-        user.username.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase())
-      );
-    });
+    if (search.trim() === "") {
+      setFilteredUsers(users);
+      setTotalPages(Math.ceil(users.length / usersPerPage));
+      return;
+    }
+
+    const filtered = users.filter(
+      (user) =>
+        user.username?.toLowerCase().includes(search.toLowerCase()) ||
+        user.email?.toLowerCase().includes(search.toLowerCase())
+    );
 
     setFilteredUsers(filtered);
+    setTotalPages(Math.ceil(filtered.length / usersPerPage));
+    setCurrentPage(1); // Reset to first page when searching
   }, [search, users]);
 
+  // Handle banning a user
   const handleBanUser = async (userId) => {
     try {
       await banUser(userId);
 
-      // Update the user in the state
-      const updatedUsers = users.map((user) => {
-        if (user.id === userId) {
-          return { ...user, is_banned: true };
-        }
-        return user;
-      });
-
-      setUsers(updatedUsers);
-
-      // Refilter users
-      const filtered = updatedUsers.filter((user) => {
-        return (
-          user.username.toLowerCase().includes(search.toLowerCase()) ||
-          user.email.toLowerCase().includes(search.toLowerCase())
-        );
-      });
-
-      setFilteredUsers(filtered);
-
-      // Update counts
-      setBannedUsersCount((prev) => prev + 1);
+      // Update user list to reflect the ban
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, is_banned: true } : user
+        )
+      );
 
       toast("User banned successfully", {
         type: "success",
       });
+
+      // If on the banned tab, refresh the data to show updated banned users
+      if (activeTab === "banned") {
+        const bannedUsers = await fetchBannedUsers();
+        setUsers(bannedUsers);
+        setFilteredUsers(bannedUsers);
+      }
     } catch (error) {
       console.error("Error banning user:", error);
       toast("Failed to ban user", {
@@ -115,36 +110,28 @@ const Users = () => {
     }
   };
 
+  // Handle unbanning a user
   const handleUnbanUser = async (userId) => {
     try {
       await unbanUser(userId);
 
-      // Update the user in the state
-      const updatedUsers = users.map((user) => {
-        if (user.id === userId) {
-          return { ...user, is_banned: false };
-        }
-        return user;
-      });
-
-      setUsers(updatedUsers);
-
-      // Refilter users
-      const filtered = updatedUsers.filter((user) => {
-        return (
-          user.username.toLowerCase().includes(search.toLowerCase()) ||
-          user.email.toLowerCase().includes(search.toLowerCase())
-        );
-      });
-
-      setFilteredUsers(filtered);
-
-      // Update counts
-      setBannedUsersCount((prev) => prev - 1);
+      // Update user list to reflect the unban
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, is_banned: false } : user
+        )
+      );
 
       toast("User unbanned successfully", {
         type: "success",
       });
+
+      // If on the banned tab, refresh the data to show updated banned users
+      if (activeTab === "banned") {
+        const bannedUsers = await fetchBannedUsers();
+        setUsers(bannedUsers);
+        setFilteredUsers(bannedUsers);
+      }
     } catch (error) {
       console.error("Error unbanning user:", error);
       toast("Failed to unban user", {
@@ -154,7 +141,35 @@ const Users = () => {
     }
   };
 
-  if (isLoading && users.length === 0) {
+  // Handle pagination
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Calculate the current displayed users based on pagination
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+  // Calculate user stats
+  const totalUsers = users.length;
+  const activeUsers = users.filter(
+    (user) => user.verified && !user.is_banned
+  ).length;
+  const inactiveUsers = users.filter(
+    (user) => !user.verified && !user.is_banned
+  ).length;
+  const bannedUsers = users.filter((user) => user.is_banned).length;
+
+  if (isLoading && !users.length) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-secondary-200 border-t-secondary-600"></div>
@@ -181,7 +196,7 @@ const Users = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
           <h3 className="text-sm font-medium text-primary-500">Active Users</h3>
           <p className="text-2xl font-bold text-primary-900 mt-2">
-            {activeUsersCount}
+            {activeUsers}
           </p>
         </div>
 
@@ -190,14 +205,14 @@ const Users = () => {
             Inactive Users
           </h3>
           <p className="text-2xl font-bold text-primary-900 mt-2">
-            {inactiveUsersCount}
+            {inactiveUsers}
           </p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
           <h3 className="text-sm font-medium text-primary-500">Banned Users</h3>
           <p className="text-2xl font-bold text-primary-900 mt-2">
-            {bannedUsersCount}
+            {bannedUsers}
           </p>
         </div>
       </div>
@@ -235,7 +250,7 @@ const Users = () => {
                   />
                 </svg>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 flex-wrap">
                 {["all", "active", "inactive", "banned"].map((tab) => (
                   <button
                     key={tab}
@@ -256,6 +271,12 @@ const Users = () => {
               <table className="min-w-full divide-y divide-primary-200">
                 <thead className="bg-primary-50">
                   <tr>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider"
+                    >
+                      ID
+                    </th>
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider"
@@ -289,57 +310,61 @@ const Users = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-primary-200">
-                  {filteredUsers.slice(0, 10).map((user) => (
-                    <tr key={user.id} className="hover:bg-primary-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-800">
-                        {user.username}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
-                        {user.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            user.verified && !user.is_banned
-                              ? "bg-green-100 text-green-800"
-                              : !user.verified && !user.is_banned
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-accent-100 text-accent-800"
-                          }`}
-                        >
-                          {user.is_banned
-                            ? "Banned"
-                            : user.verified
-                            ? "Verified"
-                            : "Unverified"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {!user.is_banned ? (
-                          <button
-                            onClick={() => handleBanUser(user.id)}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500"
+                  {currentUsers.length > 0 ? (
+                    currentUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-primary-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
+                          {user.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-800">
+                          {user.username}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
+                          {user.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              user.is_banned
+                                ? "bg-accent-100 text-accent-800"
+                                : user.verified
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
                           >
-                            Ban
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleUnbanUser(user.id)}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                          >
-                            Unban
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredUsers.length === 0 && (
+                            {user.is_banned
+                              ? "Banned"
+                              : user.verified
+                              ? "Verified"
+                              : "Unverified"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {user.is_banned ? (
+                            <button
+                              onClick={() => handleUnbanUser(user.id)}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                              Unban
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleBanUser(user.id)}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500"
+                            >
+                              Ban
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={6}
                         className="text-center py-6 text-primary-500"
                       >
                         No users found
@@ -350,16 +375,28 @@ const Users = () => {
               </table>
             </div>
 
-            <div className="flex items-center justify-end space-x-2">
-              <button
-                disabled
-                className="inline-flex items-center px-4 py-2 border border-primary-300 text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <button className="inline-flex items-center px-4 py-2 border border-primary-300 text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50">
-                Next
-              </button>
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-primary-500">
+                Showing {indexOfFirstUser + 1} to{" "}
+                {Math.min(indexOfLastUser, filteredUsers.length)} of{" "}
+                {filteredUsers.length} users
+              </p>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center px-4 py-2 border border-primary-300 text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage >= totalPages}
+                  className="inline-flex items-center px-4 py-2 border border-primary-300 text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         </div>

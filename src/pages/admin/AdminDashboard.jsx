@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { subMonths, subWeeks, subYears } from "date-fns";
+import { subMonths, subYears } from "date-fns";
 import { toast } from "sonner";
 import {
   fetchTotalUsers,
@@ -41,9 +41,6 @@ const AdminDashboard = () => {
       let startDate;
 
       switch (period) {
-        case "week":
-          startDate = subWeeks(now, 1);
-          break;
         case "year":
           startDate = subYears(now, 1);
           break;
@@ -171,7 +168,6 @@ const AdminDashboard = () => {
 
   // Period options for the select dropdowns
   const periodOptions = [
-    { value: "week", label: "Last Week" },
     { value: "month", label: "Last Month" },
     { value: "year", label: "Last Year" },
   ];

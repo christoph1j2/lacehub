@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 
 const AuthContext = createContext(null);
@@ -39,8 +39,16 @@ export const AuthProvider = ({ children }) => {
     return !!user;
   };
 
+  const isAdmin = () => {
+    if (!user) return false;
+    // Check if the user has admin role (role_id === 1) or role_name === "admin"
+    return user.role_id === 1 || (user.role && user.role.role_name === "admin");
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, isAuthenticated, isAdmin }}
+    >
       {children}
     </AuthContext.Provider>
   );

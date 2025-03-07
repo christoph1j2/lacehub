@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import {
   User,
   BarChart,
@@ -10,20 +10,38 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
+import { toast } from "sonner";
 
-const Layout = () => {
-  const { user, logout } = useAuth();
+const AdminLayout = () => {
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const sidebarRef = useRef(null);
+  const [isChecking, setIsChecking] = useState(true);
 
   // Check if user is admin
   useEffect(() => {
-    if (!user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
+    const checkAdminStatus = () => {
+      setIsChecking(true);
+
+      if (!user) {
+        toast.error("You must be logged in to access this page");
+        navigate("/");
+        return;
+      }
+
+      if (!isAdmin()) {
+        toast.error("You don't have permission to access this page");
+        navigate("/");
+        return;
+      }
+
+      setIsChecking(false);
+    };
+
+    checkAdminStatus();
+  }, [user, navigate, isAdmin]);
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -60,6 +78,14 @@ const Layout = () => {
         : "text-primary-700 hover:bg-primary-200"
     }`;
   };
+
+  if (isChecking) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-secondary-200 border-t-secondary-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex w-full bg-primary-100">
@@ -169,4 +195,4 @@ const Layout = () => {
   );
 };
 
-export default Layout;
+export default AdminLayout;
