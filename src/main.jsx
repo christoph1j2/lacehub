@@ -14,7 +14,7 @@ import AdminLayout from "./pages/admin/Layout.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminUsers from "./pages/admin/Users.jsx";
 import AdminStatistics from "./pages/admin/Statistics.jsx";
-import AdminSettings from "./pages/admin/Settings.jsx";
+// import AdminSettings from "./pages/admin/Settings.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
@@ -38,7 +38,7 @@ createRoot(document.getElementById("root")).render(
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="statistics" element={<AdminStatistics />} />
-            <Route path="settings" element={<AdminSettings />} />
+            {/* <Route path="settings" element={<AdminSettings />} /> */}
           </Route>
         </Routes>
       </AuthProvider>

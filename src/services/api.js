@@ -4,7 +4,7 @@
 export const fetchTotalUsers = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz//users/admin/total-users"
+      "https://api.lacehub.cz/users/admin/total-users"
     );
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -20,7 +20,7 @@ export const fetchTotalUsers = async () => {
 export const fetchActiveUserCount = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz//users/admin/active-user-count"
+      "https://api.lacehub.cz/users/admin/active-user-count"
     );
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -36,7 +36,7 @@ export const fetchActiveUserCount = async () => {
 export const fetchDailyMatches = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz//matches/admin/daily-matches"
+      "https://api.lacehub.cz/matches/admin/daily-matches"
     );
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -52,7 +52,7 @@ export const fetchDailyMatches = async () => {
 export const fetchMonthlyRegistrations = async (startDate, endDate) => {
   try {
     const response = await fetch(
-      `https://api.lacehub.cz//users/admin/monthly-register?startDate=${startDate}&endDate=${endDate}`
+      `https://api.lacehub.cz/users/admin/monthly-register?startDate=${startDate}&endDate=${endDate}`
     );
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -67,7 +67,7 @@ export const fetchMonthlyRegistrations = async (startDate, endDate) => {
 // Function to fetch all users
 export const fetchAllUsers = async () => {
   try {
-    const response = await fetch("https://api.lacehub.cz//users");
+    const response = await fetch("https://api.lacehub.cz/users");
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -82,7 +82,7 @@ export const fetchAllUsers = async () => {
 export const fetchActiveUsers = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz//users/admin/active-users"
+      "https://api.lacehub.cz/users/admin/active-users"
     );
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -98,7 +98,7 @@ export const fetchActiveUsers = async () => {
 export const fetchInactiveUsers = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz//users/admin/inactive-users"
+      "https://api.lacehub.cz/users/admin/inactive-users"
     );
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -114,7 +114,7 @@ export const fetchInactiveUsers = async () => {
 export const banUser = async (userId) => {
   try {
     const response = await fetch(
-      `https://api.lacehub.cz//users/admin/${userId}/ban`,
+      `https://api.lacehub.cz/users/admin/${userId}/ban`,
       {
         method: "POST",
       }
@@ -133,7 +133,7 @@ export const banUser = async (userId) => {
 export const unbanUser = async (userId) => {
   try {
     const response = await fetch(
-      `https://api.lacehub.cz//users/admin/${userId}/unban`,
+      `https://api.lacehub.cz/users/admin/${userId}/unban`,
       {
         method: "POST",
       }

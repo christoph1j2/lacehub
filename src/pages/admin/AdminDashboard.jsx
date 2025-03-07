@@ -17,7 +17,7 @@ import {
   fetchActiveUserCount,
   fetchDailyMatches,
   fetchMonthlyRegistrations,
-} from "../services/api";
+} from "../../services/api";
 
 // Helper to format date for API
 const formatDateForApi = (date) => {

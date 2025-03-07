@@ -96,8 +96,8 @@ const Dashboard = () => {
 
       const matchEndpoint =
         activeTab === "wtb"
-          ? "https://api.lacehub.cz//matches/my-buyer-matches"
-          : "https://api.lacehub.cz//matches/my-seller-matches";
+          ? "https://api.lacehub.cz/matches/my-buyer-matches"
+          : "https://api.lacehub.cz/matches/my-seller-matches";
 
       const response = await fetch(matchEndpoint, {
         method: "POST",

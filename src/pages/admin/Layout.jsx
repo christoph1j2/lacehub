@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router";
 import {
   User,
   BarChart,
@@ -10,7 +10,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 
 const Layout = () => {
   const { user, logout } = useAuth();
