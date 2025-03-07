@@ -98,7 +98,8 @@ export class AuthController {
     async verifyEmail(@Query('token') token: string) {
         const user = await this.authService.verifyEmailToken(token);
         if (!user) {
-            throw new BadRequestException('Invalid token');
+            //throw new BadRequestException('Invalid token');
+            return { message: 'Invalid token / Email already verified' };
         }
 
         return { message: 'Email verified successfully!' };

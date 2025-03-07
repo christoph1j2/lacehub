@@ -3,8 +3,39 @@ import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { UsersService } from '../../users/users.service';
 
+/**
+ * Guard that implements role-based access control for routes and controllers.
+ *
+ * This guard works in conjunction with the @Roles() decorator to restrict access
+ * to specific routes based on the user's role. It uses NestJS's Reflector to
+ * examine metadata and determine what roles are required for a given endpoint.
+ *
+ * @example
+ * * // Register the guard globally
+ * providers: [
+ *   {
+ *     provide: APP_GUARD,
+ *     useClass: RolesGuard,
+ *   },
+ * ]
+ *
+ * * // Or use it on specific controllers/routes
+ * @UseGuards(JwtAuthGuard, RolesGuard)
+ * @Roles('admin')
+ * @Controller('admin')
+ * export class AdminController {
+ *  * // Routes in this controller are only accessible to users with the 'admin' role
+ * }
+ *
+ */
 @Injectable()
 export class RolesGuard implements CanActivate {
+    /**
+     * Creates an instance of RolesGuard.
+     *
+     * @param reflector - NestJS Reflector service used to retrieve metadata from decorators
+     * @param usersService - Service for retrieving user information from the database
+     */
     constructor(
         private reflector: Reflector,
         private usersService: UsersService,

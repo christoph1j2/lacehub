@@ -7,14 +7,33 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Report } from '../entities/report.entity';
 
+/**
+ * Service responsible for managing user reports in the system.
+ *
+ * Provides methods for creating and managing user reports, including
+ * functionality for users to report other users and for administrators
+ * to review and resolve those reports.
+ */
 @Injectable()
 export class ReportsService {
+    /**
+     * Creates an instance of the ReportsService.
+     *
+     * @param reportRepository - Repository for report entity database operations
+     */
     constructor(
         @InjectRepository(Report)
         private readonly reportRepository: Repository<Report>,
     ) {}
 
-    // user reporting
+    /**
+     * Creates a new user report in the system.
+     *
+     * @param reportText - The content of the report detailing the issue
+     * @param reporterUserId - The ID of the user filing the report
+     * @param reportedUserId - The ID of the user being reported
+     * @returns Promise resolving to the newly created report entity
+     */
     async create(
         reportText: string,
         reporterUserId: number,
@@ -31,14 +50,24 @@ export class ReportsService {
         return await this.reportRepository.save(report);
     }
 
-    // list all reports for admin ui
+    /**
+     * Retrieves all reports from the database for administrative review.
+     *
+     * @returns Promise resolving to an array of all report entities with user relations
+     */
     async findAll(): Promise<Report[]> {
         return await this.reportRepository.find({
             relations: ['reportedUser', 'reporterUser'],
         });
     }
 
-    // get specific report by id for admin ui
+    /**
+     * Retrieves a specific report by its ID for administrative review.
+     *
+     * @param id - The unique identifier of the report to retrieve
+     * @returns Promise resolving to the found report entity with user relations
+     * @throws NotFoundException if no report with the given ID exists
+     */
     async findOne(id: number): Promise<Report> {
         const report = await this.reportRepository.findOne({
             where: { id },
@@ -50,8 +79,15 @@ export class ReportsService {
         return report;
     }
 
-    // mark report as resolved (admin)
-    // TODO: refine
+    /**
+     * Marks a report as resolved and records the action taken by an administrator.
+     *
+     * @param id - The unique identifier of the report to resolve
+     * @param actionTaken - Description of the administrative action taken to address the report
+     * @returns Promise resolving to the updated report entity
+     * @throws NotFoundException if no report with the given ID exists
+     * @throws BadRequestException if the report is already resolved
+     */
     async resolveReport(id: number, actionTaken: string): Promise<Report> {
         const report = await this.findOne(id);
 
@@ -63,7 +99,12 @@ export class ReportsService {
         return await this.reportRepository.save(report);
     }
 
-    // list all reports filed by specific user
+    /**
+     * Retrieves all reports filed by a specific user.
+     *
+     * @param userId - The ID of the user who filed the reports
+     * @returns Promise resolving to an array of reports filed by the specified user
+     */
     async findByReporterUserId(userId: number): Promise<Report[]> {
         return await this.reportRepository.find({
             where: { reporterUser: { id: userId } },

@@ -223,7 +223,7 @@ export class UsersController {
     @ApiOperation({ summary: 'Ban a user' })
     async banUser(
         @Param('id', ParseIntPipe) userId: number,
-        @Body('banExpiry') banExpiry: number,
+        @Param('banExpiry') banExpiry: number,
     ): Promise<User> {
         return await this.usersService.banUser(userId, banExpiry);
     }

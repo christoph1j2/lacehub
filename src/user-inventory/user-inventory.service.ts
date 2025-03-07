@@ -15,8 +15,24 @@ import { WtsService } from '../wts/wts.service';
 
 //import * as XLSX from 'xlsx';
 
+/**
+ * Service responsible for managing user inventory items.
+ *
+ * This service provides functionality to create, retrieve, update and delete
+ * inventory items for users, as well as special operations like moving items
+ * to the Want to Buy (WTB) or Want to Sell (WTS) listings.
+ */
 @Injectable()
 export class UserInventoryService {
+    /**
+     * Creates an instance of UserInventoryService.
+     *
+     * @param userInventoryRepository - Repository for user inventory entity operations
+     * @param userRepository - Repository for user entity operations
+     * @param productRepository - Repository for product entity operations
+     * @param wtbService - Service for managing Want to Buy listings
+     * @param wtsService - Service for managing Want to Sell listings
+     */
     constructor(
         @InjectRepository(UserInventory)
         private readonly userInventoryRepository: Repository<UserInventory>,
@@ -28,14 +44,23 @@ export class UserInventoryService {
         private readonly wtsService: WtsService,
     ) {}
 
-    // Get all inventory items
+    /**
+     * Retrieves all inventory items across all users.
+     *
+     * @returns Promise resolving to an array of all user inventory items with related user and product data
+     */
     async findAll(): Promise<UserInventory[]> {
         return await this.userInventoryRepository.find({
             relations: ['user', 'product'],
         });
     }
 
-    // Get all inventory items for a user
+    /**
+     * Retrieves all inventory items for a specific user.
+     *
+     * @param userId - The ID of the user whose inventory items to retrieve
+     * @returns Promise resolving to an array of the user's inventory items with related product data
+     */
     async findByUser(userId: number): Promise<UserInventory[]> {
         return await this.userInventoryRepository.find({
             where: { user: { id: userId } },
@@ -43,7 +68,16 @@ export class UserInventoryService {
         });
     }
 
-    // Create a new inventory item for a user
+    /**
+     * Creates a new inventory item for a user.
+     * If an item with the same product and size already exists for the user,
+     * the quantity is added to the existing item instead.
+     *
+     * @param createUserInventoryDto - Data transfer object containing inventory item details
+     * @param authenthicatedUserId - ID of the authenticated user creating the inventory item
+     * @returns Promise resolving to the created or updated user inventory item
+     * @throws NotFoundException if the user or product is not found
+     */
     async create(
         createUserInventoryDto: CreateUserInventoryDto,
         authenthicatedUserId: number,
@@ -95,7 +129,16 @@ export class UserInventoryService {
         return await this.userInventoryRepository.save(inventoryItem);
     }
 
-    // Update an inventory item for a user
+    /**
+     * Updates an existing inventory item.
+     *
+     * @param id - ID of the inventory item to update
+     * @param updateUserInventoryDto - Data transfer object containing updated inventory item details
+     * @param userId - ID of the authenticated user attempting to update the item
+     * @returns Promise resolving to the updated user inventory item
+     * @throws NotFoundException if the inventory item is not found
+     * @throws ForbiddenException if the authenticated user is not the owner of the inventory item
+     */
     async update(
         id: number,
         updateUserInventoryDto: UpdateUserInventoryDto,
@@ -124,7 +167,14 @@ export class UserInventoryService {
         });
     }
 
-    // Delete an inventory item for a user
+    /**
+     * Deletes an inventory item for a user.
+     *
+     * @param itemId - ID of the inventory item to delete
+     * @param userId - ID of the authenticated user attempting to delete the item
+     * @throws NotFoundException if the inventory item is not found
+     * @throws ForbiddenException if the authenticated user is not the owner of the inventory item
+     */
     async delete(itemId: number, userId: number): Promise<void> {
         const item = await this.userInventoryRepository.findOne({
             where: { id: itemId },
@@ -144,7 +194,14 @@ export class UserInventoryService {
         await this.userInventoryRepository.delete(itemId);
     }
 
-    // Move an inventory item to WTB
+    /**
+     * Moves an inventory item to the Want to Buy (WTB) listing.
+     *
+     * @param itemId - ID of the inventory item to move
+     * @param userId - ID of the authenticated user attempting to move the item
+     * @throws NotFoundException if the inventory item is not found
+     * @throws ForbiddenException if the authenticated user is not the owner of the inventory item
+     */
     async moveToWtb(itemId: number, userId: number): Promise<void> {
         const item = await this.userInventoryRepository.findOne({
             where: { id: itemId },
@@ -173,7 +230,14 @@ export class UserInventoryService {
         //? await this.userInventoryRepository.delete(itemId);
     }
 
-    // Move an inventory item to WTS
+    /**
+     * Moves an inventory item to the Want to Sell (WTS) listing.
+     *
+     * @param itemId - ID of the inventory item to move
+     * @param userId - ID of the authenticated user attempting to move the item
+     * @throws NotFoundException if the inventory item is not found
+     * @throws ForbiddenException if the authenticated user is not the owner of the inventory item
+     */
     async moveToWts(itemId: number, userId: number): Promise<void> {
         const item = await this.userInventoryRepository.findOne({
             where: { id: itemId },
@@ -202,7 +266,11 @@ export class UserInventoryService {
         //? await this.userInventoryRepository.delete(itemId);
     }
 
-    // TOP 10 most popular products in inventory (using typeORM)
+    /**
+     * Retrieves the top 10 most popular products in inventory.
+     *
+     * @returns Promise resolving to an array of the top 10 most popular products with their total quantities
+     */
     async topProducts(): Promise<any> {
         return await this.userInventoryRepository
             .createQueryBuilder('user_inventory')

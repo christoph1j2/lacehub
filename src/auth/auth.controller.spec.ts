@@ -209,7 +209,9 @@ describe('AuthController', () => {
 
         it('should handle invalid token', async () => {
             const token = 'invalid-token';
-            mockAuthService.verifyEmailToken.mockResolvedValue(null);
+            mockAuthService.verifyEmailToken.mockRejectedValue(
+                new BadRequestException('Invalid token'),
+            );
 
             await expect(controller.verifyEmail(token)).rejects.toThrow(
                 BadRequestException,

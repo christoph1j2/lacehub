@@ -11,8 +11,23 @@ import { User } from '../entities/user.entity';
 import { UpdateWTSDto } from './dto/update-wts.dto';
 import { Product } from '../entities/product.entity';
 
+/**
+ * Service responsible for managing Want to Sell (WTS) listings.
+ *
+ * This service provides functionality to create, retrieve, update, and delete
+ * WTS listings, which represent products that users are looking to sell.
+ * It also includes analytics features like finding the most popular products
+ * users want to sell.
+ */
 @Injectable()
 export class WtsService {
+    /**
+     * Creates an instance of WtsService.
+     *
+     * @param wtsRepository - Repository for WTS entity operations
+     * @param userRepository - Repository for user entity operations
+     * @param productRepository - Repository for product entity operations
+     */
     constructor(
         @InjectRepository(Wts)
         private readonly wtsRepository: Repository<Wts>,
@@ -22,12 +37,23 @@ export class WtsService {
         private readonly productRepository: Repository<Product>,
     ) {}
 
+    /**
+     * Retrieves all WTS listings from the database.
+     *
+     * @returns Promise resolving to an array of all WTS listings with related user and product data
+     */
     async findAll(): Promise<Wts[]> {
         return await this.wtsRepository.find({
             relations: ['user', 'product'],
         });
     }
 
+    /**
+     * Retrieves all WTS listings for a specific user.
+     *
+     * @param userId - The ID of the user whose WTS listings to retrieve
+     * @returns Promise resolving to an array of the user's WTS listings with related user and product data
+     */
     async findByUser(userId: number): Promise<Wts[]> {
         return await this.wtsRepository.find({
             where: { user: { id: userId } },
@@ -35,6 +61,16 @@ export class WtsService {
         });
     }
 
+    /**
+     * Creates a new WTS listing.
+     * If a listing with the same product and size already exists for the user,
+     * the quantity is added to the existing listing instead.
+     *
+     * @param createWTSDto - Data transfer object containing WTS listing details
+     * @param authenthicatedUserId - ID of the authenticated user creating the listing
+     * @returns Promise resolving to the created or updated WTS listing
+     * @throws NotFoundException if the user or product is not found
+     */
     async create(
         createWTSDto: CreateWTSDto,
         authenthicatedUserId: number,
@@ -81,6 +117,16 @@ export class WtsService {
         return await this.wtsRepository.save(wts);
     }
 
+    /**
+     * Updates an existing WTS listing.
+     *
+     * @param id - ID of the WTS listing to update
+     * @param updateWTSDto - Data transfer object containing updated listing details
+     * @param userId - ID of the authenticated user attempting to update the listing
+     * @returns Promise resolving to the updated WTS listing
+     * @throws NotFoundException if the WTS listing is not found
+     * @throws ForbiddenException if the authenticated user is not the owner of the listing
+     */
     async update(
         id: number,
         updateWTSDto: UpdateWTSDto,
@@ -109,6 +155,15 @@ export class WtsService {
         });
     }
 
+    /**
+     * Deletes a WTS listing.
+     *
+     * @param itemId - ID of the WTS listing to delete
+     * @param userId - ID of the authenticated user attempting to delete the listing
+     * @returns Promise that resolves when deletion is complete
+     * @throws NotFoundException if the WTS listing is not found
+     * @throws ForbiddenException if the authenticated user is not the owner of the listing
+     */
     async delete(itemId: number, userId: number): Promise<void> {
         const item = await this.wtsRepository.findOne({
             where: { id: itemId },
@@ -128,6 +183,11 @@ export class WtsService {
         await this.wtsRepository.delete(itemId);
     }
 
+    /**
+     * Retrieves the top 10 most frequently offered products based on total quantity in WTS listings.
+     *
+     * @returns Promise resolving to an array of objects containing product ID, name, and total quantity
+     */
     async topProducts(): Promise<any> {
         return await this.wtsRepository
             .createQueryBuilder('wts')
