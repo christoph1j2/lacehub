@@ -55,10 +55,19 @@ const SearchBar = ({ onAddItem }) => {
     setShowResults(true);
 
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
       const response = await fetch(
         `https://api.lacehub.cz/products/search?query=${encodeURIComponent(
           searchQuery
-        )}`
+        )}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (!response.ok) {
         throw new Error("Search failed");

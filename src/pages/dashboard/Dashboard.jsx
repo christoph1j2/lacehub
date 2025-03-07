@@ -21,6 +21,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [matchingStatus, setMatchingStatus] = useState(null);
+  const [matchingError, setMatchingError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
 
@@ -30,7 +31,6 @@ const Dashboard = () => {
     inventory: "https://api.lacehub.cz/user-inventory/user",
   };
 
-  // Close sidebar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -83,26 +83,76 @@ const Dashboard = () => {
     fetchData();
   }, [activeTab, navigate]);
 
-  const handleMatchWTB = async () => {
+  const handleMatch = async () => {
     setMatchingStatus("matching");
+    setMatchingError(null);
+
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("https://api.lacehub.cz/api/match", {
+
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const matchEndpoint =
+        activeTab === "wtb"
+          ? "https://api.lacehub.cz//matches/my-buyer-matches"
+          : "https://api.lacehub.cz//matches/my-seller-matches";
+
+      const response = await fetch(matchEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
+
+      if (response.status === 401) {
+        logout();
+        navigate("/");
+        throw new Error("Authentication token expired");
+      }
+
+      if (response.status === 404) {
+        setMatchingStatus("error");
+        setMatchingError(
+          "No matches found. Try adjusting your preferences or check back later."
+        );
+        return;
+      }
+
+      if (response.status === 429) {
+        setMatchingStatus("error");
+        setMatchingError(
+          "Please wait 2 minutes between matching attempts. You can try matching your list again shortly."
+        );
+        return;
+      }
+
       if (!response.ok) {
         throw new Error("Matching process failed");
       }
+
       const result = await response.json();
       setMatchingStatus("success");
       console.log(result);
     } catch (err) {
       setMatchingStatus("error");
       console.error("Matching error:", err);
+
+      if (!matchingError) {
+        setMatchingError(
+          "The matching process failed. Please try again later."
+        );
+      }
+
+      if (
+        err.message === "No authentication token found" ||
+        err.message === "Authentication token expired"
+      ) {
+        logout();
+        navigate("/");
+      }
     }
   };
 
@@ -118,14 +168,12 @@ const Dashboard = () => {
     { name: "Support", icon: LifeBuoy },
   ];
 
-  // Handle item added from search
   const handleItemAdded = () => {
-    fetchData(); // Refresh the list
+    fetchData();
   };
 
   return (
     <div className="flex min-h-screen bg-primary-100">
-      {/* Mobile overlay - closes sidebar when clicking outside */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
@@ -133,7 +181,6 @@ const Dashboard = () => {
         ></div>
       )}
 
-      {/* Sidebar */}
       <aside
         ref={sidebarRef}
         className={`fixed md:static inset-y-0 left-0 transform ${
@@ -141,7 +188,6 @@ const Dashboard = () => {
         } md:translate-x-0 w-64 bg-primary-800 text-accent-100 shadow-xl transition-transform duration-300 ease-in-out z-40`}
       >
         <div className="flex flex-col h-full p-6">
-          {/* Close button - Only visible on mobile */}
           <button
             className="absolute top-4 right-4 p-1 rounded-full bg-primary-700 text-accent-100 md:hidden"
             onClick={() => setIsSidebarOpen(false)}
@@ -180,12 +226,9 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 bg-primary-100">
-        {/* Header */}
         <header className="bg-primary-800 shadow-md p-4">
           <div className="max-w-7xl mx-auto">
-            {/* Mobile Header Row with hamburger and user button */}
             <div className="flex items-center justify-between mb-3 md:hidden">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -209,13 +252,11 @@ const Dashboard = () => {
               </button>
             </div>
 
-            {/* Desktop Header - Search and User */}
             <div className="flex flex-col md:flex-row items-center gap-4">
               <div className="relative flex-1 w-full">
                 <SearchBar onAddItem={handleItemAdded} />
               </div>
 
-              {/* User Button - Compact and right-aligned */}
               <button
                 onClick={() => navigate("/user-settings")}
                 className="hidden md:flex items-center gap-2 bg-white px-4 py-3 rounded-lg hover:bg-primary-100 transition-all duration-200 ml-auto"
@@ -229,10 +270,8 @@ const Dashboard = () => {
           </div>
         </header>
 
-        {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-6 bg-primary-100">
           <div className="max-w-7xl mx-auto">
-            {/* Tabs and Action Button */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 grid grid-cols-3 gap-3">
@@ -253,29 +292,29 @@ const Dashboard = () => {
                     );
                   })}
                 </div>
-                <button
-                  onClick={handleMatchWTB}
-                  disabled={matchingStatus === "matching"}
-                  className="min-w-[200px] px-6 py-3 bg-secondary-500 text-white rounded-lg font-medium hover:bg-secondary-600 transform hover:-translate-y-1 transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none whitespace-nowrap"
-                >
-                  {matchingStatus === "matching"
-                    ? "Matching..."
-                    : "Match your WTS list"}
-                </button>
+                {activeTab !== "inventory" && (
+                  <button
+                    onClick={handleMatch}
+                    disabled={matchingStatus === "matching"}
+                    className="min-w-[200px] px-6 py-3 bg-secondary-500 text-white rounded-lg font-medium hover:bg-secondary-600 transform hover:-translate-y-1 transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none whitespace-nowrap"
+                  >
+                    {matchingStatus === "matching"
+                      ? "Matching..."
+                      : activeTab === "wtb"
+                      ? "Match your WTB list"
+                      : "Match your WTS list"}
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Status Messages */}
             {matchingStatus === "error" && (
               <div
                 className="bg-accent-100 border-l-4 border-accent-500 text-accent-700 px-4 py-3 rounded shadow-md mb-6"
                 role="alert"
               >
                 <strong className="font-bold">Error!</strong>
-                <span className="block sm:inline">
-                  {" "}
-                  The matching process failed. Please try again later.
-                </span>
+                <span className="block sm:inline"> {matchingError}</span>
               </div>
             )}
             {matchingStatus === "success" && (
@@ -291,7 +330,6 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* Content */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-3xl font-bold text-primary-800 mb-4">
                 {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}{" "}
