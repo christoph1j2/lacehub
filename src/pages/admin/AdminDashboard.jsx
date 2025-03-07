@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
-  BarChart,
   AreaChart,
   Area,
+  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -10,72 +10,180 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { format, subMonths } from "date-fns";
+import { subMonths, subWeeks, subYears } from "date-fns";
+import { toast } from "sonner";
+import {
+  fetchTotalUsers,
+  fetchActiveUserCount,
+  fetchDailyMatches,
+  fetchMonthlyRegistrations,
+} from "../services/api";
+
+// Helper to format date for API
+const formatDateForApi = (date) => {
+  return date.toISOString().split("T")[0];
+};
+
 const AdminDashboard = () => {
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [activeUsers, setActiveUsers] = useState(0);
+  const [totalMatches, setTotalMatches] = useState(0);
   const [registrationData, setRegistrationData] = useState([]);
   const [matchingData, setMatchingData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [regPeriod, setRegPeriod] = useState("month");
+  const [matchPeriod, setMatchPeriod] = useState("month");
+
+  // Calculate date ranges based on selected periods
+  const dateRanges = useMemo(() => {
+    const now = new Date();
+    const getDateRange = (period) => {
+      let startDate;
+
+      switch (period) {
+        case "week":
+          startDate = subWeeks(now, 1);
+          break;
+        case "year":
+          startDate = subYears(now, 1);
+          break;
+        case "month":
+        default:
+          startDate = subMonths(now, 1);
+          break;
+      }
+
+      return {
+        startDate: formatDateForApi(startDate),
+        endDate: formatDateForApi(now),
+      };
+    };
+
+    return {
+      registration: getDateRange(regPeriod),
+      matching: getDateRange(matchPeriod),
+    };
+  }, [regPeriod, matchPeriod]);
+
+  // Fetch dashboard stats
   useEffect(() => {
-    // Simulate API call to fetch dashboard data
-    const fetchData = async () => {
+    const fetchStats = async () => {
+      try {
+        const [totalUsersData, activeUsersData, dailyMatchesData] =
+          await Promise.all([
+            fetchTotalUsers(),
+            fetchActiveUserCount(),
+            fetchDailyMatches(),
+          ]);
+
+        setTotalUsers(totalUsersData?.count || 0);
+        setActiveUsers(activeUsersData?.count || 0);
+        setTotalMatches(dailyMatchesData?.totalMatches || 0);
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+        toast("Failed to load dashboard statistics", {
+          description: "Please try again later",
+          type: "error",
+        });
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // Fetch registration data when date range changes
+  useEffect(() => {
+    const fetchRegistrationChart = async () => {
       setIsLoading(true);
       try {
-        // Generate mock data for registration chart
-        const mockRegistrationData = Array.from({ length: 6 }, (_, i) => {
-          const date = subMonths(new Date(), i);
-          return {
-            name: format(date, "MMM"),
-            value: Math.floor(Math.random() * 45) + 15, // Random between 15-60
-          };
-        }).reverse();
-        // Generate mock data for matching chart
-        const mockMatchingData = Array.from({ length: 7 }, (_, i) => {
-          return {
-            name: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i],
-            wtb: Math.floor(Math.random() * 50) + 10,
-            wts: Math.floor(Math.random() * 40) + 5,
-          };
-        });
-        setRegistrationData(mockRegistrationData);
-        setMatchingData(mockMatchingData);
+        const data = await fetchMonthlyRegistrations(
+          dateRanges.registration.startDate,
+          dateRanges.registration.endDate
+        );
+
+        // Map API response to chart format
+        const chartData = data.labels.map((label, index) => ({
+          name: label,
+          value: data.counts[index],
+        }));
+
+        setRegistrationData(chartData);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        console.error("Error fetching registration data:", error);
+        toast("Failed to load registration chart data", {
+          description: "Please try again later",
+          type: "error",
+        });
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
-  }, []);
-  // Stats data
+
+    fetchRegistrationChart();
+  }, [dateRanges.registration]);
+
+  // Fetch matching data when date range changes
+  useEffect(() => {
+    const fetchMatchingChart = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchDailyMatches();
+
+        // Map API response to chart format
+        const chartData = data.labels.map((label, index) => ({
+          name: label,
+          matches: data.counts[index],
+        }));
+
+        setMatchingData(chartData);
+      } catch (error) {
+        console.error("Error fetching matching data:", error);
+        toast("Failed to load matching chart data", {
+          description: "Please try again later",
+          type: "error",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMatchingChart();
+  }, [dateRanges.matching]);
+
+  // Stats cards data
   const stats = [
     {
       title: "Total Users",
-      value: "12,486",
-      description: "↗︎ 2,430 (18.6%) from last month",
+      value: totalUsers.toLocaleString(),
+      description: "Platform users",
     },
     {
       title: "Active Users",
-      value: "8,941",
-      description: "↗︎ 1,210 (13.5%) from last month",
+      value: activeUsers.toLocaleString(),
+      description: "Currently active users",
     },
     {
       title: "Total Matches",
-      value: "3,842",
-      description: "↗︎ 842 (21.9%) from last month",
-    },
-    {
-      title: "Conversion Rate",
-      value: "26.8%",
-      description: "↘︎ 1.1% from last month",
+      value: totalMatches.toLocaleString(),
+      description: "Total matches made",
     },
   ];
-  if (isLoading) {
+
+  // Period options for the select dropdowns
+  const periodOptions = [
+    { value: "week", label: "Last Week" },
+    { value: "month", label: "Last Month" },
+    { value: "year", label: "Last Year" },
+  ];
+
+  if (isLoading && !registrationData.length && !matchingData.length) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-secondary-200 border-t-secondary-600"></div>
       </div>
     );
   }
+
   return (
     <div className="space-y-6">
       <div>
@@ -84,8 +192,9 @@ const AdminDashboard = () => {
           Overview of your platform statistics.
         </p>
       </div>
+
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         {stats.map((stat, index) => (
           <div
             key={index}
@@ -105,12 +214,28 @@ const AdminDashboard = () => {
           </div>
         ))}
       </div>
+
       {/* Charts */}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
-          <h3 className="text-lg font-medium mb-4">New Users Registration</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">New Users Registration</h3>
+            <div className="w-36">
+              <select
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                value={regPeriod}
+                onChange={(e) => setRegPeriod(e.target.value)}
+              >
+                {periodOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <p className="text-sm text-primary-500 mb-6">
-            Monthly user registrations over time
+            User registrations over time
           </p>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -149,10 +274,26 @@ const AdminDashboard = () => {
             </ResponsiveContainer>
           </div>
         </div>
+
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
-          <h3 className="text-lg font-medium mb-4">Matching Activity</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">Matching Activity</h3>
+            <div className="w-36">
+              <select
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                value={matchPeriod}
+                onChange={(e) => setMatchPeriod(e.target.value)}
+              >
+                {periodOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <p className="text-sm text-primary-500 mb-6">
-            Weekly WTB and WTS matching activity
+            Matching activity over time
           </p>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -169,16 +310,10 @@ const AdminDashboard = () => {
                 <YAxis stroke="#9CA3AF" />
                 <Tooltip />
                 <Bar
-                  dataKey="wtb"
+                  dataKey="matches"
                   fill="#F97316"
                   radius={[4, 4, 0, 0]}
-                  name="WTB Matches"
-                />
-                <Bar
-                  dataKey="wts"
-                  fill="#1F2937"
-                  radius={[4, 4, 0, 0]}
-                  name="WTS Matches"
+                  name="Matches"
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -188,4 +323,5 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
 export default AdminDashboard;

@@ -1,112 +1,174 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import {
+  fetchAllUsers,
+  fetchActiveUsers,
+  fetchInactiveUsers,
+  banUser,
+  unbanUser,
+} from "../services/api";
+
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
-  useEffect(() => {
-    // Simulate API call to fetch users
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        // Generate mock users
-        const mockUsers = Array.from({ length: 50 }, (_, i) => {
-          const statuses = ["active", "inactive", "banned"];
-          const randomStatus =
-            statuses[Math.floor(Math.random() * (i > 40 ? 3 : 2))]; // More active users
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [activeUsersCount, setActiveUsersCount] = useState(0);
+  const [inactiveUsersCount, setInactiveUsersCount] = useState(0);
+  const [bannedUsersCount, setBannedUsersCount] = useState(0);
 
-          const registerDate = new Date();
-          registerDate.setDate(
-            registerDate.getDate() - Math.floor(Math.random() * 365)
-          );
+  const fetchUsers = async (tab) => {
+    setIsLoading(true);
+    try {
+      let fetchedUsers = [];
 
-          const lastActiveDate = new Date();
-          if (randomStatus === "inactive") {
-            lastActiveDate.setDate(
-              lastActiveDate.getDate() - Math.floor(Math.random() * 30) - 15
-            );
-          } else if (randomStatus === "active") {
-            lastActiveDate.setDate(
-              lastActiveDate.getDate() - Math.floor(Math.random() * 14)
-            );
-          } else {
-            lastActiveDate.setDate(
-              lastActiveDate.getDate() - Math.floor(Math.random() * 90) - 30
-            );
-          }
-
-          return {
-            id: `user-${i + 1}`,
-            username: `user${i + 1}`,
-            email: `user${i + 1}@example.com`,
-            status: randomStatus,
-            lastActive: lastActiveDate.toISOString().split("T")[0],
-            registrationDate: registerDate.toISOString().split("T")[0],
-          };
-        });
-
-        setUsers(mockUsers);
-        setFilteredUsers(mockUsers);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
-        setIsLoading(false);
+      switch (tab) {
+        case "active":
+          fetchedUsers = await fetchActiveUsers();
+          break;
+        case "inactive":
+          fetchedUsers = await fetchInactiveUsers();
+          break;
+        case "all":
+        default:
+          fetchedUsers = await fetchAllUsers();
+          break;
       }
-    };
-    fetchUsers();
-  }, []);
-  useEffect(() => {
-    // Filter users based on search term and active tab
-    const filtered = users.filter((user) => {
-      const matchesSearch =
-        user.username.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase());
 
-      if (activeTab === "all") return matchesSearch;
-      return matchesSearch && user.status === activeTab;
+      setUsers(fetchedUsers);
+      setFilteredUsers(fetchedUsers);
+
+      // Update counts
+      setTotalUsers(fetchedUsers.length);
+      setActiveUsersCount(
+        fetchedUsers.filter((user) => user.verified && !user.is_banned).length
+      );
+      setInactiveUsersCount(
+        fetchedUsers.filter((user) => !user.verified && !user.is_banned).length
+      );
+      setBannedUsersCount(fetchedUsers.filter((user) => user.is_banned).length);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast("Failed to load users", {
+        description: "Please try again later",
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    // Filter users based on search term
+    const filtered = users.filter((user) => {
+      return (
+        user.username.toLowerCase().includes(search.toLowerCase()) ||
+        user.email.toLowerCase().includes(search.toLowerCase())
+      );
     });
 
     setFilteredUsers(filtered);
-  }, [search, users, activeTab]);
-  const handleBanUser = (userId) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId ? { ...user, status: "banned" } : user
-      )
-    );
-    // Show toast notification
-    alert("User banned successfully.");
+  }, [search, users]);
+
+  const handleBanUser = async (userId) => {
+    try {
+      await banUser(userId);
+
+      // Update the user in the state
+      const updatedUsers = users.map((user) => {
+        if (user.id === userId) {
+          return { ...user, is_banned: true };
+        }
+        return user;
+      });
+
+      setUsers(updatedUsers);
+
+      // Refilter users
+      const filtered = updatedUsers.filter((user) => {
+        return (
+          user.username.toLowerCase().includes(search.toLowerCase()) ||
+          user.email.toLowerCase().includes(search.toLowerCase())
+        );
+      });
+
+      setFilteredUsers(filtered);
+
+      // Update counts
+      setBannedUsersCount((prev) => prev + 1);
+
+      toast("User banned successfully", {
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error banning user:", error);
+      toast("Failed to ban user", {
+        description: "Please try again later",
+        type: "error",
+      });
+    }
   };
-  const handleActivateUser = (userId) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId ? { ...user, status: "active" } : user
-      )
-    );
-    // Show toast notification
-    alert("User activated successfully.");
+
+  const handleUnbanUser = async (userId) => {
+    try {
+      await unbanUser(userId);
+
+      // Update the user in the state
+      const updatedUsers = users.map((user) => {
+        if (user.id === userId) {
+          return { ...user, is_banned: false };
+        }
+        return user;
+      });
+
+      setUsers(updatedUsers);
+
+      // Refilter users
+      const filtered = updatedUsers.filter((user) => {
+        return (
+          user.username.toLowerCase().includes(search.toLowerCase()) ||
+          user.email.toLowerCase().includes(search.toLowerCase())
+        );
+      });
+
+      setFilteredUsers(filtered);
+
+      // Update counts
+      setBannedUsersCount((prev) => prev - 1);
+
+      toast("User unbanned successfully", {
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error unbanning user:", error);
+      toast("Failed to unban user", {
+        description: "Please try again later",
+        type: "error",
+      });
+    }
   };
-  // Calculate stats
-  const totalUsers = users.length;
-  const activeUsers = users.filter((user) => user.status === "active").length;
-  const inactiveUsers = users.filter(
-    (user) => user.status === "inactive"
-  ).length;
-  const bannedUsers = users.filter((user) => user.status === "banned").length;
-  if (isLoading) {
+
+  if (isLoading && users.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-secondary-200 border-t-secondary-600"></div>
       </div>
     );
   }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
         <p className="text-primary-500">Manage your platform users.</p>
       </div>
+
       {/* User Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
@@ -119,7 +181,7 @@ const Users = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
           <h3 className="text-sm font-medium text-primary-500">Active Users</h3>
           <p className="text-2xl font-bold text-primary-900 mt-2">
-            {activeUsers}
+            {activeUsersCount}
           </p>
         </div>
 
@@ -128,17 +190,18 @@ const Users = () => {
             Inactive Users
           </h3>
           <p className="text-2xl font-bold text-primary-900 mt-2">
-            {inactiveUsers}
+            {inactiveUsersCount}
           </p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
           <h3 className="text-sm font-medium text-primary-500">Banned Users</h3>
           <p className="text-2xl font-bold text-primary-900 mt-2">
-            {bannedUsers}
+            {bannedUsersCount}
           </p>
         </div>
       </div>
+
       {/* User Table */}
       <div className="bg-white rounded-lg shadow-sm border border-primary-200">
         <div className="p-6">
@@ -219,12 +282,6 @@ const Users = () => {
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider"
-                    >
-                      Last Active
-                    </th>
-                    <th
-                      scope="col"
                       className="px-6 py-3 text-right text-xs font-medium text-primary-500 uppercase tracking-wider"
                     >
                       Actions
@@ -243,47 +300,46 @@ const Users = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            user.status === "active"
+                            user.verified && !user.is_banned
                               ? "bg-green-100 text-green-800"
-                              : user.status === "inactive"
+                              : !user.verified && !user.is_banned
                               ? "bg-yellow-100 text-yellow-800"
                               : "bg-accent-100 text-accent-800"
                           }`}
                         >
-                          {user.status.charAt(0).toUpperCase() +
-                            user.status.slice(1)}
+                          {user.is_banned
+                            ? "Banned"
+                            : user.verified
+                            ? "Verified"
+                            : "Unverified"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
-                        {user.registrationDate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
-                        {user.lastActive}
+                        {new Date(user.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {user.status !== "active" ? (
-                          <button
-                            onClick={() => handleActivateUser(user.id)}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mr-2"
-                          >
-                            Activate
-                          </button>
-                        ) : null}
-                        {user.status !== "banned" ? (
+                        {!user.is_banned ? (
                           <button
                             onClick={() => handleBanUser(user.id)}
                             className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500"
                           >
                             Ban
                           </button>
-                        ) : null}
+                        ) : (
+                          <button
+                            onClick={() => handleUnbanUser(user.id)}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                          >
+                            Unban
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
                   {filteredUsers.length === 0 && (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={5}
                         className="text-center py-6 text-primary-500"
                       >
                         No users found
@@ -311,4 +367,5 @@ const Users = () => {
     </div>
   );
 };
+
 export default Users;
