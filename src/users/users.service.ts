@@ -380,4 +380,12 @@ export class UsersService {
             },
         });
     }
+
+    async getBannedUsers(): Promise<User[]> {
+        return await this.usersRepository.find({
+            where: {
+                is_banned: true,
+            },
+        });
+    }
 }

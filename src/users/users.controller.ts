@@ -138,6 +138,14 @@ export class UsersController {
         }
     }
 
+    @Roles('admin')
+    @Get('/admin/banned-users')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get banned users' })
+    async getBannedUsers() {
+        return await this.usersService.getBannedUsers();
+    }
+
     @Get('profile/:id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get user profile by id' })
