@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import {
   User,
   BarChart,
@@ -10,20 +10,21 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
-const AdminLayout = () => {
+import { useAuth } from "../hooks/useAuth";
+
+const Layout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const sidebarRef = useRef(null);
-  // Simulate auth check - in a real app, you would check if the user is an admin
+
+  // Check if user is admin
   useEffect(() => {
-    // Check if user is admin
-    // If not admin, redirect to home page
     if (!user) {
       navigate("/");
     }
   }, [user, navigate]);
+
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -38,18 +39,20 @@ const AdminLayout = () => {
         setIsSidebarOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen]);
+
   const handleLogout = () => {
-    // Simulate logout - in a real app, you would call your logout function
     if (logout) {
       logout();
     }
     navigate("/");
   };
+
   const getNavLinkClass = (isActive) => {
     return `flex items-center gap-3 px-3 py-2.5 rounded-md font-medium text-sm transition-all ${
       isActive
@@ -57,6 +60,7 @@ const AdminLayout = () => {
         : "text-primary-700 hover:bg-primary-200"
     }`;
   };
+
   return (
     <div className="min-h-screen flex w-full bg-primary-100">
       {/* Mobile overlay */}
@@ -66,6 +70,7 @@ const AdminLayout = () => {
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
+
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
@@ -81,6 +86,7 @@ const AdminLayout = () => {
           >
             <X className="h-5 w-5" />
           </button>
+
           <div className="py-4 mb-8 px-2">
             <div className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-full bg-primary-800 flex items-center justify-center">
@@ -140,7 +146,7 @@ const AdminLayout = () => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {/* Mobile header - Only visible on mobile */}
+        {/* Mobile header */}
         <header className="p-4 border-b border-primary-200 bg-white md:hidden">
           <div className="flex items-center">
             <button
@@ -162,4 +168,5 @@ const AdminLayout = () => {
     </div>
   );
 };
-export default AdminLayout;
+
+export default Layout;
