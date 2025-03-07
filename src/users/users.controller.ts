@@ -221,11 +221,8 @@ export class UsersController {
     @Put('/admin/:id/ban')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Ban a user' })
-    async banUser(
-        @Param('id', ParseIntPipe) userId: number,
-        @Param('banExpiry') banExpiry: number,
-    ): Promise<User> {
-        return await this.usersService.banUser(userId, banExpiry);
+    async banUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
+        return await this.usersService.banUser(userId);
     }
 
     @Roles('admin')

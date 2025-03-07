@@ -154,7 +154,7 @@ export class UsersService {
      * @throws NotFoundException if the user is not found
      * @throws BadRequestException if the user is already banned
      */
-    async banUser(userId: number, banDurationInDays: number): Promise<User> {
+    async banUser(userId: number): Promise<User> {
         const user = await this.usersRepository.findOne({
             where: { id: userId },
         });
@@ -168,11 +168,6 @@ export class UsersService {
         }
 
         user.is_banned = true;
-        const banExpirationDate = new Date();
-        user.ban_expiration.setDate(
-            banExpirationDate.getDate() + banDurationInDays,
-        );
-
         return await this.usersRepository.save(user);
     }
 
