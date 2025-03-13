@@ -78,10 +78,23 @@ const AdminDashboard = () => {
           matches: dailyMatchesData,
         });
 
-        // Update state with the fetched data
-        setTotalUsers(totalUsersData?.count || 0);
-        setActiveUsers(activeUsersData?.count || 0);
-        setTotalMatches(dailyMatchesData?.totalMatches || 0);
+        // Update state with the fetched data - handle different possible response structures
+        setTotalUsers(
+          totalUsersData?.count ||
+            totalUsersData?.totalUsers ||
+            (typeof totalUsersData === "number" ? totalUsersData : 0)
+        );
+
+        setActiveUsers(
+          activeUsersData?.count ||
+            activeUsersData?.activeUsers ||
+            (typeof activeUsersData === "number" ? activeUsersData : 0)
+        );
+
+        setTotalMatches(
+          dailyMatchesData?.totalMatches ||
+            (typeof dailyMatchesData === "number" ? dailyMatchesData : 0)
+        );
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
         toast("Failed to load dashboard statistics", {
@@ -106,19 +119,41 @@ const AdminDashboard = () => {
           dateRanges.registration.endDate
         );
 
-        // Map API response to chart format
-        const chartData = data.labels.map((label, index) => ({
-          name: label,
-          value: data.counts[index],
-        }));
+        console.log("Registration data:", data);
 
-        setRegistrationData(chartData);
+        // Handle different possible response structures
+        if (data && Array.isArray(data)) {
+          // If data is already in the right format
+          setRegistrationData(data);
+        } else if (
+          data &&
+          Array.isArray(data.labels) &&
+          Array.isArray(data.counts)
+        ) {
+          // Map API response to chart format
+          const chartData = data.labels.map((label, index) => ({
+            name: label,
+            value: data.counts[index] || 0,
+          }));
+          setRegistrationData(chartData);
+        } else if (data && typeof data === "object") {
+          // Try to convert object data to array format
+          const chartData = Object.entries(data).map(([key, value]) => ({
+            name: key,
+            value: typeof value === "number" ? value : 0,
+          }));
+          setRegistrationData(chartData);
+        } else {
+          // Fallback to empty array
+          setRegistrationData([]);
+        }
       } catch (error) {
         console.error("Error fetching registration data:", error);
         toast("Failed to load registration chart data", {
           description: "Please try again later",
           type: "error",
         });
+        setRegistrationData([]);
       } finally {
         setIsLoading(false);
       }
@@ -134,19 +169,41 @@ const AdminDashboard = () => {
       try {
         const data = await fetchDailyMatches();
 
-        // Map API response to chart format
-        const chartData = data.labels.map((label, index) => ({
-          name: label,
-          matches: data.counts[index],
-        }));
+        console.log("Matching data:", data);
 
-        setMatchingData(chartData);
+        // Handle different possible response structures
+        if (data && Array.isArray(data)) {
+          // If data is already in the right format
+          setMatchingData(data);
+        } else if (
+          data &&
+          Array.isArray(data.labels) &&
+          Array.isArray(data.counts)
+        ) {
+          // Map API response to chart format
+          const chartData = data.labels.map((label, index) => ({
+            name: label,
+            matches: data.counts[index] || 0,
+          }));
+          setMatchingData(chartData);
+        } else if (data && typeof data === "object") {
+          // Try to convert object data to array format
+          const chartData = Object.entries(data).map(([key, value]) => ({
+            name: key,
+            matches: typeof value === "number" ? value : 0,
+          }));
+          setMatchingData(chartData);
+        } else {
+          // Fallback to empty array
+          setMatchingData([]);
+        }
       } catch (error) {
         console.error("Error fetching matching data:", error);
         toast("Failed to load matching chart data", {
           description: "Please try again later",
           type: "error",
         });
+        setMatchingData([]);
       } finally {
         setIsLoading(false);
       }
@@ -156,7 +213,6 @@ const AdminDashboard = () => {
   }, [dateRanges.matching]);
 
   // Stats cards data
-
   const stats = [
     {
       title: "Total Users",
