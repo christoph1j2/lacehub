@@ -65,14 +65,20 @@ const AdminDashboard = () => {
   // Fetch dashboard stats
   useEffect(() => {
     const fetchStats = async () => {
+      setIsLoading(true);
       try {
-        const [totalUsersData, activeUsersData, dailyMatchesData] =
-          await Promise.all([
-            fetchTotalUsers(),
-            fetchActiveUserCount(),
-            fetchDailyMatches(),
-          ]);
+        // Execute all API calls in parallel but await their results
+        const totalUsersData = await fetchTotalUsers();
+        const activeUsersData = await fetchActiveUserCount();
+        const dailyMatchesData = await fetchDailyMatches();
 
+        console.log("Dashboard stats loaded:", {
+          totalUsers: totalUsersData,
+          activeUsers: activeUsersData,
+          matches: dailyMatchesData,
+        });
+
+        // Update state with the fetched data
         setTotalUsers(totalUsersData?.count || 0);
         setActiveUsers(activeUsersData?.count || 0);
         setTotalMatches(dailyMatchesData?.totalMatches || 0);
@@ -82,6 +88,8 @@ const AdminDashboard = () => {
           description: "Please try again later",
           type: "error",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -148,6 +156,7 @@ const AdminDashboard = () => {
   }, [dateRanges.matching]);
 
   // Stats cards data
+
   const stats = [
     {
       title: "Total Users",

@@ -7,7 +7,7 @@ import {
   fetchBannedUsers,
   banUser,
   unbanUser,
-} from "../services/api";
+} from "../../services/api";
 
 const Users = () => {
   const [users, setUsers] = useState([]);

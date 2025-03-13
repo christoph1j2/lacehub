@@ -137,7 +137,7 @@ function Index() {
                 <div className="relative px-4 sm:px-0">
                   <div className="absolute -inset-4 bg-gradient-to-r from-secondary-500/20 to-accent-500/20 rounded-3xl blur-xl"></div>
                   <img
-                    src="/images/wireframe.webp"
+                    src="..\src\assets\images\hp-image.jpg"
                     alt="Featured sneaker"
                     className="relative w-full h-auto rounded-3xl transform -rotate-12 hover:rotate-0 transition-all duration-500"
                     loading="lazy"

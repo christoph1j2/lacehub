@@ -6,7 +6,7 @@ import LoginForm from "../pages/registration/LoginForm";
 import { NavLink, useLocation } from "react-router";
 
 const Navigation = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false); // Initialize to false
@@ -36,6 +36,11 @@ const Navigation = () => {
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
+  };
+
+  // Fixed logout handler to prevent passing event to React child
+  const handleLogout = () => {
+    logout();
   };
 
   //! tady vsude, kde byla zelena, tak >>>zmena barvy<<<
@@ -119,9 +124,19 @@ const Navigation = () => {
                       Dashboard
                     </NavLink>
                   </li>
+                  {isAdmin() && (
+                    <li>
+                      <NavLink
+                        to="/admin"
+                        className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition duration-300"
+                      >
+                        Admin
+                      </NavLink>
+                    </li>
+                  )}
                   <li>
                     <button
-                      onClick={logout}
+                      onClick={handleLogout}
                       //!tady
                       className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                     >
@@ -182,9 +197,19 @@ const Navigation = () => {
                         Dashboard
                       </NavLink>
                     </li>
+                    {isAdmin() && (
+                      <li>
+                        <NavLink
+                          to="/admin"
+                          className="bg-red-500 text-white block px-4 py-2 hover:bg-red-600"
+                        >
+                          Admin
+                        </NavLink>
+                      </li>
+                    )}
                     <li>
                       <button
-                        onClick={logout}
+                        onClick={handleLogout}
                         //!tady
                         className="text-white block w-full text-left px-4 py-2 hover:bg-orange-800"
                       >

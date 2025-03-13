@@ -1,4 +1,44 @@
-// API service for admin panel
+import axios from "axios";
+
+// Create axios instance
+const api = axios.create({
+  baseURL: "https://api.lacehub.cz",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add request interceptor
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor to handle 401 errors
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Check if the error is a 401 Unauthorized
+    if (error.response && error.response.status === 401) {
+      // Dispatch an event to notify the application about the unauthorized access
+      const event = new CustomEvent("auth:unauthorized", {
+        detail: { message: "Your session has expired. Please sign in again." },
+      });
+      window.dispatchEvent(event);
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Helper function to get the auth token
 const getToken = () => {
@@ -16,7 +56,7 @@ const createAuthHeaders = () => {
   };
 };
 
-// Function to fetch total users count
+// Export the original API functions
 export const fetchTotalUsers = async () => {
   try {
     const response = await fetch(
@@ -27,14 +67,16 @@ export const fetchTotalUsers = async () => {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return await response.json();
+    // Parse the JSON data and return it
+    const data = await response.json();
+    console.log("Total users data:", data);
+    return data;
   } catch (error) {
     console.error("Error fetching total users:", error);
     return { count: 0 };
   }
 };
 
-// Function to fetch active user count
 export const fetchActiveUserCount = async () => {
   try {
     const response = await fetch(
@@ -45,14 +87,15 @@ export const fetchActiveUserCount = async () => {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return await response.json();
+    const data = await response.json();
+    console.log("Active users data:", data);
+    return data;
   } catch (error) {
     console.error("Error fetching active users:", error);
     return { count: 0 };
   }
 };
 
-// Function to fetch daily matches
 export const fetchDailyMatches = async () => {
   try {
     const response = await fetch(
@@ -63,14 +106,15 @@ export const fetchDailyMatches = async () => {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return await response.json();
+    const data = await response.json();
+    console.log("Daily matches data:", data);
+    return data;
   } catch (error) {
     console.error("Error fetching daily matches:", error);
     return { labels: [], counts: [], totalMatches: 0 };
   }
 };
 
-// Function to fetch monthly registrations
 export const fetchMonthlyRegistrations = async (startDate, endDate) => {
   try {
     const response = await fetch(
@@ -81,18 +125,19 @@ export const fetchMonthlyRegistrations = async (startDate, endDate) => {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return await response.json();
+    const data = await response.json();
+    console.log("Monthly registrations data:", data);
+    return data;
   } catch (error) {
     console.error("Error fetching monthly registrations:", error);
     return { labels: [], counts: [], totalRegistered: 0 };
   }
 };
 
-// Function to fetch all users
 export const fetchAllUsers = async () => {
   try {
     const response = await fetch(
-      "https://api.lacehub.cz//users",
+      "https://api.lacehub.cz/users",
       createAuthHeaders()
     );
 
@@ -106,7 +151,6 @@ export const fetchAllUsers = async () => {
   }
 };
 
-// Function to fetch active users
 export const fetchActiveUsers = async () => {
   try {
     const response = await fetch(
@@ -124,7 +168,6 @@ export const fetchActiveUsers = async () => {
   }
 };
 
-// Function to fetch inactive users
 export const fetchInactiveUsers = async () => {
   try {
     const response = await fetch(
@@ -142,7 +185,6 @@ export const fetchInactiveUsers = async () => {
   }
 };
 
-// Function to fetch banned users
 export const fetchBannedUsers = async () => {
   try {
     const response = await fetch(
@@ -160,13 +202,12 @@ export const fetchBannedUsers = async () => {
   }
 };
 
-// Function to ban a user
 export const banUser = async (userId) => {
   try {
     const response = await fetch(
       `https://api.lacehub.cz/users/admin/${userId}/ban`,
       {
-        method: "POST",
+        method: "PUT",
         ...createAuthHeaders(),
       }
     );
@@ -181,13 +222,12 @@ export const banUser = async (userId) => {
   }
 };
 
-// Function to unban a user
 export const unbanUser = async (userId) => {
   try {
     const response = await fetch(
       `https://api.lacehub.cz/users/admin/${userId}/unban`,
       {
-        method: "POST",
+        method: "PUT",
         ...createAuthHeaders(),
       }
     );
@@ -201,3 +241,5 @@ export const unbanUser = async (userId) => {
     throw error;
   }
 };
+
+export default api;

@@ -1,16 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import {
-  User,
-  BarChart,
-  Settings,
-  LogOut,
-  Users,
-  Home,
-  Menu,
-  X,
-} from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
+import { Outlet, NavLink, useNavigate } from "react-router";
+import { User, LogOut, Users, Home, Menu, X } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 import { toast } from "sonner";
 
 const AdminLayout = () => {
@@ -141,22 +132,6 @@ const AdminLayout = () => {
             >
               <Users size={18} />
               Users
-            </NavLink>
-
-            <NavLink
-              to="/admin/statistics"
-              className={({ isActive }) => getNavLinkClass(isActive)}
-            >
-              <BarChart size={18} />
-              Statistics
-            </NavLink>
-
-            <NavLink
-              to="/admin/settings"
-              className={({ isActive }) => getNavLinkClass(isActive)}
-            >
-              <Settings size={18} />
-              Settings
             </NavLink>
           </nav>
 
