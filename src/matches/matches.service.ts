@@ -118,18 +118,32 @@ export class MatchesService {
                 .flat(), // Flatten the nested arrays
         );
 
-        // Now create notifications for each saved match
-        // We must use the saved match IDs to link notifications to matches
-        await Promise.all(
-            savedMatches.map((savedMatch) =>
-                this.notificationsService.create(
-                    buyer.id, // Notify the buyer
-                    'match_found', // Type of notification
-                    `Match found with ${savedMatch.seller.username}! Credibility: ${savedMatch.seller.credibility_score || 0}`,
-                    savedMatch.id, // CRITICAL: Link notification to match ID
-                ),
-            ),
-        );
+        // Replace individual notifications with batch notification
+        if (savedMatches.length > 0) {
+            // Send a single batch notification to the buyer
+            await this.notificationsService.createMatchBatchNotification(
+                buyer.id,
+                'match_found',
+                savedMatches,
+                'buyer',
+            );
+
+            // Optionally notify sellers individually about their single matches
+            // Group matches by seller
+            const matchesBySeller = this.groupMatchesBySeller(savedMatches);
+
+            // For each seller, send a batch notification about all their matches with this buyer
+            for (const [sellerId, sellerMatches] of Object.entries(
+                matchesBySeller,
+            )) {
+                await this.notificationsService.createMatchBatchNotification(
+                    parseInt(sellerId),
+                    'match_found',
+                    sellerMatches,
+                    'seller',
+                );
+            }
+        }
 
         return topMatches; // Return top matches for display
     }
@@ -228,18 +242,32 @@ export class MatchesService {
                 .flat(), // Flatten the nested arrays
         );
 
-        // Now create notifications for each saved match
-        // We must use the saved match IDs to link notifications to matches
-        await Promise.all(
-            savedMatches.map((savedMatch) =>
-                this.notificationsService.create(
-                    seller.id, // Notify the seller
-                    'match_found', // Type of notification
-                    `You have a match with ${savedMatch.buyer.username}! Credibility: ${savedMatch.buyer.credibility_score || 0}`,
-                    savedMatch.id, // CRITICAL: Link notification to match ID
-                ),
-            ),
-        );
+        // Replace individual notifications with batch notification
+        if (savedMatches.length > 0) {
+            // Send a single batch notification to the seller
+            await this.notificationsService.createMatchBatchNotification(
+                seller.id,
+                'match_found',
+                savedMatches,
+                'seller',
+            );
+
+            // Optionally notify buyers individually about their single matches
+            // Group matches by buyer
+            const matchesByBuyer = this.groupMatchesByBuyer(savedMatches);
+
+            // For each buyer, send a batch notification about all their matches with this seller
+            for (const [buyerId, buyerMatches] of Object.entries(
+                matchesByBuyer,
+            )) {
+                await this.notificationsService.createMatchBatchNotification(
+                    parseInt(buyerId),
+                    'match_found',
+                    buyerMatches,
+                    'buyer',
+                );
+            }
+        }
 
         return topMatches; // Return top matches for display
     }
@@ -261,6 +289,44 @@ export class MatchesService {
                     wts.size === wtb.size,
             ),
         );
+    }
+
+    /**
+     * Groups matches by seller ID
+     * @param matches Array of match objects
+     * @returns Object with seller IDs as keys and arrays of matches as values
+     */
+    private groupMatchesBySeller(matches: Match[]): Record<number, Match[]> {
+        const result: Record<number, Match[]> = {};
+
+        matches.forEach((match) => {
+            const sellerId = match.seller.id;
+            if (!result[sellerId]) {
+                result[sellerId] = [];
+            }
+            result[sellerId].push(match);
+        });
+
+        return result;
+    }
+
+    /**
+     * Groups matches by buyer ID
+     * @param matches Array of match objects
+     * @returns Object with buyer IDs as keys and arrays of matches as values
+     */
+    private groupMatchesByBuyer(matches: Match[]): Record<number, Match[]> {
+        const result: Record<number, Match[]> = {};
+
+        matches.forEach((match) => {
+            const buyerId = match.buyer.id;
+            if (!result[buyerId]) {
+                result[buyerId] = [];
+            }
+            result[buyerId].push(match);
+        });
+
+        return result;
     }
 
     /**
