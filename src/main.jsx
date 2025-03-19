@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import Contacts from "./pages/contacs/Contacts.jsx";
+import Contacts from "./pages/contacts/Contacts.jsx";
+import AboutUs from "./pages/about-us/AboutUs.jsx";
 import BaseLayout from "./layout/BaseLayout.jsx";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Homepage from "./pages/homepage/Index.jsx";
@@ -25,6 +26,7 @@ createRoot(document.getElementById("root")).render(
           <Routes>
             <Route element={<BaseLayout />}>
               <Route path="/" element={<Homepage />} />
+              <Route path="about-us" element={<AboutUs />} />
               <Route path="contacts" element={<Contacts />} />
             </Route>
             <Route

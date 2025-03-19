@@ -89,7 +89,7 @@ const Navigation = () => {
               </li>
               <li>
                 <NavLink
-                  to="/about"
+                  to="/about-us"
                   //!tady
                   className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                 >
@@ -162,7 +162,7 @@ const Navigation = () => {
                 </li>
                 <li>
                   <NavLink
-                    to="/about"
+                    to="/about-us"
                     //!tady
                     className="text-white block px-4 py-2 hover:bg-orange-800"
                   >
