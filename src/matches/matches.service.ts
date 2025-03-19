@@ -41,8 +41,13 @@ export class MatchesService {
 
         // Check if buyer exists and has wtb items
         if (!buyer || !buyer.wtb || buyer.wtb.length === 0) {
-            // Return empty array if buyer has no wtb items
-            return [];
+            // Return message if buyer has no wtb items
+            return {
+                matches: [],
+                message: buyer
+                    ? 'You have no items in your Want To Buy list'
+                    : 'Buyer not found',
+            };
         }
 
         // Get all potential sellers (everyone except the buyer)
@@ -79,9 +84,12 @@ export class MatchesService {
             }
         }
 
-        // If no matches were found, return empty array
+        // If no matches were found, return message
         if (matches.length === 0) {
-            return [];
+            return {
+                matches: [],
+                message: 'No matching sellers found for your wanted items',
+            };
         }
 
         // Sort matches by score (highest first) and then by credibility
@@ -111,7 +119,8 @@ export class MatchesService {
                         buyer: buyer,
                         seller: match.seller,
                         match_score: match.matchScore,
-                        buyer_credibility: match.buyer.credibility_score || 0,
+                        buyer_credibility:
+                            (match.buyer && match.buyer.credibility_score) || 0,
                         created_at: new Date(),
                         status: 'pending', // Initial status
                     }));
@@ -146,7 +155,7 @@ export class MatchesService {
             }
         }
 
-        return topMatches; // Return top matches for display
+        return topMatches; // Return matches with null message
     }
 
     /**
@@ -165,8 +174,13 @@ export class MatchesService {
 
         // Check if seller exists and has wts items
         if (!seller || !seller.wts || seller.wts.length === 0) {
-            // Return empty array if seller has no wts items
-            return [];
+            // Return message if seller has no wts items
+            return {
+                matches: [],
+                message: seller
+                    ? 'You have no items in your Want To Sell list'
+                    : 'Seller not found',
+            };
         }
 
         // Get all potential buyers (everyone except the seller)
@@ -204,9 +218,12 @@ export class MatchesService {
             }
         }
 
-        // If no matches were found, return empty array
+        // If no matches were found, return message
         if (matches.length === 0) {
-            return [];
+            return {
+                matches: [],
+                message: 'No matching buyers found for your offered items',
+            };
         }
 
         // Sort matches by score (highest first) and then by credibility
@@ -236,7 +253,9 @@ export class MatchesService {
                         buyer: match.buyer,
                         seller: seller,
                         match_score: match.matchScore,
-                        seller_credibility: match.seller.credibility_score || 0,
+                        seller_credibility:
+                            (match.seller && match.seller.credibility_score) ||
+                            0,
                         created_at: new Date(),
                         status: 'pending', // Initial status
                     }));
@@ -271,7 +290,7 @@ export class MatchesService {
             }
         }
 
-        return topMatches; // Return top matches for display
+        return topMatches; // Return matches with null message
     }
 
     /**

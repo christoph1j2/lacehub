@@ -26,7 +26,10 @@ export class MatchesController {
         try {
             // Get the user ID from the authenticated token
             const userId = request.user.id;
-            return await this.matchesService.findMatchesForBuyer(userId);
+            const result = await this.matchesService.findMatchesForBuyer(userId);
+            
+            // If there's a message, return it with the matches
+            return result;
         } catch (error) {
             throw new HttpException(
                 error.message || 'Failed to get buyer matches',
@@ -48,7 +51,10 @@ export class MatchesController {
         try {
             // Get the user ID from the authenticated token
             const userId = request.user.id;
-            return await this.matchesService.findMatchesForSeller(userId);
+            const result = await this.matchesService.findMatchesForSeller(userId);
+            
+            // If there's a message, return it with the matches
+            return result;
         } catch (error) {
             throw new HttpException(
                 error.message || 'Failed to get seller matches',

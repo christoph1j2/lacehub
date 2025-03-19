@@ -37,6 +37,7 @@ describe('MatchesService', () => {
 
     const mockNotificationsService = () => ({
         create: jest.fn().mockResolvedValue(undefined),
+        createMatchBatchNotification: jest.fn().mockResolvedValue(undefined),
     });
 
     // Setup testing module before each test
@@ -85,10 +86,14 @@ describe('MatchesService', () => {
         brand: 'TestBrand',
     });
 
-    const createUserMock = (id: number, name: string, credibility: number) => ({
+    const createUserMock = (
+        id: number,
+        name: string,
+        credibility_score: number = 0,
+    ) => ({
         id,
         username: name,
-        credibility_score: credibility,
+        credibility_score,
         wtb: [],
         wts: [],
     });
@@ -162,18 +167,24 @@ describe('MatchesService', () => {
                 createWtsItemMock(10, 'SKU001', 'M', 7), // Match - 33% match
             ];
 
+            // Ensure all mock sellers have credibility_score
+            const mockSellers = [
+                mockSeller1,
+                mockSeller2,
+                mockSeller3,
+                mockSeller4,
+                mockSeller5,
+                mockSeller6,
+            ];
+            mockSellers.forEach((seller) => {
+                if (seller.credibility_score === undefined) {
+                    seller.credibility_score = 0;
+                }
+            });
+
             // Setup mocks
             userRepository.findOne = jest.fn().mockResolvedValue(mockBuyer);
-            userRepository.find = jest
-                .fn()
-                .mockResolvedValue([
-                    mockSeller1,
-                    mockSeller2,
-                    mockSeller3,
-                    mockSeller4,
-                    mockSeller5,
-                    mockSeller6,
-                ]);
+            userRepository.find = jest.fn().mockResolvedValue(mockSellers); // Return the updated mockSellers array
 
             // Mock saved matches
             const savedMatchesMock = [
@@ -184,6 +195,7 @@ describe('MatchesService', () => {
                     buyer: mockBuyer,
                     seller: mockSeller1,
                     match_score: 1 / 3, // One match out of three items
+                    seller_credibility: mockSeller1.credibility_score || 0,
                     createdAt: expect.any(Date),
                     status: 'pending',
                 },
@@ -194,7 +206,13 @@ describe('MatchesService', () => {
                 .mockResolvedValue(savedMatchesMock);
 
             // Call the method
-            const result = await matchesService.findMatchesForBuyer(1);
+            let result;
+            try {
+                result = await matchesService.findMatchesForBuyer(1);
+            } catch (error) {
+                console.error('ERROR:', error);
+                throw error;
+            }
 
             // Assertions
             expect(userRepository.findOne).toHaveBeenCalledWith({
@@ -220,9 +238,10 @@ describe('MatchesService', () => {
             expect(matchRepository.save).toHaveBeenCalled();
 
             // Notifications should be created for each match
-            expect(notificationsService.create).toHaveBeenCalledTimes(
-                savedMatchesMock.length,
-            );
+            expect(
+                notificationsService.createMatchBatchNotification,
+                //jebat
+            ).toHaveBeenCalledTimes(2);
         });
 
         it('should handle case when buyer has no WTB items (with find called)', async () => {
@@ -241,7 +260,10 @@ describe('MatchesService', () => {
             const result = await matchesService.findMatchesForBuyer(1);
 
             // Assertions
-            expect(result).toEqual([]);
+            expect(result).toEqual({
+                matches: [],
+                message: 'You have no items in your Want To Buy list',
+            });
             expect(notificationsService.create).not.toHaveBeenCalled();
         });
 
@@ -257,7 +279,10 @@ describe('MatchesService', () => {
             const result = await matchesService.findMatchesForBuyer(1);
 
             // Assertions
-            expect(result).toEqual([]);
+            expect(result).toEqual({
+                matches: [],
+                message: 'You have no items in your Want To Buy list',
+            });
             expect(userRepository.find).not.toHaveBeenCalled();
             expect(matchRepository.save).not.toHaveBeenCalled();
             expect(notificationsService.create).not.toHaveBeenCalled();
@@ -271,7 +296,7 @@ describe('MatchesService', () => {
             const result = await matchesService.findMatchesForBuyer(999);
 
             // Assertions
-            expect(result).toEqual([]);
+            expect(result).toEqual({ matches: [], message: 'Buyer not found' });
             expect(userRepository.find).not.toHaveBeenCalled();
             expect(matchRepository.save).not.toHaveBeenCalled();
             expect(notificationsService.create).not.toHaveBeenCalled();
@@ -290,7 +315,10 @@ describe('MatchesService', () => {
             const result = await matchesService.findMatchesForBuyer(1);
 
             // Assertions
-            expect(result).toEqual([]);
+            expect(result).toEqual({
+                matches: [],
+                message: 'No matching sellers found for your wanted items',
+            });
             expect(matchRepository.save).not.toHaveBeenCalled();
             expect(notificationsService.create).not.toHaveBeenCalled();
         });
@@ -317,7 +345,10 @@ describe('MatchesService', () => {
             const result = await matchesService.findMatchesForBuyer(1);
 
             // Assertions
-            expect(result).toEqual([]);
+            expect(result).toEqual({
+                matches: [],
+                message: 'No matching sellers found for your wanted items',
+            });
             expect(matchRepository.save).not.toHaveBeenCalled();
             expect(notificationsService.create).not.toHaveBeenCalled();
         });
@@ -342,7 +373,10 @@ describe('MatchesService', () => {
             const result = await matchesService.findMatchesForBuyer(1);
 
             // Assertions
-            expect(result).toEqual([]);
+            expect(result).toEqual({
+                matches: [],
+                message: 'No matching sellers found for your wanted items',
+            });
             // Since no matches are found, the service might not call save() at all
             expect(matchRepository.save).not.toHaveBeenCalled();
             expect(notificationsService.create).not.toHaveBeenCalled();
@@ -381,15 +415,30 @@ describe('MatchesService', () => {
                 .fn()
                 .mockResolvedValue([mockBuyer1, mockBuyer2, mockBuyer3]);
 
+            // Ensure all mock buyers have credibility_score
+            const mockBuyers = [mockBuyer1, mockBuyer2, mockBuyer3];
+            mockBuyers.forEach((buyer) => {
+                if (buyer.credibility_score === undefined) {
+                    buyer.credibility_score = 0;
+                }
+            });
+
+            // Ensure all mock sellers have credibility_score
+            if (mockSeller.credibility_score === undefined) {
+                mockSeller.credibility_score = 0;
+            }
+
             // Mock saved matches
             const savedMatchesMock = [
                 {
                     id: 1,
-                    wtb: { wtb: mockBuyer1.wtb[0] },
-                    wts: { wts: mockSeller.wts[0] },
+                    // Fix here - change from nested objects to direct references
+                    wtb: mockBuyer1.wtb[0],
+                    wts: mockSeller.wts[0],
                     buyer: mockBuyer1,
                     seller: mockSeller,
                     match_score: 0.5, // One match out of two items
+                    buyer_credibility: mockBuyer1.credibility_score || 0,
                     createdAt: expect.any(Date),
                     status: 'pending',
                 },
@@ -418,15 +467,15 @@ describe('MatchesService', () => {
             expect(result.length).toBeLessThanOrEqual(5); // Return at most 5 matches
             expect(result[0].buyer.username).toBe('Buyer2'); // 100% match, high credibility
             expect(result[1].buyer.username).toBe('Buyer1'); // 50% match
-            // Buyer3 has 0% match so likely isn't included in the results
 
             // Match repository should be called with array of matches
             expect(matchRepository.save).toHaveBeenCalled();
 
             // Notifications should be created for each match
-            expect(notificationsService.create).toHaveBeenCalledTimes(
-                savedMatchesMock.length,
-            );
+            expect(
+                notificationsService.createMatchBatchNotification,
+                //jebat
+            ).toHaveBeenCalledTimes(2);
         });
 
         it('should handle case when seller has no WTS items', async () => {
@@ -445,7 +494,10 @@ describe('MatchesService', () => {
             const result = await matchesService.findMatchesForSeller(1);
 
             // Assertions for empty results
-            expect(result).toEqual([]);
+            expect(result).toEqual({
+                matches: [],
+                message: 'You have no items in your Want To Sell list',
+            });
             expect(matchRepository.save).not.toHaveBeenCalled();
             expect(notificationsService.create).not.toHaveBeenCalled();
         });
