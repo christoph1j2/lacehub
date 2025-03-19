@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PageTransition from "../../components/PageTransition";
 
 const Contacts = () => {
   const [offset, setOffset] = useState(0);
@@ -50,44 +51,45 @@ const Contacts = () => {
   // Developer team data
   const teamMembers = [
     {
-      name: "Alex Johnson",
+      name: "Dai Duong Bui",
       role: "Frontend Developer",
       bio: "Crafting beautiful user experiences with React and modern CSS techniques.",
       image: "/placeholder-profile-1.jpg",
-      contact: "alex@lacehub.com",
+      contact: "buid@spseplzen.cz",
       social: {
-        github: "https://github.com/alexjohnson",
-        linkedin: "https://linkedin.com/in/alexjohnson",
+        github: "https://github.com",
+        linkedin: "https://linkedin.com/in/",
       }
     },
     {
-      name: "Sam Rivera",
+      name: "Ernst Christoph Leschka",
       role: "Backend Developer",
       bio: "Building robust APIs and database solutions to power our platform.",
       image: "/placeholder-profile-2.jpg",
-      contact: "sam@lacehub.com",
+      contact: "leschkae@spseplzen.cz",
       social: {
-        github: "https://github.com/samrivera",
-        linkedin: "https://linkedin.com/in/samrivera",
+        github: "https://github.com/christoph1j2",
+        linkedin: "https://www.linkedin.com/in/ernst-christoph-leschka-52385421b/",
       }
     },
     {
-      name: "Jordan Lee",
+      name: "Vojtěch Šebek",
       role: "DevOps Engineer",
       bio: "Managing server infrastructure and ensuring smooth deployment pipelines.",
       image: "/placeholder-profile-3.jpg",
-      contact: "jordan@lacehub.com",
+      contact: "sebekv@spseplzen.cz",
       social: {
-        github: "https://github.com/jordanlee",
-        linkedin: "https://linkedin.com/in/jordanlee",
+        github: "https://github.com/",
+        linkedin: "https://linkedin.com/in/",
       }
     }
   ];
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-primary-900 text-primary-100 overflow-hidden">
       {/* Header Section */}
-      <div className="relative py-20 sm:py-32 overflow-hidden">
+      <div className="relative pt-32 sm:pt-40 pb-20 sm:pb-32 overflow-hidden">
         {/* Background elements */}
         <div
           className="absolute inset-0 z-0"
@@ -132,7 +134,7 @@ const Contacts = () => {
                 transform: `translateY(${offset * -0.15}px)`,
               }}
             >
-              Have questions about LaceHub? Want to join our team? Reach out to us.
+              Have questions about LaceHub? Reach out to us.
             </p>
           </div>
         </div>
@@ -153,7 +155,7 @@ const Contacts = () => {
                 key={index}
                 className="bg-primary-800/50 rounded-2xl p-6 sm:p-8 backdrop-blur-sm border border-primary-700 transform hover:-translate-y-2 transition-all duration-300"
                 style={{
-                  transform: `translateY(${offset * -0.1 * (index + 1)}px)`,
+                  transform: `translateY(${offset * -0.1 * (index + 0.5)}px)`,
                 }}
               >
                 <div className="flex flex-col items-center text-center">
@@ -301,20 +303,20 @@ const Contacts = () => {
                 <svg className="w-5 h-5 mr-2 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span>contact@lacehub.com</span>
+                <span>admin@lacehub.cz</span>
               </div>
               <div className="flex items-center">
                 <svg className="w-5 h-5 mr-2 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <span>+1 (555) 123-4567</span>
+                <span>+420 123 456 789</span>
               </div>
               <div className="flex items-center">
                 <svg className="w-5 h-5 mr-2 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span>123 Sneaker St, New York, NY</span>
+                <span>Czech Republic</span>
               </div>
             </div>
             <div className="flex justify-center space-x-6">
@@ -338,6 +340,7 @@ const Contacts = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

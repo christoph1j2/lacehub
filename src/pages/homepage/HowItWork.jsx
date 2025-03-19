@@ -1,6 +1,8 @@
 // src/components/HowItWork.jsx
 import { useState, useEffect } from 'react';
 import { useInView } from '../../hooks/useInView'; // Adjust the path according to your project structure
+import PageTransition from "../../components/PageTransition";
+
 
 const HowItWork = () => {
   const [sectionRef, sectionInView] = useInView({ threshold: 0.1 });
@@ -20,6 +22,7 @@ const HowItWork = () => {
         "Start by creating your account. Then discover your personal dashboard with the collections you own, are in need of, or want to sell. ",
       image: "/images/wireframe.webp",
       isReversed: false,
+      link: "/how-it-works",
     },
     {
       number: 2,
@@ -28,6 +31,7 @@ const HowItWork = () => {
         "Keep track of your inventory. Add sneakers to your personal super private inventory, or add sneakers to your public Want-To-Buy / Want-To-Sell lists.",
       image: "/images/wireframe.webp",
       isReversed: true,
+      link: "/how-it-works",
     },
     {
       number: 3,
@@ -36,6 +40,7 @@ const HowItWork = () => {
         "If you have your desired collection in place. Start matching your inventory with other users and trade your sneakers.",
       image: "/images/wireframe.webp",
       isReversed: false,
+      link: "/how-it-works",
     },
   ];
 
@@ -97,7 +102,7 @@ const HowItWork = () => {
                 <p className="text-gray-400 text-base md:text-lg leading-relaxed">
                   {step.description}
                 </p>
-                <button 
+                <a href={step.link}
                   className={`inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 
                     transition-all duration-700 transform text-sm md:text-base
                     ${animationStarted ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"}
@@ -118,7 +123,7 @@ const HowItWork = () => {
                       d="M9 5l7 7-7 7"
                     />
                   </svg>
-                </button>
+                </a>
               </div>
 
               {/* Image with Animation */}

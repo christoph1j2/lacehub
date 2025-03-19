@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import HowItWork from "./HowItWork";
 import AboutUs from "./AboutUS";
+import PageTransition from "../../components/PageTransition";
 
 function Index() {
   const [offset, setOffset] = useState(0);
@@ -27,6 +28,7 @@ function Index() {
   }, []);
 
   return (
+    <PageTransition>
     <div className="min-h-screen overflow-hidden parallax-container ">
       {/* Hero Section */}
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6">
@@ -157,6 +159,7 @@ function Index() {
         <HowItWork />
       </div>
     </div>
+    </PageTransition>
   );
 }
 
