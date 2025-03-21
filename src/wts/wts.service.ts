@@ -10,6 +10,7 @@ import { CreateWTSDto } from './dto/create-wts.dto';
 import { User } from '../entities/user.entity';
 import { UpdateWTSDto } from './dto/update-wts.dto';
 import { Product } from '../entities/product.entity';
+import { DataSource } from 'typeorm';
 
 /**
  * Service responsible for managing Want to Sell (WTS) listings.
@@ -35,6 +36,7 @@ export class WtsService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Product)
         private readonly productRepository: Repository<Product>,
+        private readonly dataSource: DataSource, // Add this line
     ) {}
 
     /**
@@ -167,7 +169,7 @@ export class WtsService {
     async delete(itemId: number, userId: number): Promise<void> {
         const item = await this.wtsRepository.findOne({
             where: { id: itemId },
-            relations: ['user'],
+            relations: ['user', 'matches'],
         });
 
         if (!item) {
@@ -180,6 +182,28 @@ export class WtsService {
             );
         }
 
+        // First delete any related notifications that reference these matches
+        if (item.matches && item.matches.length > 0) {
+            const matchIds = item.matches.map((match) => match.id);
+
+            // Step 1: Delete notifications that reference these matches
+            await this.dataSource
+                .createQueryBuilder()
+                .delete()
+                .from('notifications')
+                .where('match_id IN (:...matchIds)', { matchIds })
+                .execute();
+
+            // Step 2: Then delete the matches
+            await this.dataSource
+                .createQueryBuilder()
+                .delete()
+                .from('matches')
+                .where('wts_id = :wtsId', { wtsId: itemId })
+                .execute();
+        }
+
+        // Step 3: Now it's safe to delete the WTS item
         await this.wtsRepository.delete(itemId);
     }
 
