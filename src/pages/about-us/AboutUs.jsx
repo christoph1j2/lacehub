@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import RegisterForm from "../registration/RegisterForm";
+import LoginForm from "../registration/LoginForm"; // Add this import
 import PageTransition from "../../components/PageTransition";
 
 const AboutUs = () => {
   const [offset, setOffset] = useState(0);
   const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false); // Add this state
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -55,7 +57,24 @@ const AboutUs = () => {
     <div className="bg-primary-900 text-primary-100">
       {/* Show register form if needed */}
       {showRegisterForm && (
-        <RegisterForm onClose={() => setShowRegisterForm(false)} />
+        <RegisterForm 
+          onClose={() => setShowRegisterForm(false)} 
+          onLoginClick={() => {
+            setShowRegisterForm(false);
+            setShowLoginForm(true);
+          }}
+        />
+      )}
+      
+      {/* Add login form */}
+      {showLoginForm && (
+        <LoginForm
+          onClose={() => setShowLoginForm(false)}
+          onRegisterClick={() => {
+            setShowLoginForm(false);
+            setShowRegisterForm(true);
+          }}
+        />
       )}
       
       {/* Hero Section */}
