@@ -8,6 +8,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CreateWTBDto } from './dto/create-wtb.dto';
 import { UpdateWTBDto } from './dto/update-wtb.dto';
+import { DataSource } from 'typeorm';
 
 describe('WtbService', () => {
     let service: WtbService;
@@ -61,6 +62,12 @@ describe('WtbService', () => {
                 },
                 {
                     provide: getRepositoryToken(Product),
+                    useValue: {
+                        findOneBy: jest.fn(),
+                    },
+                },
+                {
+                    provide: DataSource,
                     useValue: {
                         findOneBy: jest.fn(),
                     },

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Wtb } from '../entities/wtb.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateWTBDto } from './dto/create-wtb.dto';
 import { User } from '../entities/user.entity';
 import { UpdateWTBDto } from './dto/update-wtb.dto';
@@ -35,6 +35,7 @@ export class WtbService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Product)
         private readonly productRepository: Repository<Product>,
+        private readonly dataSource: DataSource,
     ) {}
 
     /**
@@ -167,7 +168,7 @@ export class WtbService {
     async delete(itemId: number, userId: number): Promise<void> {
         const item = await this.wtbRepository.findOne({
             where: { id: itemId },
-            relations: ['user'],
+            relations: ['user', 'matches'],
         });
 
         if (!item) {
@@ -180,6 +181,17 @@ export class WtbService {
             );
         }
 
+        // First delete any related matches
+        if (item.matches && item.matches.length > 0) {
+            await this.dataSource
+                .createQueryBuilder()
+                .delete()
+                .from('matches')
+                .where('wtb_id = :wtbId', { wtbId: itemId })
+                .execute();
+        }
+
+        // Now it's safe to delete the WTB item
         await this.wtbRepository.delete(itemId);
     }
 
