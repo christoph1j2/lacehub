@@ -181,8 +181,19 @@ export class WtbService {
             );
         }
 
-        // First delete any related matches
+        // First delete any related notifications that reference these matches
         if (item.matches && item.matches.length > 0) {
+            const matchIds = item.matches.map((match) => match.id);
+
+            // Step 1: Delete notifications that reference these matches
+            await this.dataSource
+                .createQueryBuilder()
+                .delete()
+                .from('notifications')
+                .where('match_id IN (:...matchIds)', { matchIds })
+                .execute();
+
+            // Step 2: Then delete the matches
             await this.dataSource
                 .createQueryBuilder()
                 .delete()
@@ -191,7 +202,7 @@ export class WtbService {
                 .execute();
         }
 
-        // Now it's safe to delete the WTB item
+        // Step 3: Now it's safe to delete the WTB item
         await this.wtbRepository.delete(itemId);
     }
 
