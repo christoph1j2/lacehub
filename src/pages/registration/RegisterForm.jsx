@@ -13,16 +13,16 @@ const RegisterForm = ({ onClose, onLoginClick }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  
+
   // Set visibility to true after component mounts for entrance animation
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 50);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   // Handle close with animation
   const handleClose = () => {
     setIsVisible(false);
@@ -116,21 +116,25 @@ const RegisterForm = ({ onClose, onLoginClick }) => {
   };
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${
-      isVisible ? "opacity-100" : "opacity-0"
-    }`}>
+    <div
+      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
       {/* Backdrop with fade */}
-      <div 
+      <div
         className={`absolute inset-0 bg-black transition-opacity duration-300 ${
           isVisible ? "bg-opacity-50" : "bg-opacity-0"
-        }`} 
+        }`}
         onClick={handleClose}
       ></div>
-      
+
       {/* Registration form with scale and fade */}
-      <div 
+      <div
         className={`bg-white rounded-2xl p-8 w-full max-w-md relative transition-all duration-300 ${
-          isVisible ? "opacity-100 transform scale-100" : "opacity-0 transform scale-95"
+          isVisible
+            ? "opacity-100 transform scale-100"
+            : "opacity-0 transform scale-95"
         }`}
       >
         <button
@@ -140,7 +144,9 @@ const RegisterForm = ({ onClose, onLoginClick }) => {
           <XMarkIcon className="size-6" />
         </button>
 
-        <h2 className="text-3xl font-bold text-center mb-8">Join LaceHub</h2>
+        <h2 className="text-3xl text-black font-bold text-center mb-8">
+          Join LaceHub
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>

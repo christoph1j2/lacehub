@@ -1,83 +1,14 @@
-  // ┤├┤├┤├┤├░├░├┤├┤├├├▒████▓√├┤├├├┤├░├┤├┤├┤├
-  // ├├├┤├┤├┤├√├√├┤├┤▓█████████▒┤├√├├├├├┤├├├├
-  // ┤├┤├┤├┤├├├├├├├███▓▒├├├┤╫▓███▒├┤├┤├┤├┤├├├
-  // ├┤├├├┤├┤├┤├√▒██▓├┤├┤├┤├┤├├▒██▓├┤├├├√├┤├┤
-  // ░├├├┤├┤├┤├┤▓██┤├√┤░░░░╫░░░┤├▓██├┤├┤├├├┤├
-  // ├√├┤├√├├├├▓█▓├├░░╫░░░╫░╫░╫░░├▒██├√├┤├├├┤
-  // ┤├├├┤├├├√▒█▓├├░░╫░░░╫░░░╫╫╫╫╫├╫██├┤├√├√├
-  // ├┤├┤├├├┤├█▓├√░░░░░░░░╫░╫╫╫╫╫╫╫├▒█▓├┤├√├├
-  // ┤├┤├├├√├██┤├░░╫░░░░░░░░░╫╫╫╫╫╫╫├▓█╫├√├√├
-  // ├┤├┤├┤├▓█░├╫░╫░░░░░░░░░░░╫╫╫╫╫╫╫├██├├├├├
-  // ┤├┤├├├√█▓├╫╫╫░╫░░░░░░░░░╫░╫╫╫╫▒╫╫░█▓┤├┤├
-  // ├┤├├├┤██├░╫╫░╫░░░░┤░┤░░░░╫╫╫╫╫╫▒╫░▓█├┤├√
-  // ░├√├√├█▒√╫╫╫╫░░░░┤░┤░░░░╫░╫╫╫╫╫╫▒╫░█▓├┤├
-  // ├├├√├██├░╫╫╫░╫░░░░√┤┤░░░░╫╫╫╫╫╫▒╫▒░▓█┤├┤
-  // ┤├√├┤█▒├╫╫╫░╫░░░░├┤├░░░░░░╫░╫╫╫╫▒▒╫░█▓├├
-  // ├├├┤▒█├╫╫╫░╫░░░░░░├├├░░░░░░√├░╫╫╫▒╫░▓█├┤
-  // ░├┤├█▓├╫╫╫░├┤├┤├┤├√├┤┤░░░├├╫▒╫├░▒▒▒╫╫█░├
-  // ├├├├█▒░╫╫╫├░▓▓▒√├├├┤┤░░░├√█████┤░▒▒▒√█▓┤
-  // ┤├┤▒█├╫╫╫├▒█████├├┤├░┤░├┤██▓╫▓██┤╫▒╫░▓█├
-  // ├√├██┤╫╫├╫██├├▒██┤├░┤░┤├▒█├┤├√░█▓░╫▒╫▒█├
-  // ┤├√█▓░╫╫┤██├├├┤├█▒┤├░░├├█▓├├┤├┤▓█┤╫╫▒░█├
-  // ├┤├█╫╫╫░╫█├├├▒├┤▓█├┤░░├╫█√├▓█▓├├█▒╫▒╫░█▒
-  // ┤├▒█░╫╫├▓█┤├▓██├√█┤├░░├▓█├╫▓▓█▒├█▓╫╫▒░▓▓
-  // ├├▓█┤╫╫├█▓├▒▓▓█╫├█╫√░░├█▓├▓▓██▓┤▓█░▒╫░▒█
-  // ├├██░╫╫├█▒├▓▓██▓√█▒├░░┤█▓├▓▓███├▓█░╫▒╫▒█
-  // ├├█▓░▒╫√█╫├▓▓██▓├█▓├░░├█▓┤▓████├▓█░▒▒╫░█
-  // ├├█▓╫▒╫├█▒├████▒┤█▒├░░├▓█├▓███▓├█▓░╫▒╫░█
-  // ├├█▒░▒╫├█▓├▓███√├█╫┤░░├▒█┤├███├├█▒╫▒▒▒├█
-  // ├├█▒╫▒▒░▓█┤├██▓├╫█√░╫╫░├█▒┤├▒├├▒█░╫▒▒╫░█
-  // ├┤█▒╫▒▒╫░█░┤├√├├██├░╫╫░├▓█├√├├├█▓░╫▒▒▒┤█
-  // ├├█▒╫▒▒╫├██├├├┤▒█░√╫╫╫╫░┤██├├├██░╫▒▒▒╫░▓
-  // ├├█▒╫▒▒╫├├██▒░▓█▓√░╫╫╫╫╫├╫█████▒░▒▒▒▒▒┤█
-  // ┤├█▒╫╫╫╫█▓┤████▓┤░╫╫╫╫╫╫╫├░▓█▓╫░▒▒▒▒▒╫░█
-  // ├┤█▒░╫┤███░██▓├├░╫╫╫╫▒╫╫╫╫░░├░╫▒▒▒▒▒▒▒√█
-  // ┤├█▒├├▒█√▓██▓█┤░╫╫╫╫▒╫▒╫▒╫▒╫▒╫▒▒▒▒▒▒▒╫░█
-  // ├├█▒╫██▓├▒█┤├█▓░╫▒╫▒╫▒╫▒▒▒▒▒▒▒▒▒▒▒▒▒▒╫░█
-  // ┤├█▒███▒√╫█├├▓█√╫╫▒╫▒╫▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒╫░█
-  // ├┤▓██┤█▓├├█░├▓█░╫▒▒▒╫▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒╫╫█
-  // ├├▒█▓├█▓┤├█░√▓█┤▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░▒█
-  // ├├▒█╫┤██├┤█▒├▓█░╫▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒╫░▓▓
-  // ┤▓██▒├▓█┤├█▒┤▓█░▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒╫╫▒▒▒▒┤█▓
-  // ▒█▒█▒√▓█├┤█▓├▓█░╫▒▒▒▒▒▒▒▒▒▒▒▒▒╫▒▓╫▒▒╫░█░
-  // █▓┤█▓├▓█√├█▓┤▓█┤▒▒▒▒▒▒▒▒▒▒▒▒▒╫░▓█░╫▒╫╫█├
-  // █▒├▓█√▒█├┤█▓├▓█├╫╫╫╫╫▒▒▒▒▒▒▒╫░░█▓░╫▒░▓█┤
-  // █▒┤▓█├▒█┤├█▓┤▒█├░▒▒░╫╫▒▒▒▒▒╫╫├██░╫▒╫░█▓├
-  // █▒├▓█√▒█├├█▓├▒█▒████░╫▒▒▒▒╫░├██▒░▒▒╫░█╫├
-  // █▒┤▓█├╫█├├██┤╫███▒▓█▓┤╫╫╫┤√▒██▒┤╫╫▒░▓█┤├
-  // █▒├▓█┤├╫├├▒▒├▒█▓├√├▓█┤├┤╫▓███▒┤╫╫▒╫┤█▓├├
-  // █▓├▓█├┤├┤├┤├├▒█├┤├┤▒█▓█████▓░░▒▒▒▒░▒█├┤├
-  // █▓├▓█┤├√├├├┤├√├├├┤├█████▓▒┤░╫▒▒▒▒╫├██┤├┤
-  // ▓█├├┤├┤├┤├√├├├┤├├▒██▒√░├┤░╫╫▒▒▒▒▒░▒█┤├┤├
-  // ▒█├├├┤├├├├├├├┤├√▒██╫░╫╫╫╫▒▒▒▒▒▒▒╫┤██├√├├
-  // ░█┤├┤├├├├├√├┤├├├█▓√░▒╫▒▒▒▒▒▒▒▒▒╫┤▓█├├├├├
-  // ├█░├├┤├├├┤├├├├├██√╫▒▒▒▒▒▒▒▒▒▒▒╫░▒█▒├├┤├┤
-  // ┤█▒├┤├√├├├├├├├├█▒░▒▒▒▒▒▒▒▒▒▒▒╫░░██┤├┤├┤├
-  // ├▓█┤├┤├├├┤├├├┤├█╫╫▒▒▒▒▒▒▒▒▒▒╫░░██√├┤├┤├┤
-  // √▒█├├├┤├┤├├├┤├╫█░╫▒▒▒▒▒▒▒▒▒╫░░██┤├├├├├┤├
-  // ├┤█√├┤├┤├┤├√├├▒█├╫▒▒▒▒▒▒╫╫░┤▒██┤├┤├┤├├├┤
-  // ├├█▒┤├√├┤├┤├┤├▒█┤├╫╫╫╫╫╫░├░▓██├├┤├┤├┤├┤├
-  // ├┤▓█├√├┤├├├├├┤▒██▓╫░├√├░▒███▓├├┤├├├√├├├┤
-  // ├├░█├├┤├├├┤├├├▓████████████├├├√├┤├√├┤├├├
-  // ├┤├█▓┤├├├┤├┤├┤█▒├╫▓█████▒┤├√├┤├┤├√├├├┤├┤
-  // ┤├├▓█├┤├┤├┤├├╫█├√├┤├┤├├├├├┤├√├┤├√├├├├├√├
-  // ├├├┤██▒╫├┤░▒███┤├┤├┤├√├├├├├┤├√├┤├┤├√├├├┤
-  // ░├┤├├████████▒├├┤├┤├├├┤├┤├├├├├┤├┤├┤├┤├┤├
-
-
 import { useState, useEffect, useMemo } from "react";
 import {
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { subMonths, subYears } from "date-fns";
+import { subYears, subMonths } from "date-fns";
 import { toast } from "sonner";
 import {
   fetchTotalUsers,
@@ -85,8 +16,6 @@ import {
   fetchDailyMatches,
   fetchMonthlyRegistrations,
 } from "../../services/api";
-
-
 
 // Helper to format date for API
 const formatDateForApi = (date) => {
@@ -100,43 +29,35 @@ const AdminDashboard = () => {
   const [registrationData, setRegistrationData] = useState([]);
   const [matchingData, setMatchingData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [regPeriod, setRegPeriod] = useState("month");
-  const [matchPeriod, setMatchPeriod] = useState("month");
+  const [matchPeriod, setMatchPeriod] = useState("month"); // Keep dropdown for matching activity
 
-  // Calculate date ranges based on selected periods
+  // Calculate date range for the last year (registration) and dynamic range (matching)
   const dateRanges = useMemo(() => {
     const now = new Date();
-    const getDateRange = (period) => {
-      let startDate;
 
-      switch (period) {
-        case "year":
-          startDate = subYears(now, 1);
-          break;
-        case "month":
-        default:
-          startDate = subMonths(now, 1);
-          break;
-      }
+    const registrationRange = {
+      startDate: formatDateForApi(subYears(now, 1)),
+      endDate: formatDateForApi(now),
+    };
 
-      return {
-        startDate: formatDateForApi(startDate),
-        endDate: formatDateForApi(now),
-      };
+    const matchingRange = {
+      startDate: formatDateForApi(
+        matchPeriod === "year" ? subYears(now, 1) : subMonths(now, 1)
+      ),
+      endDate: formatDateForApi(now),
     };
 
     return {
-      registration: getDateRange(regPeriod),
-      matching: getDateRange(matchPeriod),
+      registration: registrationRange,
+      matching: matchingRange,
     };
-  }, [regPeriod, matchPeriod]);
+  }, [matchPeriod]);
 
   // Fetch dashboard stats
   useEffect(() => {
     const fetchStats = async () => {
       setIsLoading(true);
       try {
-        // Execute all API calls in parallel but await their results
         const totalUsersData = await fetchTotalUsers();
         const activeUsersData = await fetchActiveUserCount();
         const dailyMatchesData = await fetchDailyMatches();
@@ -147,7 +68,6 @@ const AdminDashboard = () => {
           matches: dailyMatchesData,
         });
 
-        // Update state with the fetched data - handle different possible response structures
         setTotalUsers(
           totalUsersData?.count ||
             totalUsersData?.totalUsers ||
@@ -178,7 +98,7 @@ const AdminDashboard = () => {
     fetchStats();
   }, []);
 
-  // Fetch registration data when date range changes
+  // Fetch registration data for the last year
   useEffect(() => {
     const fetchRegistrationChart = async () => {
       setIsLoading(true);
@@ -190,30 +110,25 @@ const AdminDashboard = () => {
 
         console.log("Registration data:", data);
 
-        // Handle different possible response structures
         if (data && Array.isArray(data)) {
-          // If data is already in the right format
           setRegistrationData(data);
         } else if (
           data &&
           Array.isArray(data.labels) &&
           Array.isArray(data.counts)
         ) {
-          // Map API response to chart format
           const chartData = data.labels.map((label, index) => ({
             name: label,
             value: data.counts[index] || 0,
           }));
           setRegistrationData(chartData);
         } else if (data && typeof data === "object") {
-          // Try to convert object data to array format
           const chartData = Object.entries(data).map(([key, value]) => ({
             name: key,
             value: typeof value === "number" ? value : 0,
           }));
           setRegistrationData(chartData);
         } else {
-          // Fallback to empty array
           setRegistrationData([]);
         }
       } catch (error) {
@@ -240,30 +155,25 @@ const AdminDashboard = () => {
 
         console.log("Matching data:", data);
 
-        // Handle different possible response structures
         if (data && Array.isArray(data)) {
-          // If data is already in the right format
           setMatchingData(data);
         } else if (
           data &&
           Array.isArray(data.labels) &&
           Array.isArray(data.counts)
         ) {
-          // Map API response to chart format
           const chartData = data.labels.map((label, index) => ({
             name: label,
             matches: data.counts[index] || 0,
           }));
           setMatchingData(chartData);
         } else if (data && typeof data === "object") {
-          // Try to convert object data to array format
           const chartData = Object.entries(data).map(([key, value]) => ({
             name: key,
             matches: typeof value === "number" ? value : 0,
           }));
           setMatchingData(chartData);
         } else {
-          // Fallback to empty array
           setMatchingData([]);
         }
       } catch (error) {
@@ -300,7 +210,7 @@ const AdminDashboard = () => {
     },
   ];
 
-  // Period options for the select dropdowns
+  // Period options for the matching activity dropdown
   const periodOptions = [
     { value: "month", label: "Last Month" },
     { value: "year", label: "Last Year" },
@@ -347,25 +257,11 @@ const AdminDashboard = () => {
 
       {/* Charts */}
       <div className="grid gap-4 md:grid-cols-2">
+        {/* Registration Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">New Users Registration</h3>
-            <div className="w-36">
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                value={regPeriod}
-                onChange={(e) => setRegPeriod(e.target.value)}
-              >
-                {periodOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <h3 className="text-lg font-medium mb-4">New Users Registration</h3>
           <p className="text-sm text-primary-500 mb-6">
-            User registrations over time
+            User registrations for the last year
           </p>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -405,6 +301,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Matching Activity Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-primary-200">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">Matching Activity</h3>
@@ -427,10 +324,22 @@ const AdminDashboard = () => {
           </p>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
+              <AreaChart
                 data={matchingData}
                 margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
               >
+                <defs>
+                  <linearGradient
+                    id="colorMatching"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
@@ -439,13 +348,14 @@ const AdminDashboard = () => {
                 <XAxis dataKey="name" stroke="#9CA3AF" />
                 <YAxis stroke="#9CA3AF" />
                 <Tooltip />
-                <Bar
+                <Area
+                  type="monotone"
                   dataKey="matches"
-                  fill="#F97316"
-                  radius={[4, 4, 0, 0]}
-                  name="Matches"
+                  stroke="#3B82F6"
+                  fillOpacity={1}
+                  fill="url(#colorMatching)"
                 />
-              </BarChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>

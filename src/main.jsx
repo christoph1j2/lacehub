@@ -12,6 +12,8 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import App from "./App.jsx";
 import "./index.css";
 
+import NotFound from "./pages/errors/NotFound.jsx";
+
 //Admin routes
 import AdminLayout from "./pages/admin/Layout.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
@@ -47,6 +49,8 @@ createRoot(document.getElementById("root")).render(
               {/* <Route path="statistics" element={<AdminStatistics />} /> */}
               {/* <Route path="settings" element={<AdminSettings />} /> */}
             </Route>
+
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </App>
       </AuthProvider>

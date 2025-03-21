@@ -242,4 +242,113 @@ export const unbanUser = async (userId) => {
   }
 };
 
+const handleApiResponse = async (response) => {
+  // Create a more detailed error message based on status code
+  if (!response.ok) {
+    let errorMessage = "";
+
+    switch (response.status) {
+      case 400:
+        errorMessage =
+          "Bad request: The request was malformed or contained invalid data.";
+        break;
+      case 401:
+        errorMessage =
+          "Unauthorized: You need to log in to perform this action.";
+        break;
+      case 403:
+        errorMessage =
+          "Forbidden: You don't have permission to perform this action.";
+        break;
+      case 404:
+        errorMessage = "Not found: The requested resource was not found.";
+        break;
+      case 429:
+        errorMessage = "Too many requests: Please wait before trying again.";
+        break;
+      case 500:
+      case 502:
+      case 503:
+        errorMessage =
+          "Server error: Something went wrong on our end. Please try again later.";
+        break;
+      default:
+        errorMessage = `Error (${response.status}): ${response.statusText}`;
+    }
+
+    // Try to get more detailed error message from the response if available
+    try {
+      const errorData = await response.json();
+      if (errorData && errorData.message) {
+        errorMessage = `${errorMessage} - ${errorData.message}`;
+      }
+    } catch (e) {
+      // If parsing json fails, just use the status error
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  return await response.json();
+};
+
+// API functions for user dashboard
+export const updateWtbItem = async (id, data) => {
+  try {
+    const response = await fetch(`https://api.lacehub.cz/wtb/${id}`, {
+      method: "PATCH",
+      ...createAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    return await handleApiResponse(response);
+  } catch (error) {
+    console.error("Error updating WTB item:", error);
+    throw error;
+  }
+};
+
+export const deleteWtbItem = async (id) => {
+  try {
+    const response = await fetch(`https://api.lacehub.cz/wtb/${id}`, {
+      method: "DELETE",
+      ...createAuthHeaders(),
+    });
+
+    return await handleApiResponse(response);
+  } catch (error) {
+    console.error("Error deleting WTB item:", error);
+    throw error;
+  }
+};
+
+export const updateWtsItem = async (id, data) => {
+  try {
+    const response = await fetch(`https://api.lacehub.cz/wts/${id}`, {
+      method: "PATCH",
+      ...createAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    return await handleApiResponse(response);
+  } catch (error) {
+    console.error("Error updating WTS item:", error);
+    throw error;
+  }
+};
+
+export const deleteWtsItem = async (id) => {
+  try {
+    const response = await fetch(`https://api.lacehub.cz/wts/${id}`, {
+      method: "DELETE",
+      ...createAuthHeaders(),
+    });
+
+    return await handleApiResponse(response);
+  } catch (error) {
+    console.error("Error deleting WTS item:", error);
+    throw error;
+  }
+};
+
 export default api;

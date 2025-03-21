@@ -9,9 +9,16 @@ import {
   LifeBuoy,
   LogOut,
   User,
+  Save,
+  Trash,
+  Check,
+  AlertCircle,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import SearchBar from "./SearchBar";
+import * as api from "../../services/api";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -23,7 +30,40 @@ const Dashboard = () => {
   const [matchingStatus, setMatchingStatus] = useState(null);
   const [matchingError, setMatchingError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [editedItems, setEditedItems] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeEditCell, setActiveEditCell] = useState(null);
   const sidebarRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  // Size options for dropdown
+  const sizeOptions = [
+    "US 4",
+    "US 4.5",
+    "US 5",
+    "US 5.5",
+    "US 6",
+    "US 6.5",
+    "US 7",
+    "US 7.5",
+    "US 8",
+    "US 8.5",
+    "US 9",
+    "US 9.5",
+    "US 10",
+    "US 10.5",
+    "US 11",
+    "US 11.5",
+    "US 12",
+    "US 12.5",
+    "US 13",
+    "US 13.5",
+    "US 14",
+    "US 15",
+  ];
+
+  // Quantity options
+  const quantityOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   const apiEndpoints = {
     wtb: "https://api.lacehub.cz/wtb/user",
@@ -31,6 +71,7 @@ const Dashboard = () => {
     inventory: "https://api.lacehub.cz/user-inventory/user",
   };
 
+  // Handle clicks outside sidebar
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -40,14 +81,23 @@ const Dashboard = () => {
       ) {
         setIsSidebarOpen(false);
       }
+
+      if (
+        activeEditCell &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setActiveEditCell(null);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isSidebarOpen]);
+  }, [isSidebarOpen, activeEditCell]);
 
+  // Fetch data from API
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -67,6 +117,7 @@ const Dashboard = () => {
       const result = await response.json();
       console.log(result);
       setData(result);
+      setEditedItems({});
       setError(null);
     } catch (err) {
       setError("Failed to fetch data");
@@ -83,6 +134,7 @@ const Dashboard = () => {
     fetchData();
   }, [activeTab, navigate]);
 
+  // Handle matching
   const handleMatch = async () => {
     setMatchingStatus("matching");
     setMatchingError(null);
@@ -156,6 +208,93 @@ const Dashboard = () => {
     }
   };
 
+  // Handle click on editable cells
+  const handleCellClick = (itemId, field, currentValue) => {
+    if (activeTab === "inventory") return; // Not editable yet
+
+    setActiveEditCell({
+      id: itemId,
+      field,
+      value: currentValue,
+    });
+  };
+
+  // Handle selecting a new value from dropdown
+  const handleSelectChange = (itemId, field, newValue) => {
+    setEditedItems((prev) => ({
+      ...prev,
+      [itemId]: {
+        ...prev[itemId],
+        [field]: newValue,
+      },
+    }));
+    setActiveEditCell(null);
+  };
+
+  // Handle removing an item
+  const handleRemoveItem = async (itemId) => {
+    if (activeTab === "inventory") return; // Not handling inventory yet
+
+    try {
+      setLoading(true);
+
+      if (activeTab === "wtb") {
+        await api.deleteWtbItem(itemId);
+      } else if (activeTab === "wts") {
+        await api.deleteWtsItem(itemId);
+      }
+
+      // Remove item from state
+      setData(data.filter((item) => item.id !== itemId));
+      toast.success("Item removed successfully");
+    } catch (err) {
+      console.error("Error removing item:", err);
+      toast.error(`Failed to remove item: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle saving all changes
+  const handleSaveChanges = async () => {
+    if (Object.keys(editedItems).length === 0) {
+      toast.info("No changes to save");
+      return;
+    }
+
+    setIsSaving(true);
+    let hasErrors = false;
+
+    try {
+      // Process each edited item one by one
+      for (const [itemId, changes] of Object.entries(editedItems)) {
+        try {
+          if (activeTab === "wtb") {
+            await api.updateWtbItem(itemId, changes);
+          } else if (activeTab === "wts") {
+            await api.updateWtsItem(itemId, changes);
+          }
+        } catch (err) {
+          console.error(`Error updating item ${itemId}:`, err);
+          hasErrors = true;
+        }
+      }
+
+      if (hasErrors) {
+        toast.error("Some items could not be updated. Please try again.");
+      } else {
+        toast.success("All changes saved successfully");
+        setEditedItems({});
+        fetchData();
+      }
+    } catch (err) {
+      console.error("Error saving changes:", err);
+      toast.error("Failed to save changes");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (!user) {
     navigate("/");
     return null;
@@ -172,6 +311,22 @@ const Dashboard = () => {
     fetchData();
   };
 
+  // Check if an item has been edited
+  const isItemEdited = (itemId) => {
+    return editedItems[itemId] !== undefined;
+  };
+
+  // Get current edited or original value
+  const getCurrentValue = (item, field) => {
+    if (editedItems[item.id] && editedItems[item.id][field] !== undefined) {
+      return editedItems[item.id][field];
+    }
+    return item[field];
+  };
+
+  // Determine if Save Changes button should be enabled
+  const hasPendingChanges = Object.keys(editedItems).length > 0;
+
   return (
     <div className="flex min-h-screen bg-primary-100">
       {isSidebarOpen && (
@@ -185,11 +340,11 @@ const Dashboard = () => {
         ref={sidebarRef}
         className={`fixed md:static inset-y-0 left-0 transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 w-64 bg-primary-800 text-accent-100 shadow-xl transition-transform duration-300 ease-in-out z-40`}
+        } md:translate-x-0 w-64 bg-primary-800 text-white shadow-xl transition-transform duration-300 ease-in-out z-40`}
       >
         <div className="flex flex-col h-full p-6">
           <button
-            className="absolute top-4 right-4 p-1 rounded-full bg-primary-700 text-accent-100 md:hidden"
+            className="absolute top-4 right-4 p-1 rounded-full bg-primary-700 text-white md:hidden"
             onClick={() => setIsSidebarOpen(false)}
           >
             <X className="h-5 w-5" />
@@ -205,7 +360,7 @@ const Dashboard = () => {
                     if (item.path) navigate(item.path);
                     setIsSidebarOpen(false);
                   }}
-                  className="flex items-center w-full p-3 rounded-lg text-accent-100 hover:bg-primary-700 hover:pl-4 transition-all duration-200"
+                  className="flex items-center w-full p-3 rounded-lg text-white hover:bg-primary-700 hover:pl-4 transition-all duration-200"
                 >
                   <item.icon className="h-5 w-5 mr-3" />
                   <span>{item.name}</span>
@@ -218,7 +373,7 @@ const Dashboard = () => {
               logout();
               navigate("/");
             }}
-            className="mt-auto flex items-center w-full p-3 rounded-lg text-accent-100 hover:bg-primary-700 hover:pl-4 transition-all duration-200"
+            className="mt-auto flex items-center w-full p-3 rounded-lg text-white hover:bg-primary-700 hover:pl-4 transition-all duration-200"
           >
             <LogOut className="h-5 w-5 mr-3" />
             <span>Logout</span>
@@ -232,7 +387,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-3 md:hidden">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 rounded-lg text-accent-100 hover:bg-primary-700 transition-colors"
+                className="p-2 rounded-lg text-white hover:bg-primary-700 transition-colors"
               >
                 {isSidebarOpen ? (
                   <X className="h-6 w-6" />
@@ -310,7 +465,7 @@ const Dashboard = () => {
 
             {matchingStatus === "error" && (
               <div
-                className="bg-accent-100 border-l-4 border-accent-500 text-accent-700 px-4 py-3 rounded shadow-md mb-6"
+                className="bg-accent-100 border-l-4 border-accent-500 text-accent-700 px-4 py-3 rounded shadow-md mb-6 animate-fade-in"
                 role="alert"
               >
                 <strong className="font-bold">Error!</strong>
@@ -319,7 +474,7 @@ const Dashboard = () => {
             )}
             {matchingStatus === "success" && (
               <div
-                className="bg-secondary-100 border-l-4 border-secondary-500 text-secondary-700 px-4 py-3 rounded shadow-md mb-6"
+                className="bg-secondary-100 border-l-4 border-secondary-500 text-secondary-700 px-4 py-3 rounded shadow-md mb-6 animate-fade-in"
                 role="alert"
               >
                 <strong className="font-bold">Success!</strong>
@@ -332,14 +487,46 @@ const Dashboard = () => {
             )}
 
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-3xl font-bold text-primary-800 mb-4">
-                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}{" "}
-                Dashboard
-              </h2>
-              <p className="text-primary-600 mb-6">
-                Welcome to your {activeTab} dashboard. Here you can manage your
-                sneaker collection and trades.
-              </p>
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold text-primary-800">
+                    {activeTab.toUpperCase()} Dashboard
+                  </h2>
+                  <p className="text-primary-600 mt-1">
+                    Manage your{" "}
+                    {activeTab === "wtb"
+                      ? "want to buy"
+                      : activeTab === "wts"
+                      ? "want to sell"
+                      : "inventory"}{" "}
+                    items
+                  </p>
+                </div>
+
+                {(activeTab === "wtb" || activeTab === "wts") && (
+                  <button
+                    onClick={handleSaveChanges}
+                    disabled={!hasPendingChanges || isSaving}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                      hasPendingChanges
+                        ? "bg-secondary-500 text-white hover:bg-secondary-600 shadow-md"
+                        : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-5 w-5" />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
 
               {loading ? (
                 <div className="text-center py-12">
@@ -348,7 +535,7 @@ const Dashboard = () => {
                 </div>
               ) : error ? (
                 <div
-                  className="bg-accent-100 border-l-4 border-accent-500 text-accent-700 px-4 py-3 rounded shadow-md"
+                  className="bg-accent-100 border-l-4 border-accent-500 text-accent-700 px-4 py-3 rounded shadow-md animate-fade-in"
                   role="alert"
                 >
                   <strong className="font-bold">Error!</strong>
@@ -374,23 +561,35 @@ const Dashboard = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
                           Quantity
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
-                          Description
-                        </th>
+                        {activeTab !== "inventory" && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        )}
+                        {activeTab === "inventory" && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-primary-500 uppercase tracking-wider">
+                            Description
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-primary-200">
-                      {data.map((item) => (
+                      {data.map((item, index) => (
                         <tr
                           key={item.id}
-                          className="hover:bg-primary-50 transition-colors duration-150"
+                          className={`hover:bg-primary-50 transition-colors duration-150 ${
+                            isItemEdited(item.id) ? "bg-secondary-100/30" : ""
+                          }`}
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <img
-                              src={item.product.image_link}
-                              alt={item.product.name}
-                              className="h-12 w-auto object-contain"
-                            />
+                            <div className="h-14 w-14 relative">
+                              <img
+                                src={item.product.image_link}
+                                alt={item.product.name}
+                                className="h-full w-full object-contain rounded-md"
+                                loading="lazy"
+                              />
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-800">
                             {item.product.name}
@@ -398,22 +597,138 @@ const Dashboard = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
                             {item.product.sku}
                           </td>
+
+                          {/* Size Cell */}
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
-                            {item.size}
+                            {activeTab !== "inventory" ? (
+                              <div className="relative">
+                                <button
+                                  onClick={() =>
+                                    handleCellClick(item.id, "size", item.size)
+                                  }
+                                  className={`flex items-center justify-between w-24 px-3 py-1.5 rounded border ${
+                                    isItemEdited(item.id) &&
+                                    editedItems[item.id].size
+                                      ? "border-secondary-500 bg-secondary-100/20"
+                                      : "border-primary-200 hover:border-secondary-400"
+                                  } transition-all duration-200`}
+                                >
+                                  <span>{getCurrentValue(item, "size")}</span>
+                                  <ChevronDown className="h-4 w-4 ml-1 text-primary-500" />
+                                </button>
+
+                                {activeEditCell &&
+                                  activeEditCell.id === item.id &&
+                                  activeEditCell.field === "size" && (
+                                    <div
+                                      ref={dropdownRef}
+                                      className="absolute top-full left-0 mt-1 w-32 max-h-48 overflow-y-auto bg-white border border-primary-200 rounded-md shadow-lg z-50 animate-scale-in transform origin-top"
+                                    >
+                                      <div className="py-1">
+                                        {sizeOptions.map((size) => (
+                                          <button
+                                            key={size}
+                                            onClick={() =>
+                                              handleSelectChange(
+                                                item.id,
+                                                "size",
+                                                size
+                                              )
+                                            }
+                                            className="w-full text-left px-4 py-2 text-sm text-primary-700 hover:bg-secondary-100 transition-colors duration-150"
+                                          >
+                                            {size}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                              </div>
+                            ) : (
+                              item.size
+                            )}
                           </td>
+
+                          {/* Quantity Cell */}
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
-                            {item.quantity}
+                            {activeTab !== "inventory" ? (
+                              <div className="relative">
+                                <button
+                                  onClick={() =>
+                                    handleCellClick(
+                                      item.id,
+                                      "quantity",
+                                      item.quantity
+                                    )
+                                  }
+                                  className={`flex items-center justify-between w-24 px-3 py-1.5 rounded border ${
+                                    isItemEdited(item.id) &&
+                                    editedItems[item.id].quantity
+                                      ? "border-secondary-500 bg-secondary-100/20"
+                                      : "border-primary-200 hover:border-secondary-400"
+                                  } transition-all duration-200`}
+                                >
+                                  <span>
+                                    {getCurrentValue(item, "quantity")}
+                                  </span>
+                                  <ChevronDown className="h-4 w-4 ml-1 text-primary-500" />
+                                </button>
+
+                                {activeEditCell &&
+                                  activeEditCell.id === item.id &&
+                                  activeEditCell.field === "quantity" && (
+                                    <div
+                                      ref={dropdownRef}
+                                      className="absolute top-full left-0 mt-1 w-24 max-h-48 overflow-y-auto bg-white border border-primary-200 rounded-md shadow-lg z-50 animate-scale-in transform origin-top"
+                                    >
+                                      <div className="py-1">
+                                        {quantityOptions.map((qty) => (
+                                          <button
+                                            key={qty}
+                                            onClick={() =>
+                                              handleSelectChange(
+                                                item.id,
+                                                "quantity",
+                                                qty
+                                              )
+                                            }
+                                            className="w-full text-left px-4 py-2 text-sm text-primary-700 hover:bg-secondary-100 transition-colors duration-150"
+                                          >
+                                            {qty}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                              </div>
+                            ) : (
+                              item.quantity
+                            )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
-                            {item.product.description}
-                          </td>
+
+                          {/* Actions or Description Cell */}
+                          {activeTab !== "inventory" ? (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button
+                                onClick={() => handleRemoveItem(item.id)}
+                                className="p-2 text-accent-500 hover:text-accent-700 hover:bg-accent-100 rounded-full transition-colors duration-150"
+                                title="Remove item"
+                              >
+                                <Trash className="h-5 w-5" />
+                              </button>
+                            </td>
+                          ) : (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
+                              {item.product.description}
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <div className="bg-primary-50 rounded-lg p-6 shadow-sm border border-primary-200">
+                <div className="bg-primary-50 rounded-lg p-6 shadow-sm border border-primary-200 animate-fade-in">
                   <p className="font-medium text-lg text-primary-800 mb-2">
                     No data available
                   </p>
