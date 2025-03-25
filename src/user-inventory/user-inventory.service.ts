@@ -292,45 +292,55 @@ export class UserInventoryService {
      * @returns Promise resolving to an object with success and error counts and details
      */
     async upload(fileBuffer: Buffer, userId: number): Promise<any> {
+        // Step 1: Parse the Excel file into a workbook object
         const workbook = XLSX.read(fileBuffer);
+
+        // Get the first sheet from the workbook
         const sheetName = workbook.SheetNames[0];
 
-        // Read data using standard headers
+        // Step 2: Convert sheet data to JSON
+        // This transforms Excel rows into an array of JavaScript objects
+        // where column headers become property names
         const data: any[] = XLSX.utils.sheet_to_json(
             workbook.Sheets[sheetName],
             {
-                raw: true,
-                defval: null,
+                raw: true, // Keep raw values (don't parse dates, etc.)
+                defval: null, // Use null for empty cells
             },
         );
 
+        // Log parsed data for debugging
         console.log('Excel data:', data);
 
+        // Step 3: Validate the file has content
         if (data.length === 0) {
             throw new BadRequestException('The uploaded file is empty');
         }
 
-        // Verify columns exist
+        // Step 4: Verify required columns exist in the file
         const requiredColumns = ['SKU', 'Size', 'Quantity'];
         const firstRow = data[0];
 
+        // Find any missing columns by comparing required columns with actual columns
         const missingColumns = requiredColumns.filter(
             (column) => !(column in firstRow),
         );
 
+        // Throw error if any required columns are missing
         if (missingColumns.length > 0) {
             throw new BadRequestException(
                 `Template is missing required columns: ${missingColumns.join(', ')}. Found columns: ${Object.keys(firstRow).join(', ')}`,
             );
         }
 
+        // Arrays to track processing results
         const errors = [];
         const successes = [];
 
-        // Process each row
+        // Step 5: Process each row in the Excel file
         for (const [index, row] of data.entries()) {
             try {
-                // Validate row data
+                // Validate row has all required fields
                 if (
                     !row.SKU ||
                     !row.Size ||
@@ -338,13 +348,13 @@ export class UserInventoryService {
                     row.Quantity === null
                 ) {
                     errors.push({
-                        row: index + 2, // +2 because Excel is 1-indexed and we have a header row
+                        row: index + 2, // +2 because Excel is 1-indexed and we skip header row
                         error: 'Missing required fields (SKU, Size, or Quantity)',
                     });
-                    continue;
+                    continue; // Skip to next row
                 }
 
-                // Validate quantity is a positive number
+                // Validate quantity is a positive integer
                 const quantity = Number(row.Quantity);
                 if (
                     isNaN(quantity) ||
@@ -357,14 +367,15 @@ export class UserInventoryService {
                         size: row.Size,
                         error: 'Quantity must be a positive integer',
                     });
-                    continue;
+                    continue; // Skip to next row
                 }
 
-                // Check if product exists
+                // Step 6: Look up product in database by SKU
                 const product = await this.productRepository.findOne({
                     where: { sku: row.SKU },
                 });
 
+                // If product not found, record error and continue
                 if (!product) {
                     errors.push({
                         row: index + 2,
@@ -374,7 +385,7 @@ export class UserInventoryService {
                     continue;
                 }
 
-                // Check if user already has this item in inventory
+                // Step 7: Check if user already has this product in inventory
                 const existingItem = await this.userInventoryRepository.findOne(
                     {
                         where: {
@@ -385,11 +396,13 @@ export class UserInventoryService {
                     },
                 );
 
+                // Step 8: Update existing item or create new one
                 if (existingItem) {
-                    // Update existing item
+                    // Update quantity of existing inventory item
                     existingItem.quantity += quantity;
                     await this.userInventoryRepository.save(existingItem);
 
+                    // Record successful update
                     successes.push({
                         row: index + 2,
                         sku: row.SKU,
@@ -409,6 +422,7 @@ export class UserInventoryService {
 
                     await this.userInventoryRepository.save(newItem);
 
+                    // Record successful creation
                     successes.push({
                         row: index + 2,
                         sku: row.SKU,
@@ -418,6 +432,7 @@ export class UserInventoryService {
                     });
                 }
             } catch (error) {
+                // Log and record any errors during processing
                 console.error('Error processing row:', error);
                 errors.push({
                     row: index + 2,
@@ -428,6 +443,7 @@ export class UserInventoryService {
             }
         }
 
+        // Step 9: Return processing summary with statistics
         return {
             totalRows: data.length,
             successCount: successes.length,
