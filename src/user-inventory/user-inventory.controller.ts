@@ -10,6 +10,12 @@ import {
     Delete,
     Req,
     UseGuards,
+    UseInterceptors,
+    UploadedFile,
+    // ParseFilePipe,
+    // MaxFileSizeValidator,
+    // FileTypeValidator,
+    BadRequestException,
 } from '@nestjs/common';
 import { UserInventoryService } from './user-inventory.service';
 import { UserInventory } from '../entities/userInventory.entity';
@@ -18,7 +24,14 @@ import { UpdateUserInventoryDto } from './dto/update-userInventory.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { VerifiedUserGuard } from '../common/guards/verified-user.guard';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiTags,
+    ApiConsumes,
+    ApiBody,
+} from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('user-inventory')
 @Controller('user-inventory')
@@ -115,5 +128,41 @@ export class UserInventoryController {
     @ApiOperation({ summary: 'Get top 10 most popular items' })
     async getTopProducts() {
         return await this.userInventoryService.topProducts();
+    }
+
+    @UseGuards(VerifiedUserGuard)
+    @Post('upload')
+    @ApiOperation({ summary: 'Upload inventory items from Excel file' })
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                    description:
+                        'Excel file (.xlsx) containing inventory items',
+                },
+            },
+        },
+    })
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadExcel(
+        @UploadedFile() file: Express.Multer.File,
+        @GetUser() user: { id: number },
+    ) {
+        // Check file extension manually
+        const fileName = file.originalname;
+        const fileExt = fileName.split('.').pop().toLowerCase();
+
+        if (!['xlsx', 'xls'].includes(fileExt)) {
+            throw new BadRequestException(
+                'Only Excel files (.xlsx, .xls) are allowed',
+            );
+        }
+
+        return await this.userInventoryService.upload(file.buffer, user.id);
     }
 }

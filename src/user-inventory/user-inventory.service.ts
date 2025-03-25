@@ -2,6 +2,7 @@ import {
     ForbiddenException,
     Injectable,
     NotFoundException,
+    BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserInventory } from '../entities/userInventory.entity';
@@ -12,8 +13,7 @@ import { Product } from '../entities/product.entity';
 import { User } from '../entities/user.entity';
 import { WtbService } from '../wtb/wtb.service';
 import { WtsService } from '../wts/wts.service';
-
-//import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 
 /**
  * Service responsible for managing user inventory items.
@@ -284,63 +284,156 @@ export class UserInventoryService {
             .getRawMany();
     }
 
-    //! TODO: I don't know how to test this without frontend, future feature
-    /* async upload(fileBuffer: Buffer, userId: number): Promise<any> {
+    /**
+     * Uploads and processes inventory items from an Excel file
+     *
+     * @param fileBuffer - Buffer containing the Excel file data
+     * @param userId - ID of the user uploading inventory
+     * @returns Promise resolving to an object with success and error counts and details
+     */
+    async upload(fileBuffer: Buffer, userId: number): Promise<any> {
         const workbook = XLSX.read(fileBuffer);
         const sheetName = workbook.SheetNames[0];
+
+        // Read data using standard headers
         const data: any[] = XLSX.utils.sheet_to_json(
             workbook.Sheets[sheetName],
+            {
+                raw: true,
+                defval: null,
+            },
         );
+
+        console.log('Excel data:', data);
+
+        if (data.length === 0) {
+            throw new BadRequestException('The uploaded file is empty');
+        }
+
+        // Verify columns exist
+        const requiredColumns = ['SKU', 'Size', 'Quantity'];
+        const firstRow = data[0];
+
+        const missingColumns = requiredColumns.filter(
+            (column) => !(column in firstRow),
+        );
+
+        if (missingColumns.length > 0) {
+            throw new BadRequestException(
+                `Template is missing required columns: ${missingColumns.join(', ')}. Found columns: ${Object.keys(firstRow).join(', ')}`,
+            );
+        }
 
         const errors = [];
         const successes = [];
 
-        for (const row of data) {
+        // Process each row
+        for (const [index, row] of data.entries()) {
             try {
-                const { sku, size, quantity } = row;
-
-                if (!sku || !size || !quantity) {
-                    throw new Error('Missing required fields');
+                // Validate row data
+                if (
+                    !row.SKU ||
+                    !row.Size ||
+                    row.Quantity === undefined ||
+                    row.Quantity === null
+                ) {
+                    errors.push({
+                        row: index + 2, // +2 because Excel is 1-indexed and we have a header row
+                        error: 'Missing required fields (SKU, Size, or Quantity)',
+                    });
+                    continue;
                 }
 
+                // Validate quantity is a positive number
+                const quantity = Number(row.Quantity);
+                if (
+                    isNaN(quantity) ||
+                    quantity <= 0 ||
+                    !Number.isInteger(quantity)
+                ) {
+                    errors.push({
+                        row: index + 2,
+                        sku: row.SKU,
+                        size: row.Size,
+                        error: 'Quantity must be a positive integer',
+                    });
+                    continue;
+                }
+
+                // Check if product exists
                 const product = await this.productRepository.findOne({
-                    where: { sku },
+                    where: { sku: row.SKU },
                 });
 
                 if (!product) {
-                    throw new Error(`Product with SKU ${sku} not found`);
+                    errors.push({
+                        row: index + 2,
+                        sku: row.SKU,
+                        error: 'Product not found in database',
+                    });
+                    continue;
                 }
 
-                // Check for existing inventory
+                // Check if user already has this item in inventory
                 const existingItem = await this.userInventoryRepository.findOne(
                     {
                         where: {
                             user: { id: userId },
                             product: { id: product.id },
-                            size,
+                            size: row.Size,
                         },
                     },
                 );
 
                 if (existingItem) {
-                    existingItem.quantity += Number(quantity);
+                    // Update existing item
+                    existingItem.quantity += quantity;
                     await this.userInventoryRepository.save(existingItem);
+
+                    successes.push({
+                        row: index + 2,
+                        sku: row.SKU,
+                        size: row.Size,
+                        quantity,
+                        status: 'updated',
+                        newQuantity: existingItem.quantity,
+                    });
                 } else {
+                    // Create new inventory item
                     const newItem = this.userInventoryRepository.create({
                         user: { id: userId },
-                        product,
-                        size,
-                        quantity: Number(quantity),
+                        product: { id: product.id },
+                        size: row.Size,
+                        quantity,
                     });
-                    await this.userInventoryRepository.save(newItem);
-                }
 
-                successes.push(row);
+                    await this.userInventoryRepository.save(newItem);
+
+                    successes.push({
+                        row: index + 2,
+                        sku: row.SKU,
+                        size: row.Size,
+                        quantity,
+                        status: 'created',
+                    });
+                }
             } catch (error) {
-                errors.push({ row, error: error.message });
+                console.error('Error processing row:', error);
+                errors.push({
+                    row: index + 2,
+                    sku: row.SKU,
+                    size: row.Size,
+                    error: `Error processing row: ${error.message}`,
+                });
             }
         }
 
-        return { successes, errors };
-    } */
+        return {
+            totalRows: data.length,
+            successCount: successes.length,
+            errorCount: errors.length,
+            successes,
+            errors,
+        };
+    }
 }
