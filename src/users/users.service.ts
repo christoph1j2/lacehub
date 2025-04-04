@@ -9,7 +9,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Between, ILike, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import * as bcrypt from 'bcrypt';
 
 /**
  * Service responsible for managing user accounts and providing user-related functionality.
@@ -103,6 +105,41 @@ export class UsersService {
     async update(userId: number, updateUserDto: UpdateUserDto) {
         await this.usersRepository.update(userId, updateUserDto);
         return this.findOneById(userId);
+    }
+
+    /**
+     * Updates a user's password.
+     *
+     * @param userId - The unique identifier of the user whose password is to be updated
+     * @param changePasswordDto - Data transfer object containing the new password and confirmation
+     * @returns - Promise resolving to the updated user entity
+     * @throws NotFoundException if the user is not found
+     * @throws BadRequestException if the old password is incorrect or the new passwords do not match
+     */
+    async updatePassword(
+        userId: number,
+        changePasswordDto: ChangePasswordDto,
+    ): Promise<User> {
+        const user = await this.usersRepository.findOne({
+            where: { id: userId },
+        });
+        const { oldPassword, password, confirmPassword } = changePasswordDto;
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        // Check if the former password matches the password in the database
+        if (!(await bcrypt.compare(oldPassword, user.password_hash))) {
+            throw new BadRequestException('Old password is incorrect');
+        }
+
+        if (password !== confirmPassword) {
+            throw new BadRequestException('Passwords do not match');
+        }
+
+        user.password_hash = await bcrypt.hash(password, 10);
+        return await this.usersRepository.save(user);
     }
 
     /**

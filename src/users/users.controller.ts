@@ -22,6 +22,7 @@ import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Roles } from '../common/decorators/roles.decorator';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -183,6 +184,21 @@ export class UsersController {
     @ApiOperation({ summary: 'Update user profile' })
     updateProfile(@Request() req, @Body() updateUserDto: UpdateUserDto) {
         return this.usersService.update(req.user.id, updateUserDto);
+    }
+
+    @UseGuards(VerifiedUserGuard)
+    @Patch('profile')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update user password' })
+    async updatePassword(
+        @Request() req,
+        @Body() changePasswordDto: ChangePasswordDto,
+    ): Promise<User> {
+        const userId = req.user.id;
+        return await this.usersService.updatePassword(
+            userId,
+            changePasswordDto,
+        );
     }
 
     @Delete(':id')
