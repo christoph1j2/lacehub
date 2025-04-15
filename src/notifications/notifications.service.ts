@@ -224,8 +224,8 @@ export class NotificationsService {
                     </ul>
                     <p>
                         <a href="mailto:${counterparty.email}?subject=Matched%20Items%20from%20Trading%20Platform" 
-                           style="display: inline-block; padding: 8px 16px; background-color: #4CAF50; color: white; 
-                                  text-decoration: none; border-radius: 4px;">
+                            style="display: inline-block; padding: 8px 16px; background-color: #4CAF50; color: white; 
+                                text-decoration: none; border-radius: 4px;">
                             Contact ${counterparty.username}
                         </a>
                     </p>

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
     CanActivate,
     ExecutionContext,
@@ -49,16 +50,11 @@ export class VerifiedUserGuard implements CanActivate {
         }
 
         if (user.verified === undefined) {
-            throw new UnauthorizedException(
-                'Verification status not available',
-            );
+            throw new UnauthorizedException('Verification status not available',);
         }
 
         if (!user.verified) {
-            console.log('User is not verified');
-            throw new UnauthorizedException(
-                'Please verify your email to access this resource',
-            );
+            throw new UnauthorizedException('Please verify your email to access this resource',);
         }
         return true;
     }
