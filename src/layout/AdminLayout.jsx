@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router";
 import { User, LogOut, Users, Home, Menu, X } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import { toast } from "sonner";
 
 const AdminLayout = () => {

@@ -103,7 +103,6 @@ export const AuthProvider = ({ children }) => {
 
   const isAdmin = () => {
     if (!user) return false;
-    // Check if the user has admin role (role_id === 1) or role_name === "admin"
     return user.role_id === 1 || (user.role && user.role.role_name === "admin");
   };
 

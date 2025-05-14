@@ -84,7 +84,7 @@ const Navigation = () => {
                   //!tady
                   className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                 >
-                  How Does It Work?
+                  How does it work?
                 </NavLink>
               </li>
               <li>
@@ -93,7 +93,7 @@ const Navigation = () => {
                   //!tady
                   className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                 >
-                  About Us
+                  About us
                 </NavLink>
               </li>
               <li>
@@ -102,7 +102,7 @@ const Navigation = () => {
                   //!tady
                   className="text-white px-4 py-2 rounded-full transition-all hover:bg-orange-800"
                 >
-                  Contact Us
+                  Contact us
                 </NavLink>
               </li>
               {!user ? (

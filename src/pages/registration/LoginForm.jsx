@@ -13,16 +13,16 @@ const LoginForm = ({ onClose, onRegisterClick }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  
+
   // Set visibility to true after component mounts for entrance animation
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 50);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   // Handle close with animation
   const handleClose = () => {
     setIsVisible(false);
@@ -30,7 +30,7 @@ const LoginForm = ({ onClose, onRegisterClick }) => {
       onClose();
     }, 300); // Match this timing with transition duration
   };
-  
+
   // Handle transition to register form
   const handleRegisterTransition = () => {
     setIsVisible(false);
@@ -86,10 +86,8 @@ const LoginForm = ({ onClose, onRegisterClick }) => {
         throw new Error(data.message || "Login failed");
       }
 
-      // Show success message
       setShowSuccess(true);
 
-      // Update authentication state
       await login(data);
 
       // Close form with animation after showing success message
@@ -109,21 +107,25 @@ const LoginForm = ({ onClose, onRegisterClick }) => {
   };
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${
-      isVisible ? "opacity-100" : "opacity-0"
-    }`}>
+    <div
+      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
       {/* Backdrop with fade */}
-      <div 
+      <div
         className={`absolute inset-0 bg-black transition-opacity duration-300 ${
           isVisible ? "bg-opacity-50" : "bg-opacity-0"
-        }`} 
+        }`}
         onClick={handleClose}
       ></div>
-      
+
       {/* Login form with scale and fade */}
-      <div 
+      <div
         className={`bg-white rounded-2xl p-8 w-full max-w-md relative transition-all duration-300 ${
-          isVisible ? "opacity-100 transform scale-100" : "opacity-0 transform scale-95"
+          isVisible
+            ? "opacity-100 transform scale-100"
+            : "opacity-0 transform scale-95"
         }`}
       >
         <button
