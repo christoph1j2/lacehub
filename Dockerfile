@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY ./ ./
 
-RUN npm install
+RUN npm install && npm install sitemap
 
 EXPOSE 3000
 
