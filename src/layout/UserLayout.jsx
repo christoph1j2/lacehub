@@ -4,7 +4,7 @@ import {
   X,
   Home,
   HelpCircle,
-  Settings,
+  // Settings, // Removed as per request
   LifeBuoy,
   LogOut,
   User,
@@ -44,9 +44,9 @@ const UserLayout = ({ children }) => {
 
   const navItems = [
     { name: "Homepage", icon: Home, path: "/" },
-    { name: "How it works", icon: HelpCircle },
-    { name: "Settings", icon: Settings },
-    { name: "Support", icon: LifeBuoy },
+    { name: "How it works", icon: HelpCircle, path: "/how-it-works" }, // Added path
+    // { name: "Settings", icon: Settings }, // Removed as per request
+    { name: "Support", icon: LifeBuoy, path: "/contacts" }, // Assuming 'contacts' is the support page
   ];
 
   return (
@@ -122,7 +122,7 @@ const UserLayout = ({ children }) => {
               </button>
 
               <button
-                onClick={() => navigate("/settings")}
+                onClick={() => navigate("/settings")} // This button still navigates to /settings. You might want to change or remove it.
                 className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg hover:bg-primary-100 transition-all duration-200"
               >
                 <span className="text-sm text-primary-800">
@@ -138,7 +138,7 @@ const UserLayout = ({ children }) => {
               </div>
 
               <button
-                onClick={() => navigate("/settings")}
+                onClick={() => navigate("/settings")} // This button also still navigates to /settings.
                 className="hidden md:flex items-center gap-2 bg-white px-4 py-3 rounded-lg hover:bg-primary-100 transition-all duration-200 ml-auto"
               >
                 <span className="whitespace-nowrap text-primary-800">
