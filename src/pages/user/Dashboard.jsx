@@ -1,7 +1,7 @@
 import UserLayout from "../../layout/UserLayout";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { Save, Trash, ChevronDown } from "lucide-react";
+import { Save, Trash, ChevronDown, Upload } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import * as api from "../../services/api";
 import { toast } from "sonner";
@@ -16,10 +16,16 @@ const Dashboard = () => {
   const [matchingStatus, setMatchingStatus] = useState(null);
   const [matchingError, setMatchingError] = useState(null);
   const [editedItems, setEditedItems] = useState({});
-  const [itemsToDelete, setItemsToDelete] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [activeEditCell, setActiveEditCell] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [currentEditItem, setCurrentEditItem] = useState(null);
+  const [currentEditField, setCurrentEditField] = useState(null);
+  const [tempEditValue, setTempEditValue] = useState("");
+  const [itemsToDelete, setItemsToDelete] = useState({});
   const dropdownRef = useRef(null);
+  const modalRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Size options for dropdown
   const sizeOptions = [
@@ -56,21 +62,15 @@ const Dashboard = () => {
     inventory: "https://api.lacehub.cz/user-inventory/user",
   };
 
-  const deleteEndpoints = {
-    wtb: (id) => `https://api.lacehub.cz/wtb/${id}`,
-    wts: (id) => `https://api.lacehub.cz/wts/${id}`,
-    inventory: (id) => `https://api.lacehub.cz/user-inventory/${id}`,
-  };
-
-  // Handle clicks outside dropdown
+  // Handle clicks outside the edit modal
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        activeEditCell &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
+        showEditModal &&
+        modalRef.current &&
+        !modalRef.current.contains(event.target)
       ) {
-        setActiveEditCell(null);
+        setShowEditModal(false);
       }
     };
 
@@ -78,7 +78,7 @@ const Dashboard = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [activeEditCell]);
+  }, [showEditModal]);
 
   // Fetch data from API
   const fetchData = async () => {
@@ -101,7 +101,7 @@ const Dashboard = () => {
       console.log(result);
       setData(result);
       setEditedItems({});
-      setItemsToDelete([]);
+      setItemsToDelete({});
       setError(null);
     } catch (err) {
       setError("Failed to fetch data");
@@ -192,41 +192,81 @@ const Dashboard = () => {
     }
   };
 
-  // Handle click on editable cells
-  const handleCellClick = (itemId, field, currentValue) => {
-    setActiveEditCell({
-      id: itemId,
-      field,
-      value: currentValue,
-    });
+  // Handle file upload for inventory
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check if the file is an .xlsx file
+    if (!file.name.endsWith(".xlsx")) {
+      toast.error("Please upload a valid Excel (.xlsx) file");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    fetch("https://api.lacehub.cz/user-inventory/upload", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: formData,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Upload failed");
+        toast.success("File uploaded successfully");
+        fetchData(); // Refresh the data
+      })
+      .catch((error) => {
+        console.error("Upload error:", error);
+        toast.error(`Failed to upload file: ${error.message}`);
+      })
+      .finally(() => {
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      });
   };
 
-  // Handle selecting a new value from dropdown
-  const handleSelectChange = (itemId, field, newValue) => {
-    setEditedItems((prev) => ({
-      ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        [field]: newValue,
-      },
-    }));
-    setActiveEditCell(null);
+  // Handle click on editable cells
+  const handleCellClick = (itemId, field, currentValue) => {
+    setCurrentEditItem(data.find((item) => item.id === itemId));
+    setCurrentEditField(field);
+    setTempEditValue(currentValue);
+    setShowEditModal(true);
+  };
+
+  // Handle selecting a new value
+  const handleSelectChange = () => {
+    if (currentEditItem && currentEditField) {
+      setEditedItems((prev) => ({
+        ...prev,
+        [currentEditItem.id]: {
+          ...(prev[currentEditItem.id] || {}),
+          [currentEditField]: tempEditValue,
+        },
+      }));
+      setShowEditModal(false);
+    }
   };
 
   // Handle marking an item for deletion
   const handleMarkForDeletion = (itemId) => {
-    setItemsToDelete((prev) => [...prev, itemId]);
-    setData((prevData) =>
-      prevData.map((item) =>
-        item.id === itemId ? { ...item, markedForDeletion: true } : item
-      )
-    );
-    toast.info("Item marked for deletion. Click Save Changes to confirm.");
+    setItemsToDelete((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
   };
 
-  // Handle saving all changes
+  // Handle saving all changes, including deletions
   const handleSaveChanges = async () => {
-    if (Object.keys(editedItems).length === 0 && itemsToDelete.length === 0) {
+    const hasEdits = Object.keys(editedItems).length > 0;
+    const hasDeletions =
+      Object.keys(itemsToDelete).filter((id) => itemsToDelete[id]).length > 0;
+
+    if (!hasEdits && !hasDeletions) {
       toast.info("No changes to save");
       return;
     }
@@ -235,7 +275,7 @@ const Dashboard = () => {
     let hasErrors = false;
 
     try {
-      // Process each edited item one by one
+      // First, handle edits
       for (const [itemId, changes] of Object.entries(editedItems)) {
         try {
           if (activeTab === "wtb") {
@@ -243,20 +283,20 @@ const Dashboard = () => {
           } else if (activeTab === "wts") {
             await api.updateWtsItem(itemId, changes);
           } else if (activeTab === "inventory") {
+            // Add inventory update endpoint here when available
             const token = localStorage.getItem("token");
-            const response = await fetch(
-              `https://api.lacehub.cz/user-inventory/${itemId}`,
-              {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(changes),
-              }
-            );
-            if (!response.ok)
-              throw new Error("Failed to update inventory item");
+            if (!token) {
+              throw new Error("No authentication token found");
+            }
+
+            await fetch(`https://api.lacehub.cz/user-inventory/${itemId}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(changes),
+            });
           }
         } catch (err) {
           console.error(`Error updating item ${itemId}:`, err);
@@ -264,38 +304,52 @@ const Dashboard = () => {
         }
       }
 
-      // Process all items marked for deletion
-      for (const itemId of itemsToDelete) {
-        try {
-          const token = localStorage.getItem("token");
-          const deleteUrl = deleteEndpoints[activeTab](itemId);
+      // Then, handle deletions
+      const deletionPromises = Object.keys(itemsToDelete)
+        .filter((id) => itemsToDelete[id])
+        .map(async (itemId) => {
+          try {
+            if (activeTab === "wtb") {
+              await api.deleteWtbItem(itemId);
+            } else if (activeTab === "wts") {
+              await api.deleteWtsItem(itemId);
+            } else if (activeTab === "inventory") {
+              const token = localStorage.getItem("token");
+              if (!token) {
+                throw new Error("No authentication token found");
+              }
 
-          const response = await fetch(deleteUrl, {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+              await fetch(`https://api.lacehub.cz/user-inventory/${itemId}`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+            }
+            return itemId;
+          } catch (err) {
+            console.error(`Error deleting item ${itemId}:`, err);
+            hasErrors = true;
+            return null;
+          }
+        });
 
-          if (!response.ok) throw new Error(`Failed to delete item ${itemId}`);
-        } catch (err) {
-          console.error(`Error deleting item ${itemId}:`, err);
-          hasErrors = true;
-        }
+      const deletedIds = (await Promise.all(deletionPromises)).filter(
+        (id) => id !== null
+      );
+
+      // Update UI to remove deleted items
+      if (deletedIds.length > 0) {
+        setData((prev) => prev.filter((item) => !deletedIds.includes(item.id)));
       }
 
       if (hasErrors) {
         toast.error("Some items could not be updated. Please try again.");
       } else {
         toast.success("All changes saved successfully");
-        if (itemsToDelete.length > 0) {
-          setData((prevData) =>
-            prevData.filter((item) => !itemsToDelete.includes(item.id))
-          );
-        }
         setEditedItems({});
-        setItemsToDelete([]);
-        fetchData();
+        setItemsToDelete({});
+        fetchData(); // Refresh data to show updated state
       }
     } catch (err) {
       console.error("Error saving changes:", err);
@@ -315,11 +369,8 @@ const Dashboard = () => {
   };
 
   // Check if an item is marked for deletion
-  const isItemMarkedForDeletion = (itemId) => {
-    return (
-      itemsToDelete.includes(itemId) ||
-      data.find((item) => item.id === itemId)?.markedForDeletion
-    );
+  const isMarkedForDeletion = (itemId) => {
+    return itemsToDelete[itemId] === true;
   };
 
   // Get current edited or original value
@@ -332,7 +383,8 @@ const Dashboard = () => {
 
   // Determine if Save Changes button should be enabled
   const hasPendingChanges =
-    Object.keys(editedItems).length > 0 || itemsToDelete.length > 0;
+    Object.keys(editedItems).length > 0 ||
+    Object.values(itemsToDelete).some((value) => value === true);
 
   // The actual dashboard content to be rendered
   const DashboardContent = () => (
@@ -357,7 +409,7 @@ const Dashboard = () => {
               );
             })}
           </div>
-          {activeTab !== "inventory" ? (
+          {activeTab !== "inventory" && (
             <button
               onClick={handleMatch}
               disabled={matchingStatus === "matching"}
@@ -369,22 +421,24 @@ const Dashboard = () => {
                 ? "Match your WTB list"
                 : "Match your WTS list"}
             </button>
-          ) : (
-            <div>
+          )}
+          {activeTab === "inventory" && (
+            <>
               <input
                 type="file"
-                id="file-upload"
+                accept=".xlsx"
+                ref={fileInputRef}
                 onChange={handleFileUpload}
                 className="hidden"
-                accept=".xlsx,.xls"
               />
-              <label
-                htmlFor="file-upload"
-                className="min-w-[200px] px-6 py-3 bg-secondary-500 text-white rounded-lg font-medium hover:bg-secondary-600 transform hover:-translate-y-1 transition-all duration-300 shadow-md cursor-pointer inline-block text-center whitespace-nowrap"
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="min-w-[200px] px-6 py-3 bg-secondary-500 text-white rounded-lg font-medium hover:bg-secondary-600 transform hover:-translate-y-1 transition-all duration-300 shadow-md flex items-center justify-center gap-2"
               >
+                <Upload className="h-5 w-5" />
                 Upload .xlsx file
-              </label>
-            </div>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -501,7 +555,7 @@ const Dashboard = () => {
                     className={`hover:bg-primary-50 transition-colors duration-150 ${
                       isItemEdited(item.id) ? "bg-secondary-100/30" : ""
                     } ${
-                      isItemMarkedForDeletion(item.id) ? "bg-accent-100/30" : ""
+                      isMarkedForDeletion(item.id) ? "bg-accent-100/30" : ""
                     }`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -529,39 +583,14 @@ const Dashboard = () => {
                             handleCellClick(item.id, "size", item.size)
                           }
                           className={`flex items-center justify-between w-24 px-3 py-1.5 rounded border ${
-                            isItemEdited(item.id) && editedItems[item.id]?.size
+                            isItemEdited(item.id) && editedItems[item.id].size
                               ? "border-secondary-500 bg-secondary-100/20"
                               : "border-primary-200 hover:border-secondary-400"
                           } transition-all duration-200`}
-                          disabled={isItemMarkedForDeletion(item.id)}
                         >
                           <span>{getCurrentValue(item, "size")}</span>
                           <ChevronDown className="h-4 w-4 ml-1 text-primary-500" />
                         </button>
-
-                        {activeEditCell &&
-                          activeEditCell.id === item.id &&
-                          activeEditCell.field === "size" && (
-                            <div
-                              ref={dropdownRef}
-                              className="absolute top-full left-0 mt-1 w-32 bg-white border border-primary-200 rounded-md shadow-lg z-50 animate-scale-in transform origin-top"
-                              style={{ maxHeight: "200px", overflowY: "auto" }}
-                            >
-                              <div className="py-1">
-                                {sizeOptions.map((size) => (
-                                  <button
-                                    key={size}
-                                    onClick={() =>
-                                      handleSelectChange(item.id, "size", size)
-                                    }
-                                    className="block w-full text-left px-4 py-2 text-sm text-primary-700 hover:bg-secondary-100 transition-colors duration-150"
-                                  >
-                                    {size}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
                       </div>
                     </td>
 
@@ -574,43 +603,14 @@ const Dashboard = () => {
                           }
                           className={`flex items-center justify-between w-24 px-3 py-1.5 rounded border ${
                             isItemEdited(item.id) &&
-                            editedItems[item.id]?.quantity
+                            editedItems[item.id].quantity
                               ? "border-secondary-500 bg-secondary-100/20"
                               : "border-primary-200 hover:border-secondary-400"
                           } transition-all duration-200`}
-                          disabled={isItemMarkedForDeletion(item.id)}
                         >
                           <span>{getCurrentValue(item, "quantity")}</span>
                           <ChevronDown className="h-4 w-4 ml-1 text-primary-500" />
                         </button>
-
-                        {activeEditCell &&
-                          activeEditCell.id === item.id &&
-                          activeEditCell.field === "quantity" && (
-                            <div
-                              ref={dropdownRef}
-                              className="absolute top-full left-0 mt-1 w-24 bg-white border border-primary-200 rounded-md shadow-lg z-50 animate-scale-in transform origin-top"
-                              style={{ maxHeight: "200px", overflowY: "auto" }}
-                            >
-                              <div className="py-1">
-                                {quantityOptions.map((qty) => (
-                                  <button
-                                    key={qty}
-                                    onClick={() =>
-                                      handleSelectChange(
-                                        item.id,
-                                        "quantity",
-                                        qty
-                                      )
-                                    }
-                                    className="block w-full text-left px-4 py-2 text-sm text-primary-700 hover:bg-secondary-100 transition-colors duration-150"
-                                  >
-                                    {qty}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
                       </div>
                     </td>
 
@@ -618,16 +618,15 @@ const Dashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button
                         onClick={() => handleMarkForDeletion(item.id)}
-                        disabled={isItemMarkedForDeletion(item.id)}
                         className={`p-2 ${
-                          isItemMarkedForDeletion(item.id)
-                            ? "text-gray-400 cursor-not-allowed"
+                          isMarkedForDeletion(item.id)
+                            ? "text-accent-600 bg-accent-100"
                             : "text-accent-500 hover:text-accent-700 hover:bg-accent-100"
                         } rounded-full transition-colors duration-150`}
                         title={
-                          isItemMarkedForDeletion(item.id)
-                            ? "Marked for deletion"
-                            : "Remove item"
+                          isMarkedForDeletion(item.id)
+                            ? "Unmark for deletion"
+                            : "Mark for deletion"
                         }
                       >
                         <Trash className="h-5 w-5" />
@@ -637,7 +636,7 @@ const Dashboard = () => {
                     {/* Description Cell (only for inventory) */}
                     {activeTab === "inventory" && (
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-primary-600">
-                        {item.product.description}
+                        {item.product.description || "N/A"}
                       </td>
                     )}
                   </tr>
@@ -657,6 +656,84 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Modal for editing (similar to SearchBarResult) */}
+      {showEditModal && currentEditItem && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setShowEditModal(false)}
+        >
+          <div
+            ref={modalRef}
+            className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-semibold text-primary-800 mb-1">
+              Edit {currentEditField === "size" ? "Size" : "Quantity"}
+            </h3>
+            <p className="text-primary-600 text-sm mb-4">
+              {currentEditItem.product.name}
+            </p>
+
+            <div className="space-y-4">
+              {currentEditField === "size" ? (
+                <div>
+                  <label className="block text-sm font-medium text-primary-700 mb-1">
+                    Size
+                  </label>
+                  <select
+                    value={tempEditValue}
+                    onChange={(e) => setTempEditValue(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-primary-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400"
+                  >
+                    {sizeOptions.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-primary-700 mb-1">
+                    Quantity
+                  </label>
+                  <select
+                    value={tempEditValue}
+                    onChange={(e) => setTempEditValue(Number(e.target.value))}
+                    required
+                    className="w-full px-3 py-2 border border-primary-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400"
+                  >
+                    {quantityOptions.map((qty) => (
+                      <option key={qty} value={qty}>
+                        {qty}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 border border-primary-300 rounded-md text-primary-700 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSelectChange}
+                  className="px-4 py-2 bg-secondary-500 rounded-md text-white hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
