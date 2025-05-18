@@ -1,7 +1,7 @@
 import UserLayout from "../../layout/UserLayout";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { Save, Trash, ChevronDown } from "lucide-react";
+import { Save, Trash, ChevronDown, Upload } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import * as api from "../../services/api";
 import { toast } from "sonner";
@@ -18,7 +18,9 @@ const Dashboard = () => {
   const [editedItems, setEditedItems] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [activeEditCell, setActiveEditCell] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const dropdownRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Size options for dropdown
   const sizeOptions = [
@@ -109,6 +111,64 @@ const Dashboard = () => {
   useEffect(() => {
     fetchData();
   }, [activeTab, navigate]);
+
+  // Handle .xlsx file upload
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check if the file is an Excel file
+    if (!file.name.endsWith(".xlsx")) {
+      toast.error("Please upload a valid .xlsx file");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(
+        "https://api.lacehub.cz/user-inventory/upload",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      toast.success("Inventory file uploaded successfully");
+      fetchData(); // Refresh the data to show newly uploaded inventory
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error(`Failed to upload inventory: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Handler to trigger file input click
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   // Handle matching
   const handleMatch = async () => {
@@ -314,7 +374,7 @@ const Dashboard = () => {
               );
             })}
           </div>
-          {activeTab !== "inventory" && (
+          {activeTab !== "inventory" ? (
             <button
               onClick={handleMatch}
               disabled={matchingStatus === "matching"}
@@ -326,6 +386,33 @@ const Dashboard = () => {
                 ? "Match your WTB list"
                 : "Match your WTS list"}
             </button>
+          ) : (
+            <>
+              <input
+                type="file"
+                accept=".xlsx"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={triggerFileInput}
+                disabled={isUploading}
+                className="min-w-[200px] px-6 py-3 bg-secondary-500 text-white rounded-lg font-medium hover:bg-secondary-600 transform hover:-translate-y-1 transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                {isUploading ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-5 w-5" />
+                    <span>Upload .xlsx file</span>
+                  </>
+                )}
+              </button>
+            </>
           )}
         </div>
       </div>
