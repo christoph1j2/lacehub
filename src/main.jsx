@@ -5,7 +5,7 @@ import AboutUs from "./pages/about-us/AboutUs.jsx";
 import HowItWork from "./pages/how-it-works/HowItWorks.jsx";
 import BaseLayout from "./layout/BaseLayout.jsx";
 import { BrowserRouter, Routes, Route } from "react-router";
-import Homepage from "./pages/homepage/Index.jsx";
+import Homepage from "./pages/homepage/Homepage.jsx";
 import { AuthProvider } from "./hooks/useAuth.jsx";
 import Dashboard from "./pages/user/Dashboard.jsx";
 import UserSettings from "./pages/user-settings/UserSettings.jsx";

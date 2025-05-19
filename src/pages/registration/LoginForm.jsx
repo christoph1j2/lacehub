@@ -43,6 +43,11 @@ const LoginForm = ({ onClose, onRegisterClick }) => {
     }, 300);
   };
 
+  // Redirect to homepage when "Forgot password" is clicked
+  const handleForgotPassword = () => {
+    window.location.href = "/";
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -202,6 +207,17 @@ const LoginForm = ({ onClose, onRegisterClick }) => {
               className="text-secondary-600 hover:text-secondary-500 font-medium"
             >
               Register
+            </button>
+          </p>
+
+          <p className="text-center text-sm text-gray-500">
+            Forgot password?{" "}
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-secondary-600 hover:text-secondary-500 font-medium"
+            >
+              Click here
             </button>
           </p>
         </form>
