@@ -1,0 +1,66 @@
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Req,
+} from '@nestjs/common';
+import { NotificationsService } from './notifications.service';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('notifications')
+@Controller('notifications')
+export class NotificationsController {
+    constructor(private readonly notificationsService: NotificationsService) {}
+
+    @Post()
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary:
+            'Create a new notification for a user, should be created on its own',
+    })
+    async create(
+        @Body() body: { type: string; message: string; matchId?: number },
+        @Req() req: any,
+    ) {
+        const userId = req.user.id;
+        return await this.notificationsService.create(
+            userId,
+            body.type,
+            body.message,
+            body.matchId,
+        );
+    }
+
+    @Get()
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Get all notifications for a user, displayed in notif tab',
+    })
+    async findAll(@Req() req: any) {
+        const userId = req.user.id;
+        return await this.notificationsService.findAll(userId);
+    }
+
+    @Patch(':id/read')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary:
+            'Mark a notification as read - when user sees the notification, mark as read',
+    })
+    async markAsRead(@Param('id') id: number, @Req() req: any) {
+        const userId = req.user.id;
+        return await this.notificationsService.markAsRead(id, userId);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Delete a notification, done through notif tab' })
+    async delete(@Param('id') id: number, @Req() req: any) {
+        const userId = req.user.id;
+        return await this.notificationsService.delete(id, userId);
+    }
+}
